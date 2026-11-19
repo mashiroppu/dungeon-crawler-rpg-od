@@ -846,6 +846,40 @@ header button i {
 }
 .ability-btn:hover { filter: brightness(1.25); }
 .ability-btn.on-cd { opacity: 0.45; cursor: default; }
+#timing-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 6px 0;
+}
+#timingGauge {
+    position: relative;
+    width: 220px;
+    height: 14px;
+    border-radius: 7px;
+    background: #1a1a1a;
+    border: 1px solid #555;
+    overflow: hidden;
+}
+#timingZone {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 42%;
+    width: 16%;
+    background: rgba(80, 200, 120, 0.35);
+}
+#timingMarker {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 4px;
+    left: 0%;
+    background: #ffd700;
+    box-shadow: 0 0 4px #ffd700;
+}
+#timingGauge.hit { border-color: #ffd700; box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
+#btnTiming.armed { border-color: #ffd700; color: #ffd700; }
+
 .ability-btn .cd {
     position: absolute;
     inset: 0;

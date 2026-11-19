@@ -3,7 +3,7 @@
     "howler": "^2.2.3"
   },
   "name": "dungeon-crawler-rpg-od",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Browser roguelite dungeon crawler: 4 classes, abilities, affixes, sets, elites",
   "license": "GPL-3.0-only"
 }

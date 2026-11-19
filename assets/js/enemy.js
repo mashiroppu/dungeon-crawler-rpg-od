@@ -349,6 +349,17 @@ const setEnemyStats = (type, condition) => {
     enemy.stats.critRate = enemy.stats.critRate * dungeon.enemyMultipliers.critRate;
     enemy.stats.critDmg = enemy.stats.critDmg * dungeon.enemyMultipliers.critDmg;
 
+    // Scale with player level so monsters keep pace with gear/level growth
+    const lvlGap = (player && player.lvl ? player.lvl : 1) - enemy.lvl;
+    if (lvlGap > 0) {
+        const pressure = Math.min(3, 1 + lvlGap * 0.07);
+        enemy.stats.hpMax = Math.round(enemy.stats.hpMax * pressure);
+        enemy.stats.atk = Math.round(enemy.stats.atk * pressure);
+        enemy.stats.def = Math.round(enemy.stats.def * pressure);
+        enemy.stats.critRate = Math.min(50, enemy.stats.critRate + lvlGap);
+        enemy.stats.critDmg = Math.min(300, enemy.stats.critDmg + lvlGap * 2);
+    }
+
     // Calculate exp and gold that the monster gives
     const expYield = [];
 
