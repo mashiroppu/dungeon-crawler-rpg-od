@@ -4,40 +4,18 @@ let playerDead = false;
 let timingPos = 0;
 let timingDir = 1;
 let timingTimer = null;
-const TIMING_ZONE_LO = 42;
-const TIMING_ZONE_HI = 58;
-const TIMING_MULT = 1.5;
-const TIMING_HITS = 3;
-const timingInZone = () => timingPos >= TIMING_ZONE_LO && timingPos <= TIMING_ZONE_HI;
-
-const updateTimingBtn = () => {
-    const btn = document.querySelector("#btnTiming");
-    if (!btn) return;
-    const hits = (player && player.timingHits) || 0;
-    btn.innerHTML = hits > 0 ? `TIMING! x${hits}` : "TIMING!";
-    btn.classList.toggle("armed", hits > 0);
-};
+const TIMING_ZONE_W = 4;
+let timingZoneLo = 48;
+let timingZoneHi = 52;
+let timingSpeed = 3.2;
+const timingInZone = () => timingPos >= timingZoneLo && timingPos <= timingZoneHi;
 
 const timingGaugeTick = () => {
-    timingPos += timingDir * 1.6;
+    timingPos += timingDir * timingSpeed;
     if (timingPos >= 100) { timingPos = 100; timingDir = -1; }
     if (timingPos <= 0) { timingPos = 0; timingDir = 1; }
     const marker = document.querySelector("#timingMarker");
     if (marker) marker.style.left = timingPos + "%";
-};
-
-const timingPress = () => {
-    if (!player.inCombat) return;
-    if (timingInZone()) {
-        sfxBuff.play();
-        player.timingHits = TIMING_HITS;
-        addCombatLog(`<b style="color:#ffd700">Perfect timing!</b> Next ${TIMING_HITS} attacks deal +${Math.round((TIMING_MULT - 1) * 100)}% damage.`);
-        const g = document.querySelector("#timingGauge");
-        if (g) { g.classList.add("hit"); setTimeout(() => g.classList.remove("hit"), 250); }
-    } else {
-        addCombatLog(`Timing missed (${Math.round(timingPos)}%).`);
-    }
-    updateTimingBtn();
 };
 
 // ========== Validation ==========
@@ -172,21 +150,13 @@ const playerAttack = () => {
 // Ability buffs
     damage = Math.round(damage * playerBuffMult("atkMult"));
 
-    // Timing gauge buff
-    let timingHit = false;
-    if (player.timingHits > 0) {
-        timingHit = true;
-        damage = Math.round(damage * TIMING_MULT);
-        player.timingHits--;
-    }
-
     // Lifesteal formula
     let lifesteal = Math.round(damage * (player.stats.vamp / 100));
 
     // Apply the calculations to combat
     enemy.stats.hp -= damage;
     player.stats.hp += lifesteal;
-    addCombatLog(`${player.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${enemy.name}.` + (timingHit ? ' <b style="color:#ffd700">Timing!</b>' : ''));
+    addCombatLog(`${player.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${enemy.name}.`);
     hpValidation();
     playerLoadStats();
     enemyLoadStats();
@@ -361,12 +331,14 @@ const startCombat = (battleMusic) => {
     dungeon.status.event = true;
     combatPanel.style.display = "flex";
 
-    player.timingHits = 0;
-    timingPos = 0;
-    timingDir = 1;
+    timingPos = Math.random() * 100;
+    timingDir = Math.random() < 0.5 ? -1 : 1;
+    timingSpeed = 2.8 + Math.random() * 1.6;
+    const zoneCenter = 46 + Math.random() * 8;
+    timingZoneLo = zoneCenter - TIMING_ZONE_W / 2;
+    timingZoneHi = zoneCenter + TIMING_ZONE_W / 2;
     clearInterval(timingTimer);
     timingTimer = setInterval(timingGaugeTick, 30);
-    updateTimingBtn();
 
     combatTimer = setInterval(combatCounter, 1000);
 }
@@ -397,7 +369,6 @@ const endCombat = () => {
     clearInterval(combatTimer);
     clearInterval(timingTimer);
     timingTimer = null;
-    if (player) player.timingHits = 0;
     combatSeconds = 0;
 }
 
@@ -434,7 +405,6 @@ const showCombatInfo = () => {
         </div>
         <div id="ability-bar"></div>
         <div id="timing-wrap">
-            <button id="btnTiming" class="ability-btn">TIMING!</button>
             <div id="timingGauge"><div id="timingZone"></div><div id="timingMarker"></div></div>
         </div>
         <div class="logBox primary-panel">
@@ -443,7 +413,9 @@ const showCombatInfo = () => {
     </div>
     `;
     renderAbilityBar();
-    const btnT = document.querySelector("#btnTiming");
-    if (btnT) btnT.addEventListener("click", timingPress);
-    updateTimingBtn();
+    const tz = document.querySelector("#timingZone");
+    if (tz) {
+        tz.style.left = timingZoneLo + "%";
+        tz.style.width = TIMING_ZONE_W + "%";
+    }
 }

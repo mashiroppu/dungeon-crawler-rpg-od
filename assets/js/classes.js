@@ -87,49 +87,61 @@ const useAbility = (id) => {
     if (abilityCdLeft(id) > 0) { sfxDeny.play(); return; }
     player.abilityCds = player.abilityCds || {};
     player.abilityCds[id] = Date.now() + a.cd * 1000;
-    sfxBuff.play();
+
+    // Timing gauge: hitting the zone empowers the ability
+    const timed = typeof timingInZone === "function" && timingInZone();
+    const power = timed ? 1.5 : 1;
+    const dur = (sec) => Math.round(sec * 1000 * power);
+    if (timed) {
+        sfxBuff.play();
+        addCombatLog(`<b style="color:#ffd700">Perfect timing!</b> ${a.name} is empowered!`);
+        const g = document.querySelector("#timingGauge");
+        if (g) { g.classList.add("hit"); setTimeout(() => g.classList.remove("hit"), 250); }
+    } else {
+        sfxConfirm.play();
+    }
     const now = Date.now();
     switch (id) {
-        case "cleave": abilityDamage(2.6); break;
+        case "cleave": abilityDamage(2.6 * power); break;
         case "warcry":
             player.combatBuffs = player.combatBuffs || [];
-            player.combatBuffs.push({ type: "atkMult", mult: 1.35, expire: now + 12000 });
-            addCombatLog(`${player.name} lets out a war cry! (+35% damage for 12s)`);
+            player.combatBuffs.push({ type: "atkMult", mult: 1 + 0.35 * power, expire: now + dur(12) });
+            addCombatLog(`${player.name} lets out a war cry! (+${Math.round(35 * power)}% damage for ${Math.round(12 * power)}s)`);
             break;
         case "bulwark":
-            player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.35));
+            player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.35 * power));
             addCombatLog(`${player.name} raises a bulwark! (Shield: ${nFormatter(player.shield)})`);
             break;
-        case "fireball": abilityDamage(3.5, 0.5); break;
+        case "fireball": abilityDamage(3.5 * power, 0.5); break;
         case "frostbolt":
-            abilityDamage(1.8);
+            abilityDamage(1.8 * power);
             enemy.combatDebuffs = enemy.combatDebuffs || [];
-            enemy.combatDebuffs.push({ type: "atkSpdMult", mult: 0.65, expire: now + 6000 });
+            enemy.combatDebuffs.push({ type: "atkSpdMult", mult: timed ? 0.5 : 0.65, expire: now + dur(6) });
             addCombatLog(`${enemy.name}'s movements slow down!`);
             break;
         case "mana_shield":
-            player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.45));
+            player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.45 * power));
             addCombatLog(`${player.name} surrounds themself in mana! (Shield: ${nFormatter(player.shield)})`);
             break;
-        case "backstab": abilityDamage(3.5); break;
+        case "backstab": abilityDamage(3.5 * power); break;
         case "smoke_bomb":
             player.combatBuffs = player.combatBuffs || [];
-            player.combatBuffs.push({ type: "atkSpdMult", mult: 1.45, expire: now + 8000 });
-            addCombatLog(`${player.name} vanishes in smoke! (+45% ATK.SPD for 8s)`);
+            player.combatBuffs.push({ type: "atkSpdMult", mult: 1 + 0.45 * power, expire: now + dur(8) });
+            addCombatLog(`${player.name} vanishes in smoke! (+${Math.round(45 * power)}% ATK.SPD for ${Math.round(8 * power)}s)`);
             break;
         case "poison_blade":
-            abilityDamage(1.6);
-            enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.01), ticks: 6 };
+            abilityDamage(1.6 * power);
+            enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.01 * power), ticks: 6 };
             addCombatLog(`${enemy.name} is poisoned!`);
             break;
-        case "impale": abilityDamage(3.0, 0.75); break;
+        case "impale": abilityDamage(3.0 * power, 0.75); break;
         case "skewer_rush":
-            abilityDamage(2.2);
+            abilityDamage(2.2 * power);
             player.combatBuffs = player.combatBuffs || [];
-            player.combatBuffs.push({ type: "atkSpdMult", mult: 1.4, expire: now + 6000 });
-            addCombatLog(`${player.name} charges forward with the lance! (+40% ATK.SPD for 6s)`);
+            player.combatBuffs.push({ type: "atkSpdMult", mult: 1 + 0.4 * power, expire: now + dur(6) });
+            addCombatLog(`${player.name} charges forward with the lance! (+${Math.round(40 * power)}% ATK.SPD for ${Math.round(6 * power)}s)`);
             break;
-        case "dragon_fall": abilityDamage(4.5, 0.5); break;
+        case "dragon_fall": abilityDamage(4.5 * power, 0.5); break;
     }
     updateAbilityBar();
     playerLoadStats();
@@ -166,7 +178,7 @@ const renderAbilityBar = () => {
     const abs = unlockedAbilities();
     if (!abs.length) { bar.innerHTML = ""; return; }
     bar.innerHTML = abs.map(a =>
-        `<button class="ability-btn" data-ab="${a.id}" title="${a.desc}"><i class="ra ${a.icon}"></i> ${a.name}</button>`
+        `<button class="ability-btn" data-ab="${a.id}" title="${a.desc} — time the gauge to empower"><i class="ra ${a.icon}"></i> ${a.name}</button>`
     ).join("");
     bar.querySelectorAll(".ability-btn").forEach(btn => {
         btn.onclick = () => useAbility(btn.dataset.ab);

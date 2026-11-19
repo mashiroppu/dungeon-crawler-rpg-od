@@ -751,6 +751,10 @@ const allocationPopup = () => {
     let reset = document.querySelector("#allocate-reset");
     let close = document.querySelector("#allocate-close");
     confirm.onclick = function () {
+        // Set player class
+        const clsKey = document.querySelector("#select-class").value;
+        const clsDef = CLASSES[clsKey] || CLASSES.warrior;
+
         // Set allocated stats to player base stats
         player.baseStats = {
             hp: stats.hp,
@@ -763,9 +767,6 @@ const allocationPopup = () => {
             critDmg: 50 + (clsDef.add.critDmg || 0)
         }
 
-        // Set player class
-        const clsKey = document.querySelector("#select-class").value;
-        const clsDef = CLASSES[clsKey] || CLASSES.warrior;
         player.cls = clsKey;
         stats.hp = Math.round(stats.hp * clsDef.mult.hp);
         stats.atk = Math.round(stats.atk * clsDef.mult.atk);
