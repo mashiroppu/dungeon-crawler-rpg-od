@@ -824,3 +824,39 @@ header button i {
         -o-transform: scale(1.5);
     }
 }
+/* ===== Classes & Abilities ===== */
+#ability-bar {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 6px 0;
+}
+.ability-btn {
+    position: relative;
+    min-width: 72px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #8a6d3b;
+    background: #2a2118;
+    color: #f0e6d2;
+    cursor: pointer;
+    font-size: 0.8rem;
+    overflow: hidden;
+}
+.ability-btn:hover { filter: brightness(1.25); }
+.ability-btn.on-cd { opacity: 0.45; cursor: default; }
+.ability-btn .cd {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+    color: #fff;
+    text-shadow: 0 0 4px #000;
+    background: rgba(0,0,0,0.45);
+}
+.enemy-mods { color: #ff9a3c; font-size: 0.8em; }
+.set-name { color: #c9a227; font-size: 0.75em; }

@@ -30,13 +30,24 @@ const hpValidation = () => {
         // Gives out all the reward and show the claim button
         enemy.stats.hp = 0;
         enemyDead = true;
+        if (enemy.mods && enemy.mods.includes("volatile")) {
+            const boom = Math.round(player.stats.hpMax * 0.08);
+            player.stats.hp -= boom;
+            addCombatLog(`${enemy.name} explodes! You take ${nFormatter(boom)} damage.`);
+            if (player.stats.hp < 1) {
+                player.stats.hp = 0;
+                hpValidation();
+                return;
+            }
+        }
         player.kills++;
         dungeon.statistics.kills++;
         addCombatLog(`${enemy.name} died! (${new Date(combatSeconds * 1000).toISOString().substring(14, 19)})`);
         addCombatLog(`You earned ${nFormatter(enemy.rewards.exp)} exp.`)
         playerExpGain();
-        addCombatLog(`${enemy.name} dropped <i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(enemy.rewards.gold)} gold.`)
-        player.gold += enemy.rewards.gold;
+        const goldGain = Math.round(enemy.rewards.gold * (1 + ((player.equippedStats && player.equippedStats.goldFind) || 0) / 100));
+        addCombatLog(`${enemy.name} dropped <i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(goldGain)} gold.`)
+        player.gold += goldGain;
         playerLoadStats();
         if (enemy.rewards.drop) {
             createEquipmentPrint("combat");
@@ -75,7 +86,8 @@ const playerAttack = () => {
 
     // Calculates the damage and attacks the enemy
     let crit;
-    let damage = player.stats.atk * (player.stats.atk / (player.stats.atk + enemy.stats.def));
+    let penFactor = 1 - Math.min(90, (player.equippedStats && player.equippedStats.penPct) || 0) / 100;
+    let damage = player.stats.atk * (player.stats.atk / (player.stats.atk + enemy.stats.def * penFactor));
     // Randomizes the damage by 90% - 110%
     let dmgRange = 0.9 + Math.random() * 0.2;
     damage = damage * dmgRange;
@@ -119,6 +131,9 @@ const playerAttack = () => {
         saveData();
     }
 
+    // Ability buffs
+    damage = Math.round(damage * playerBuffMult("atkMult"));
+
     // Lifesteal formula
     let lifesteal = Math.round(damage * (player.stats.vamp / 100));
 
@@ -138,19 +153,7 @@ const playerAttack = () => {
     }, 200);
 
     // Damage numbers
-    const dmgContainer = document.querySelector("#dmg-container");
-    const dmgNumber = document.createElement("p");
-    dmgNumber.classList.add("dmg-numbers");
-    if (crit) {
-        dmgNumber.style.color = "gold";
-        dmgNumber.innerHTML = nFormatter(damage) + "!";
-    } else {
-        dmgNumber.innerHTML = nFormatter(damage);
-    }
-    dmgContainer.appendChild(dmgNumber);
-    setTimeout(() => {
-        dmgContainer.removeChild(dmgContainer.lastElementChild);
-    }, 370);
+    spawnDamageNumber(damage, crit);
 
     // Attack Timer
     if (player.inCombat) {
@@ -158,7 +161,7 @@ const playerAttack = () => {
             if (player.inCombat) {
                 playerAttack();
             }
-        }, (1000 / player.stats.atkSpd));
+        }, (1000 / (player.stats.atkSpd * playerBuffMult("atkSpdMult"))));
     }
 }
 
@@ -171,7 +174,7 @@ const enemyAttack = () => {
     }
 
     // Calculates the damage and attacks the player
-    let damage = enemy.stats.atk * (enemy.stats.atk / (enemy.stats.atk + player.stats.def));
+    let damage = enemy.stats.atk * (enemy.stats.atk / (enemy.stats.atk + player.stats.def * playerBuffMult("defMult")));
     let lifesteal = Math.round(enemy.stats.atk * (enemy.stats.vamp / 100));
     // Randomizes the damage by 90% - 110%
     let dmgRange = 0.9 + Math.random() * 0.2;
@@ -185,14 +188,39 @@ const enemyAttack = () => {
         damage = Math.round(damage);
     }
 
+    // Dodge affix: chance to avoid the hit entirely
+    if (damage > 0 && Math.random() * 100 < ((player.equippedStats && player.equippedStats.dodge) || 0)) {
+        damage = 0;
+        lifesteal = 0;
+        addCombatLog(`${enemy.name}'s attack misses ${player.name}!`);
+    }
+
     // Skill effects
     if (player.skills.includes("Paladin's Heart")) {
         // You receive 25% less damage
         damage = Math.round(damage - ((25 * damage) / 100));
     }
 
+    // Burning modifier: bonus damage based on player max HP
+    if (enemy.mods && enemy.mods.includes("burning")) {
+        damage += Math.round(player.stats.hpMax * 0.03);
+    }
+
+    // Shield absorb
+    let absorbed = 0;
+    if (player.shield > 0) {
+        absorbed = Math.min(player.shield, damage);
+        player.shield -= absorbed;
+        damage -= absorbed;
+    }
+
     // Apply the calculations
     player.stats.hp -= damage;
+    // Thorns affix: reflect % of damage taken
+    const thornsPct = (player.equippedStats && player.equippedStats.thorns) || 0;
+    if (thornsPct > 0 && damage > 0) {
+        enemy.stats.hp -= Math.round(damage * thornsPct / 100);
+    }
     // Aegis Thorns skill
     objectValidation();
     if (player.skills.includes("Aegis Thorns")) {
@@ -200,7 +228,7 @@ const enemyAttack = () => {
         enemy.stats.hp -= Math.round((15 * damage) / 100);
     }
     enemy.stats.hp += lifesteal;
-    addCombatLog(`${enemy.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${player.name}.`);
+    addCombatLog(`${enemy.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${player.name}.` + (absorbed > 0 ? ` (Shield absorbed ${nFormatter(absorbed)})` : ""));
     hpValidation();
     playerLoadStats();
     enemyLoadStats();
@@ -218,7 +246,7 @@ const enemyAttack = () => {
             if (player.inCombat) {
                 enemyAttack();
             }
-        }, (1000 / enemy.stats.atkSpd));
+        }, (1000 / (enemy.stats.atkSpd * enemyDebuffMult("atkSpdMult"))));
     }
 }
 
@@ -267,6 +295,13 @@ const startCombat = (battleMusic) => {
     sfxEncounter.play();
     battleMusic.play();
     player.inCombat = true;
+    player.abilityCds = {};
+    player.combatBuffs = [];
+    player.shield = 0;
+    if (enemy) {
+        enemy.combatDebuffs = [];
+        delete enemy.dot;
+    }
 
     // Starts the timer for player and enemy attacks along with combat timer
     setTimeout(playerAttack, (1000 / player.stats.atkSpd));
@@ -312,13 +347,14 @@ const endCombat = () => {
 
 const combatCounter = () => {
     combatSeconds++;
+    combatSecondTick();
 }
 
 const showCombatInfo = () => {
     document.querySelector('#combatPanel').innerHTML = `
     <div class="content">
         <div class="battle-info-panel center" id="enemyPanel">
-            <p>${enemy.name} Lv.${enemy.lvl}</p>
+            <p>${enemy.name} Lv.${enemy.lvl}${enemyModLabel()}</p>
             <div class="battle-bar empty-bar hp bb-hp">
                 <div class="battle-bar dmg bb-hp" id="enemy-hp-dmg"></div>
                 <div class="battle-bar current bb-hp" id="enemy-hp-battle">
@@ -340,9 +376,11 @@ const showCombatInfo = () => {
                 <div class="battle-bar current bb-xb" id="player-exp-bar">exp</div>
             </div>
         </div>
+        <div id="ability-bar"></div>
         <div class="logBox primary-panel">
             <div id="combatLogBox"></div>
         </div>
     </div>
     `;
+    renderAbilityBar();
 }

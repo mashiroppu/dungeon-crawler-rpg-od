@@ -211,7 +211,7 @@ window.addEventListener("load", function () {
                     <h3>Current Run</h3>
                     <p id="run-close"><i class="fa fa-xmark"></i></p>
                 </div>
-                <p>${player.name} Lv.${player.lvl} (${player.skills})</p>
+                <p>${player.name} Lv.${player.lvl} [${(CLASSES[player.cls] || CLASSES.warrior).name}]</p>
                 <p>Blessing Lvl.${player.blessing}</p>
                 <p>Curse Lvl.${Math.round((dungeon.settings.enemyScaling - 1) * 10)}</p>
                 <p>Kills: ${nFormatter(dungeon.statistics.kills)}</p>
@@ -438,9 +438,12 @@ const calculateStats = () => {
     let playerCRateBase = player.baseStats.critRate;
     let playerCDmgBase = player.baseStats.critDmg;
 
-    player.stats.hpMax = Math.round((playerHpBase + playerHpBase * (player.bonusStats.hp / 100)) + player.equippedStats.hp);
-    player.stats.atk = Math.round((playerAtkBase + playerAtkBase * (player.bonusStats.atk / 100)) + player.equippedStats.atk);
-    player.stats.def = Math.round((playerDefBase + playerDefBase * (player.bonusStats.def / 100)) + player.equippedStats.def);
+    const eqHpPct = player.equippedStats.hpPct || 0;
+    const eqAtkPct = player.equippedStats.atkPct || 0;
+    const eqDefPct = player.equippedStats.defPct || 0;
+    player.stats.hpMax = Math.round(playerHpBase * (1 + (player.bonusStats.hp + eqHpPct) / 100) + player.equippedStats.hp);
+    player.stats.atk = Math.round(playerAtkBase * (1 + (player.bonusStats.atk + eqAtkPct) / 100) + player.equippedStats.atk);
+    player.stats.def = Math.round(playerDefBase * (1 + (player.bonusStats.def + eqDefPct) / 100) + player.equippedStats.def);
     player.stats.atkSpd = (playerAtkSpdBase + playerAtkSpdBase * (player.bonusStats.atkSpd / 100)) + equipmentAtkSpd + (equipmentAtkSpd * (player.equippedStats.atkSpd / 100));
     player.stats.vamp = playerVampBase + player.bonusStats.vamp + player.equippedStats.vamp;
     player.stats.critRate = playerCRateBase + player.bonusStats.critRate + player.equippedStats.critRate;
@@ -474,6 +477,9 @@ const progressReset = () => {
         critDmg: 0
     };
     player.skills = [];
+    player.abilityCds = {};
+    player.combatBuffs = [];
+    player.shield = 0;
     player.inCombat = false;
     dungeon.progress.floor = 1;
     dungeon.progress.room = 1;
@@ -616,6 +622,18 @@ const allocationPopup = () => {
                 <button id="allocate-reset">Reset</button>
             </div>
             <div class="row">
+                <p>Class</p>
+                <select id="select-class">
+                    <option value="warrior">Warrior</option>
+                    <option value="mage">Mage</option>
+                    <option value="rogue">Rogue</option>
+                    <option value="lancer">Lancer</option>
+                </select>
+            </div>
+            <div class="row primary-panel pad">
+                <p id="class-desc">Frontline fighter. High HP/ATK/DEF.</p>
+            </div>
+            <div class="row">
                 <p>Passive</p>
                 <select id="select-skill">
                     <option value="Remnant Razor">Remnant Razor</option>
@@ -721,6 +739,12 @@ const allocationPopup = () => {
             skillDesc.innerHTML = "Enemies receive 15% of the damage they dealt.";
         }
     }
+    let selectClass = document.querySelector("#select-class");
+    let classDesc = document.querySelector("#class-desc");
+    selectClass.onchange = function () {
+        sfxConfirm.play();
+        classDesc.innerHTML = CLASSES[selectClass.value].desc;
+    }
 
     // Operation Buttons
     let confirm = document.querySelector("#allocate-confirm");
@@ -735,9 +759,18 @@ const allocationPopup = () => {
             pen: 0,
             atkSpd: stats.atkSpd,
             vamp: 0,
-            critRate: 0,
-            critDmg: 50
+            critRate: clsDef.add.critRate || 0,
+            critDmg: 50 + (clsDef.add.critDmg || 0)
         }
+
+        // Set player class
+        const clsKey = document.querySelector("#select-class").value;
+        const clsDef = CLASSES[clsKey] || CLASSES.warrior;
+        player.cls = clsKey;
+        stats.hp = Math.round(stats.hp * clsDef.mult.hp);
+        stats.atk = Math.round(stats.atk * clsDef.mult.atk);
+        stats.def = Math.round(stats.def * clsDef.mult.def);
+        stats.atkSpd = Number((stats.atkSpd * clsDef.mult.atkSpd).toFixed(3));
 
         // Set player skill
         objectValidation();

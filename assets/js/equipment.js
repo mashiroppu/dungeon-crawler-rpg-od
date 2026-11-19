@@ -1,3 +1,55 @@
+const EQUIPMENT_SETS = {
+    ember: { name: "Emberforged", bonus2: { atkPct: 6 },              bonus4: { atkPct: 12, vamp: 3 } },
+    frost: { name: "Rimescale",   bonus2: { defPct: 8, hpPct: 8 },    bonus4: { defPct: 16, hpPct: 16, atkSpd: 4 } },
+    storm: { name: "Galestep",    bonus2: { atkSpd: 6, critRate: 2 },  bonus4: { atkSpd: 12, critRate: 5, critDmg: 8 } },
+    void:  { name: "Nyxweave",    bonus2: { critRate: 4, critDmg: 8 }, bonus4: { critRate: 8, critDmg: 20, atkPct: 8 } },
+};
+const SET_KEYS = Object.keys(EQUIPMENT_SETS);
+const SET_CHANCE = { Common: 0, Uncommon: 0, Rare: 0.15, Epic: 0.4, Legendary: 0.7, Heirloom: 1 };
+const AFFIXES = [
+    { key: "atkPct",    label: "ATK",    min: 4,  max: 10, w: 3 },
+    { key: "hpPct",     label: "HP",     min: 5,  max: 12, w: 3 },
+    { key: "defPct",    label: "DEF",    min: 5,  max: 12, w: 2 },
+    { key: "atkSpd",    label: "ATK.SPD",min: 3,  max: 8,  w: 2 },
+    { key: "vamp",      label: "VAMP",   min: 0.5,max: 2,  w: 2 },
+    { key: "critRate",  label: "C.RATE", min: 1,  max: 4,  w: 2 },
+    { key: "critDmg",   label: "C.DMG",  min: 5,  max: 15, w: 2 },
+    { key: "penPct",    label: "PEN",    min: 3,  max: 10, w: 1 },
+    { key: "thorns",    label: "THORN",  min: 4,  max: 12, w: 1 },
+    { key: "dodge",     label: "DODGE",  min: 2,  max: 6,  w: 1 },
+    { key: "goldFind",  label: "G.FIND", min: 5,  max: 15, w: 1 },
+    { key: "expFind",   label: "E.FIND", min: 5,  max: 15, w: 1 },
+];
+const AFFIX_COUNT = { Rare: 1, Epic: 2, Legendary: 3, Heirloom: 4 };
+const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND" };
+const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind"]);
+const formatStatLine = (stat) => {
+    const key = Object.keys(stat)[0];
+    const label = STAT_LINE_LABEL[key] || key.replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase();
+    const val = stat[key];
+    const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+    const txt = PCT_STATS.has(key) ? val.toFixed(2).replace(rx, "$1") + "%" : String(val);
+    return `<li>${label}+${txt}</li>`;
+};
+
+const rollAffixes = (equipment) => {
+    const affixCount = AFFIX_COUNT[equipment.rarity] || 0;
+    equipment.affixes = [];
+    const usedAffix = new Set();
+    for (let i = 0; i < affixCount; i++) {
+        const pool = AFFIXES.filter(a => !usedAffix.has(a.key));
+        const totalW = pool.reduce((sum, a) => sum + a.w, 0);
+        let r = Math.random() * totalW;
+        let pick = pool[pool.length - 1];
+        for (const a of pool) { r -= a.w; if (r <= 0) { pick = a; break; } }
+        usedAffix.add(pick.key);
+        const mult = equipment.rarity === "Heirloom" ? 1.5 : 1;
+        const val = Math.round(randomizeDecimal(pick.min, pick.max) * mult * 10) / 10;
+        equipment.affixes.push({ key: pick.key, value: val });
+        equipment.stats.push({ [pick.key]: val });
+    }
+};
+
 const createEquipment = () => {
     const equipment = {
         category: null,
@@ -197,6 +249,12 @@ const createEquipment = () => {
             equipment.stats.push({ [statType]: statValue });
         }
     }
+    // Set & affixes (Rare and above)
+    if (Math.random() < (SET_CHANCE[equipment.rarity] || 0)) {
+        equipment.set = SET_KEYS[Math.floor(Math.random() * SET_KEYS.length)];
+    }
+    rollAffixes(equipment);
+    equipmentValue += equipment.affixes.reduce((sum, a) => sum + a.value, 0) * 25;
     equipment.value = Math.round(equipmentValue * 3);
     player.inventory.equipment.push(JSON.stringify(equipment));
 
@@ -262,20 +320,12 @@ const showItemInfo = (item, icon, type, i) => {
     dimContainer.style.filter = "brightness(50%)";
     itemInfo.innerHTML = `
             <div class="content">
-                <h3 class="${item.rarity}">${icon}${item.rarity} ${item.category}</h3>
+                <h3 class="${item.rarity}">${icon}${item.rarity} ${item.category}${item.set ? ` <span class="set-name">[${EQUIPMENT_SETS[item.set].name}]</span>` : ""}</h3>
                 <h5 class="lvltier ${item.rarity}"><b>Lv.${item.lvl} Tier ${item.tier}</b></h5>
-                <ul>
-                ${item.stats.map(stat => {
-        if (Object.keys(stat)[0] === "critRate" || Object.keys(stat)[0] === "critDmg" || Object.keys(stat)[0] === "atkSpd" || Object.keys(stat)[0] === "vamp") {
-            return `<li>${Object.keys(stat)[0].toString().replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase()}+${stat[Object.keys(stat)[0]].toFixed(2).replace(rx, "$1")}%</li>`;
-        }
-        else {
-            return `<li>${Object.keys(stat)[0].toString().replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase()}+${stat[Object.keys(stat)[0]]}</li>`;
-        }
-    }).join('')}
-                </ul>
+                <ul>${item.stats.map(formatStatLine).join('')}</ul>
                 <div class="button-container">
                     <button id="un-equip">${type}</button>
+                    ${item.affixes && item.affixes.length ? '<button id="reroll-equip"><i class="ra ra-recycle"></i>Reroll</button>' : ''}
                     <button id="sell-equip"><i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(item.value)}</button>
                     <button id="close-item-info">Close</button>
                 </div>
@@ -361,6 +411,30 @@ const showItemInfo = (item, icon, type, i) => {
         }
     };
 
+    // Reroll affixes (Rare and above)
+    let rerollBtn = document.querySelector("#reroll-equip");
+    if (rerollBtn) {
+        rerollBtn.onclick = function () {
+            const cost = Math.max(100, Math.round((item.value || 100) * 0.3));
+            if (player.gold < cost) {
+                sfxDeny.play();
+                return;
+            }
+            sfxSell.play();
+            player.gold -= cost;
+            const oldCount = (item.affixes || []).length;
+            if (oldCount > 0) item.stats.splice(item.stats.length - oldCount, oldCount);
+            rollAffixes(item);
+            item.value = Math.round((item.value || 0) * 1.1);
+            if (type == "Equip") {
+                player.inventory.equipment[i] = JSON.stringify(item);
+            }
+            playerLoadStats();
+            saveData();
+            showItemInfo(item, icon, type, i);
+        };
+    }
+
     // Close item info
     let close = document.querySelector("#close-item-info");
     close.onclick = function () {
@@ -439,7 +513,15 @@ const applyEquipmentStats = () => {
         atkSpd: 0,
         vamp: 0,
         critRate: 0,
-        critDmg: 0
+        critDmg: 0,
+        hpPct: 0,
+        atkPct: 0,
+        defPct: 0,
+        penPct: 0,
+        thorns: 0,
+        dodge: 0,
+        goldFind: 0,
+        expFind: 0
     };
 
     for (let i = 0; i < player.equipped.length; i++) {
@@ -451,6 +533,22 @@ const applyEquipmentStats = () => {
                 player.equippedStats[key] += stat[key];
             }
         });
+    }
+
+    // Set bonuses
+    const setCounts = {};
+    for (const item of player.equipped) {
+        if (item.set && EQUIPMENT_SETS[item.set]) setCounts[item.set] = (setCounts[item.set] || 0) + 1;
+    }
+    player.activeSets = {};
+    for (const setKey in setCounts) {
+        const n = setCounts[setKey];
+        player.activeSets[setKey] = n;
+        const def = EQUIPMENT_SETS[setKey];
+        const bonus = n >= 4 ? def.bonus4 : n >= 2 ? def.bonus2 : null;
+        if (bonus) {
+            for (const k in bonus) player.equippedStats[k] = (player.equippedStats[k] || 0) + bonus[k];
+        }
     }
     calculateStats();
 }
@@ -512,18 +610,9 @@ const createEquipmentPrint = (condition) => {
     let item = createEquipment();
     let panel = `
         <div class="primary-panel" style="padding: 0.5rem; margin-top: 0.5rem;">
-                <h4 class="${item.rarity}"><b>${item.icon}${item.rarity} ${item.category}</b></h4>
+                <h4 class="${item.rarity}"><b>${item.icon}${item.rarity} ${item.category}${item.set ? ` <span class="set-name">[${EQUIPMENT_SETS[item.set].name}]</span>` : ""}</b></h4>
                 <h5 class="${item.rarity}"><b>Lv.${item.lvl} Tier ${item.tier}</b></h5>
-                <ul>
-                ${item.stats.map(stat => {
-        if (Object.keys(stat)[0] === "critRate" || Object.keys(stat)[0] === "critDmg" || Object.keys(stat)[0] === "atkSpd" || Object.keys(stat)[0] === "vamp") {
-            return `<li>${Object.keys(stat)[0].toString().replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase()}+${stat[Object.keys(stat)[0]].toFixed(2).replace(rx, "$1")}%</li>`;
-        }
-        else {
-            return `<li>${Object.keys(stat)[0].toString().replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase()}+${stat[Object.keys(stat)[0]]}</li>`;
-        }
-    }).join('')}
-            </ul>
+                <ul>${item.stats.map(formatStatLine).join('')}</ul>
         </div>`;
     if (condition == "combat") {
         addCombatLog(`

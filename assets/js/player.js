@@ -5,8 +5,10 @@ const lvlupSelect = document.querySelector("#lvlupSelect");
 const lvlupPanel = document.querySelector("#lvlupPanel");
 
 const playerExpGain = () => {
-    player.exp.expCurr += enemy.rewards.exp;
-    player.exp.expCurrLvl += enemy.rewards.exp;
+    const prevAbilities = unlockedAbilities().map(a => a.id);
+    const expGain = Math.round(enemy.rewards.exp * (1 + ((player.equippedStats && player.equippedStats.expFind) || 0) / 100));
+    player.exp.expCurr += expGain;
+    player.exp.expCurrLvl += expGain;
 
     while (player.exp.expCurr >= player.exp.expMax) {
         playerLvlUp();
@@ -14,6 +16,7 @@ const playerExpGain = () => {
     if (leveled) {
         lvlupPopup();
     }
+    checkAbilityUnlocks(prevAbilities);
 
     playerLoadStats();
 }
@@ -94,7 +97,16 @@ const playerLoadStats = () => {
     <p><i class="ra ra-plain-dagger"></i>ATK.SPD+${player.bonusStats.atkSpd.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-dripping-blade"></i>VAMP+${player.bonusStats.vamp.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-lightning-bolt"></i>C.RATE+${player.bonusStats.critRate.toFixed(2).replace(rx, "$1")}%</p>
-    <p><i class="ra ra-focused-lightning"></i>C.DMG+${player.bonusStats.critDmg.toFixed(2).replace(rx, "$1")}%</p>`;
+    <p><i class="ra ra-focused-lightning"></i>C.DMG+${player.bonusStats.critDmg.toFixed(2).replace(rx, "$1")}%</p>` + (() => {
+        if (!player.activeSets) return "";
+        return Object.keys(player.activeSets).filter(k => player.activeSets[k] >= 2).map(k => {
+            const n = player.activeSets[k];
+            const d = EQUIPMENT_SETS[k];
+            const bonus = n >= 4 ? d.bonus4 : d.bonus2;
+            const txt = Object.keys(bonus).map(bk => `${STAT_LINE_LABEL[bk] || bk}+${bonus[bk]}${PCT_STATS.has(bk) ? "%" : ""}`).join(" ");
+            return `<p><i class="ra ra-gem"></i>${d.name} (${n}pc): ${txt}</p>`;
+        }).join("");
+    })();
 }
 
 // Opens inventory

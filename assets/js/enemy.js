@@ -25,7 +25,53 @@ let enemy = {
     }
 };
 
+const ENEMY_MODS = {
+    burning:      { label: "Burning",      desc: "Deals +3% of your max HP as bonus damage per hit." },
+    frenzy:       { label: "Frenzy",       atkSpd: 1.35 },
+    vampiric:     { label: "Vampiric",     vamp: 8 },
+    regenerating: { label: "Regenerating", regen: 0.01 },
+    armored:      { label: "Armored",      def: 1.6 },
+    volatile:     { label: "Volatile",     desc: "Explodes on death, dealing 8% of your max HP." },
+};
+
+const applyElite = () => {
+    enemy.elite = true;
+    enemy.name = "Elite " + enemy.name;
+    enemy.stats.hpMax = Math.round(enemy.stats.hpMax * 1.6);
+    enemy.stats.atk = Math.round(enemy.stats.atk * 1.4);
+    enemy.stats.def = Math.round(enemy.stats.def * 1.4);
+    enemy.stats.atkSpd = Math.min(2.5, enemy.stats.atkSpd * 1.15);
+    enemy.rewards.exp = Math.round(enemy.rewards.exp * 2.2);
+    enemy.rewards.gold = Math.round(enemy.rewards.gold * 2.2);
+    enemy.rewards.drop = true;
+    enemy.stats.hp = enemy.stats.hpMax;
+};
+
+const applyEnemyModifiers = (condition) => {
+    enemy.mods = [];
+    enemy.combatDebuffs = [];
+    const rollCount = condition
+        ? 2
+        : (enemy.elite ? (Math.random() < 0.5 ? 2 : 1) : (Math.random() < 0.1 ? 1 : 0));
+    const pool = Object.keys(ENEMY_MODS);
+    for (let i = 0; i < rollCount; i++) {
+        const key = pool[Math.floor(Math.random() * pool.length)];
+        if (enemy.mods.includes(key)) continue;
+        enemy.mods.push(key);
+        const m = ENEMY_MODS[key];
+        if (m.atkSpd) enemy.stats.atkSpd = Math.min(2.5, enemy.stats.atkSpd * m.atkSpd);
+        if (m.vamp) enemy.stats.vamp += m.vamp;
+        if (m.def) enemy.stats.def = Math.round(enemy.stats.def * m.def);
+        if (m.regen) enemy.regenPerSec = Math.max(1, Math.round(enemy.stats.hpMax * m.regen));
+    }
+};
+
 const generateRandomEnemy = (condition) => {
+    enemy.elite = false;
+    enemy.mods = [];
+    enemy.combatDebuffs = [];
+    delete enemy.dot;
+    delete enemy.regenPerSec;
     // List of possible enemy names
     const enemyNames = [
         // Goblin
@@ -180,6 +226,10 @@ const generateRandomEnemy = (condition) => {
         enemy.name = "Door Mimic";
     }
     setEnemyImg();
+    if (!condition && Math.random() < 0.12) {
+        applyElite();
+    }
+    applyEnemyModifiers(condition);
 }
 
 // Set a randomly generated stat for the enemy
