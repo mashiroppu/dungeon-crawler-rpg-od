@@ -33,6 +33,10 @@ let sfxUnpause;
 let sfxSell;
 let sfxItem;
 let sfxBuff;
+let sfxAbility;
+let sfxHolyStrike;
+let sfxThornsNova;
+let sfxAegisOath;
 
 const setVolume = () => {
     // ===== BGM =====
@@ -133,6 +137,27 @@ const setVolume = () => {
 
     sfxBuff = new Howl({
         src: ['./assets/sfx/buff.wav'],
+        volume: volume.sfx * volume.master
+    });
+
+    sfxAbility = new Howl({
+        src: ['./assets/sfx/attack.wav'],
+        volume: volume.sfx * volume.master,
+        rate: 0.6
+    });
+
+    sfxHolyStrike = new Howl({
+        src: ['./assets/sfx/holy_strike.mp3'],
+        volume: volume.sfx * volume.master
+    });
+
+    sfxThornsNova = new Howl({
+        src: ['./assets/sfx/thorns_nova.mp3'],
+        volume: volume.sfx * volume.master * 0.6
+    });
+
+    sfxAegisOath = new Howl({
+        src: ['./assets/sfx/aegis_oath.mp3'],
         volume: volume.sfx * volume.master
     });
 }

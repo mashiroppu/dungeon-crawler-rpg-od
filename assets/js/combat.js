@@ -1,32 +1,35 @@
 const combatPanel = document.querySelector("#combatPanel")
 let enemyDead = false;
 let playerDead = false;
-let timingPos = 0;
-let timingDir = 1;
-let timingTimer = null;
-const TIMING_ZONE_W = 4;
-let timingZoneLo = 48;
-let timingZoneHi = 52;
-let timingSpeed = 3.2;
-const timingInZone = () => timingPos >= timingZoneLo && timingPos <= timingZoneHi;
+let endCombatAction = null;
+let playerRegenTimer = null;
 
-const timingGaugeTick = () => {
-    timingPos += timingDir * timingSpeed;
-    if (timingPos >= 100) { timingPos = 100; timingDir = -1; }
-    if (timingPos <= 0) { timingPos = 0; timingDir = 1; }
-    const marker = document.querySelector("#timingMarker");
-    if (marker) marker.style.left = timingPos + "%";
+// Applies healing to the player. Blood Oath: while below 50% HP, healing cannot raise HP above 51%.
+const applyPlayerHeal = (amount) => {
+    let hp = player.stats.hp + amount;
+    if (((player.equippedStats && player.equippedStats.bloodOath) || 0) > 0 && player.stats.hp < player.stats.hpMax * 0.5) {
+        hp = Math.min(hp, player.stats.hpMax * 0.51);
+    }
+    player.stats.hp = Math.min(player.stats.hpMax, hp);
 };
 
 // ========== Validation ==========
 const hpValidation = () => {
     // Prioritizes player death before the enemy
-    if (player.stats.hp < 1) {
+    if (!playerDead && player.stats.hp < 1) {
+        // Second Wind: survive lethal damage once per battle at 1 HP
+        if (player.skills.includes("Second Wind") && !player.secondWindUsed) {
+            player.secondWindUsed = true;
+            player.stats.hp = 1;
+            addCombatLog(`${player.name} refuses to fall! (Second Wind)`);
+            playerLoadStats();
+            return;
+        }
         player.stats.hp = 0;
         playerDead = true;
         player.deaths++;
         addCombatLog(`You died!`);
-        document.querySelector("#battleButton").addEventListener("click", function () {
+        endCombatAction = () => {
             sfxConfirm.play();
             playerDead = false;
 
@@ -35,14 +38,17 @@ const hpValidation = () => {
             dimDungeon.style.filter = "brightness(100%)";
             dimDungeon.style.display = "none";
             combatPanel.style.display = "none";
-            runLoad("title-screen", "flex");
 
-            clearInterval(dungeonTimer);
-            clearInterval(playTimer);
-            progressReset();
-        });
+            // Legacy: choose one item to carry into storage before the run resets
+            showLegacyModal(() => {
+                clearInterval(dungeonTimer);
+                clearInterval(playTimer);
+                progressReset();
+                runLoad("title-screen", "flex");
+            });
+        };
         endCombat();
-    } else if (enemy.stats.hp < 1) {
+    } else if (!enemyDead && enemy.stats.hp < 1) {
         // Gives out all the reward and show the claim button
         enemy.stats.hp = 0;
         enemyDead = true;
@@ -70,11 +76,21 @@ const hpValidation = () => {
         }
 
         // Recover 20% of players health
-        player.stats.hp += Math.round((player.stats.hpMax * 20) / 100);
+        applyPlayerHeal(Math.round((player.stats.hpMax * 20) / 100));
         playerLoadStats();
 
+        // VAMP: recover HP equal to VAMP% of the defeated enemy's max HP on kill
+        const vampPct = (player.stats.vamp || 0) * (player.skills.includes("Leech Lord") ? 1.35 : 1);
+        if (vampPct > 0) {
+            const vampHeal = Math.round(enemy.stats.hpMax * vampPct / 100);
+            if (vampHeal > 0) {
+                applyPlayerHeal(vampHeal);
+                addCombatLog(`${player.name} drains ${nFormatter(vampHeal)} HP from the kill!`);
+            }
+        }
+
         // Close the battle panel
-        document.querySelector("#battleButton").addEventListener("click", function () {
+        endCombatAction = () => {
             sfxConfirm.play();
 
             // Clear combat backlog and transition to dungeon exploration
@@ -86,14 +102,14 @@ const hpValidation = () => {
             combatPanel.style.display = "none";
             enemyDead = false;
             combatBacklog.length = 0;
-        });
+        };
         endCombat();
     }
 }
 
 // ========== Attack Functions ==========
 const playerAttack = () => {
-    if (!player.inCombat) {
+    if (!player.inCombat || enemyDead) {
         return;
     }
     if (player.inCombat) {
@@ -108,7 +124,7 @@ const playerAttack = () => {
     let dmgRange = 0.9 + Math.random() * 0.2;
     damage = damage * dmgRange;
     // Check if the attack is a critical hit
-    if (Math.floor(Math.random() * 100) < player.stats.critRate) {
+    if (Math.floor(Math.random() * 100) < (player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd"))) {
         crit = true;
         dmgtype = "crit damage";
         damage = Math.round(damage * (1 + (player.stats.critDmg / 100)));
@@ -125,12 +141,12 @@ const playerAttack = () => {
         damage += Math.round((8 * enemy.stats.hp) / 100);
     }
     if (player.skills.includes("Titan's Will")) {
-        // Attacks deal extra 5% of your maximum health on hit
-        damage += Math.round((5 * player.stats.hpMax) / 100);
+        // Attacks deal extra 6% of your maximum health on hit
+        damage += Math.round((6 * player.stats.hpMax) / 100);
     }
     if (player.skills.includes("Devastator")) {
-        // Deal 30% more damage but you lose 30% base attack speed
-        damage = Math.round(damage + ((30 * damage) / 100));
+        // Deal 40% more damage but you lose 30% base attack speed
+        damage = Math.round(damage + ((40 * damage) / 100));
     }
     if (player.skills.includes("Rampager")) {
         // Increase base attack by 5 after each hit. Stack resets after battle.
@@ -150,13 +166,64 @@ const playerAttack = () => {
 // Ability buffs
     damage = Math.round(damage * playerBuffMult("atkMult"));
 
-    // Lifesteal formula
-    let lifesteal = Math.round(damage * (player.stats.vamp / 100));
+    // HP-conditional damage affixes
+    const hpPctNow = (player.stats.hp / player.stats.hpMax) * 100;
+    if (hpPctNow >= 95 && ((player.equippedStats && player.equippedStats.fullHpDmg) || 0) > 0) {
+        damage = Math.round(damage * (1 + player.equippedStats.fullHpDmg / 100));
+    }
+    if (hpPctNow <= 50 && ((player.equippedStats && player.equippedStats.lowHpDmg) || 0) > 0) {
+        damage = Math.round(damage * (1 + player.equippedStats.lowHpDmg / 100));
+    }
+    // Burst: each attack stacks (max = affix value, capped at 5); stacks burst into bonus fragment hits below
+    player.burstStacks = Math.min((player.burstStacks || 0) + 1, Math.min((player.equippedStats && player.equippedStats.burst) || 0, 5));
+
+    // Passives: Adrenaline / Executioner / Leech Lord / Bloodlust / petrified / Momentum
+    if (player.skills.includes("Adrenaline") && hpPctNow < 30) damage = Math.round(damage * 1.2);
+    if (player.skills.includes("Executioner") && enemy.stats.hp < enemy.stats.hpMax * 0.3) damage = Math.round(damage * 1.35);
+    if (player.skills.includes("Leech Lord")) damage = Math.round(damage * 0.85);
+    damage = Math.round(damage * petrifyDamageMult());
+    if (player.skills.includes("Momentum")) {
+        damage = Math.round(damage * (1 + Math.min(player.momentumStacks || 0, 20) * 0.03));
+        player.momentumStacks = Math.min((player.momentumStacks || 0) + 1, 20);
+    }
 
     // Apply the calculations to combat
     enemy.stats.hp -= damage;
-    player.stats.hp += lifesteal;
+    petrifyOnHit();
+    // Blood Tithe: each attack costs 2% of your max HP (cannot drop below 1 HP)
+    if (player.skills.includes("Blood Tithe") && damage > 0) {
+        player.stats.hp = Math.max(1, player.stats.hp - Math.round(player.stats.hpMax * 0.02));
+    }
     addCombatLog(`${player.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${enemy.name}.`);
+    // Phase: attacking grants brief invulnerability
+    const invulnSec = Math.min((player.equippedStats && player.equippedStats.attackInvuln) || 0, 3);
+    if (invulnSec > 0) {
+        player.invulnUntil = Date.now() + invulnSec * 1000;
+    }
+
+    // Afterimage: 30% chance per attack to strike again at 50% damage, can chain (max 10)
+    if (!enemyDead && (player.combatBuffs || []).some(b => b.type === "afterimage" && b.expire > Date.now())) {
+        let chains = 0;
+        while (chains < 10 && !enemyDead && Math.random() < 0.3) {
+            chains++;
+            const bonus = Math.max(1, Math.round(damage * 0.5));
+            enemy.stats.hp -= bonus;
+            spawnDamageNumber(bonus, false);
+        }
+        if (chains) addCombatLog(`${player.name}'s afterimages strike ${chains} more time${chains > 1 ? "s" : ""}!`);
+    }
+    // Burst: each stack explodes into a separate fragment hit (10% of damage each)
+    const burstStacks = player.burstStacks || 0;
+    if (burstStacks > 0 && enemy.stats.hp > 0) {
+        let frags = 0;
+        for (let i = 0; i < burstStacks && enemy.stats.hp > 0; i++) {
+            const frag = Math.max(1, Math.round(damage * 0.10));
+            enemy.stats.hp -= frag;
+            spawnDamageNumber(frag, false);
+            frags++;
+        }
+        if (frags) addCombatLog(`${player.name}'s attack bursts into ${frags} fragment${frags > 1 ? "s" : ""}!`);
+    }
     hpValidation();
     playerLoadStats();
     enemyLoadStats();
@@ -177,12 +244,12 @@ const playerAttack = () => {
             if (player.inCombat) {
                 playerAttack();
             }
-        }, (1000 / (player.stats.atkSpd * playerBuffMult("atkSpdMult"))));
+        }, (1000 / (player.stats.atkSpd * playerBuffMult("atkSpdMult") * (player.skills.includes("Adrenaline") && player.stats.hp < player.stats.hpMax * 0.3 ? 1.4 : 1))));
     }
 }
 
 const enemyAttack = () => {
-    if (!player.inCombat) {
+    if (!player.inCombat || playerDead) {
         return;
     }
     if (player.inCombat) {
@@ -190,7 +257,8 @@ const enemyAttack = () => {
     }
 
     // Calculates the damage and attacks the player
-    let damage = enemy.stats.atk * (enemy.stats.atk / (enemy.stats.atk + player.stats.def * playerBuffMult("defMult")));
+    let damage = enemy.stats.atk * (enemy.stats.atk / (enemy.stats.atk + player.stats.def * playerBuffMult("defMult") * (player.skills.includes("Iron Will") && player.stats.hp < player.stats.hpMax * 0.5 ? 1.3 : 1)));
+    damage *= enemyDebuffMult("atkMult");
     let lifesteal = Math.round(enemy.stats.atk * (enemy.stats.vamp / 100));
     // Randomizes the damage by 90% - 110%
     let dmgRange = 0.9 + Math.random() * 0.2;
@@ -203,12 +271,36 @@ const enemyAttack = () => {
         dmgtype = "damage";
         damage = Math.round(damage);
     }
+    damage = Math.round(damage * playerBuffMult("damageTakenMult"));
+
+    // Petrified enemies cannot attack
+    if (isEnemyPetrified()) {
+        damage = 0;
+        lifesteal = 0;
+        addCombatLog(`${enemy.name} is petrified solid and cannot attack!`);
+    }
 
     // Dodge affix: chance to avoid the hit entirely
     if (damage > 0 && Math.random() * 100 < ((player.equippedStats && player.equippedStats.dodge) || 0)) {
         damage = 0;
         lifesteal = 0;
         addCombatLog(`${enemy.name}'s attack misses ${player.name}!`);
+    }
+
+    // Trial: above 50% HP you take increased damage
+    if (damage > 0 && player.stats.hp > player.stats.hpMax * 0.5 && ((player.equippedStats && player.equippedStats.hpTradeDmg) || 0) > 0) {
+        damage = Math.round(damage * (1 + player.equippedStats.hpTradeDmg / 100));
+    }
+
+    // Phase: invulnerable for a short window after attacking — but hits dealing 10%+ max HP pierce it
+    if (damage > 0 && player.invulnUntil && Date.now() < player.invulnUntil) {
+        if (damage >= player.stats.hpMax * 0.10) {
+            addCombatLog(`${enemy.name}'s attack pierces ${player.name}'s guard!`);
+        } else {
+            damage = 0;
+            lifesteal = 0;
+            addCombatLog(`${enemy.name}'s attack passes through ${player.name}!`);
+        }
     }
 
     // Skill effects
@@ -232,16 +324,36 @@ const enemyAttack = () => {
 
     // Apply the calculations
     player.stats.hp -= damage;
-    // Thorns affix: reflect % of damage taken
-    const thornsPct = (player.equippedStats && player.equippedStats.thorns) || 0;
+    if (damage > 0) player.momentumStacks = 0;
+    // Thorns: reflect % of damage taken (level growth + equipment)
+    // Blood Oath: below 50% HP, THORN is increased by the affix value
+    const oathThorns = player.stats.hp < player.stats.hpMax * 0.5 ? ((player.equippedStats && player.equippedStats.bloodOath) || 0) : 0;
+    const thornsPct = ((player.bonusStats && player.bonusStats.thorns) || 0) + ((player.equippedStats && player.equippedStats.thorns) || 0) + oathThorns;
     if (thornsPct > 0 && damage > 0) {
-        enemy.stats.hp -= Math.round(damage * thornsPct / 100);
+        const refDmg = Math.round(damage * thornsPct / 100);
+        enemy.stats.hp -= refDmg;
+        // Thorns Nova: reflected damage bursts for +50%
+        if ((player.combatBuffs || []).some(b => b.type === "thornsNova" && b.expire > Date.now())) {
+            enemy.stats.hp -= Math.round(refDmg * 0.5);
+        }
     }
     // Aegis Thorns skill
     objectValidation();
     if (player.skills.includes("Aegis Thorns")) {
-        // Enemies receive 15% of the damage they dealt
-        enemy.stats.hp -= Math.round((15 * damage) / 100);
+        // Enemies receive 20% of the damage they dealt
+        enemy.stats.hp -= Math.round((20 * damage) / 100);
+    }
+    // Blood Tithe: taking damage heals 6% of max HP
+    if (player.skills.includes("Blood Tithe") && damage > 0) {
+        applyPlayerHeal(Math.round(player.stats.hpMax * 0.06));
+    }
+    // Reflect buffs (Paladin abilities): reflect % of damage taken
+    const reflectPct = buffAdd(player.combatBuffs, "reflectPct");
+    if (reflectPct > 0 && damage > 0) {
+        const refDmg = Math.round(damage * reflectPct / 100);
+        enemy.stats.hp -= refDmg;
+        addCombatLog(`${player.name} reflects ${nFormatter(refDmg)} damage!`);
+        spawnDamageNumber(refDmg, false);
     }
     enemy.stats.hp += lifesteal;
     addCombatLog(`${enemy.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${player.name}.` + (absorbed > 0 ? ` (Shield absorbed ${nFormatter(absorbed)})` : ""));
@@ -300,6 +412,14 @@ const updateCombatLog = () => {
         combatLogBox.appendChild(button);
     }
 
+    // Flee becomes available 60s into combat
+    if (!enemyDead && !playerDead && combatSeconds >= 60) {
+        let fleePanel = document.createElement("div");
+        fleePanel.className = "decision-panel";
+        fleePanel.innerHTML = `<button id="fleeButton">Flee</button>`;
+        combatLogBox.appendChild(fleePanel);
+    }
+
     combatLogBox.scrollTop = combatLogBox.scrollHeight;
 }
 
@@ -311,9 +431,27 @@ const startCombat = (battleMusic) => {
     sfxEncounter.play();
     battleMusic.play();
     player.inCombat = true;
-    player.abilityCds = {};
     player.combatBuffs = [];
     player.shield = 0;
+    player.burstStacks = 0;
+    player.invulnUntil = 0;
+    player.abilityRecs = {};
+    player.momentumStacks = 0;
+    player.secondWindUsed = false;
+    delete player.hot;
+    if (enemy) { delete enemy.petrifyStacks; enemy.petrifiedUntil = 0; }
+    // Trial regen: while below 50% HP, recover REGEN% of max HP every 0.5s
+    if (playerRegenTimer) clearInterval(playerRegenTimer);
+    playerRegenTimer = setInterval(() => {
+        if (!player.inCombat || playerDead || enemyDead) return;
+        const regen = (player.equippedStats && player.equippedStats.hpRegen) || 0;
+        if (regen <= 0 || player.stats.hp <= 0 || player.stats.hp >= player.stats.hpMax * 0.5) return;
+        applyPlayerHeal(Math.round(player.stats.hpMax * regen / 100));
+        playerLoadStats();
+    }, 500);
+    endCombatAction = null;
+    enemyDead = false;
+    playerDead = false;
     if (enemy) {
         enemy.combatDebuffs = [];
         delete enemy.dot;
@@ -330,15 +468,6 @@ const startCombat = (battleMusic) => {
 
     dungeon.status.event = true;
     combatPanel.style.display = "flex";
-
-    timingPos = Math.random() * 100;
-    timingDir = Math.random() < 0.5 ? -1 : 1;
-    timingSpeed = 2.8 + Math.random() * 1.6;
-    const zoneCenter = 46 + Math.random() * 8;
-    timingZoneLo = zoneCenter - TIMING_ZONE_W / 2;
-    timingZoneHi = zoneCenter + TIMING_ZONE_W / 2;
-    clearInterval(timingTimer);
-    timingTimer = setInterval(timingGaugeTick, 30);
 
     combatTimer = setInterval(combatCounter, 1000);
 }
@@ -367,14 +496,34 @@ const endCombat = () => {
 
     // Stops every timer in combat
     clearInterval(combatTimer);
-    clearInterval(timingTimer);
-    timingTimer = null;
+    if (playerRegenTimer) { clearInterval(playerRegenTimer); playerRegenTimer = null; }
     combatSeconds = 0;
+    saveData();
 }
 
 const combatCounter = () => {
     combatSeconds++;
     combatSecondTick();
+    if (combatSeconds === 60 && player.inCombat && !enemyDead && !playerDead) {
+        addCombatLog(`You can flee from battle now!`);
+    }
+}
+
+// Flee mid-combat: no rewards, return to dungeon exploration
+const fleeCombat = () => {
+    sfxConfirm.play();
+    endCombat();
+    addDungeonLog(`You fled from ${enemy.name}.`);
+
+    let dimDungeon = document.querySelector('#dungeon-main');
+    dimDungeon.style.filter = "brightness(100%)";
+    bgmDungeon.play();
+
+    dungeon.status.event = false;
+    combatPanel.style.display = "none";
+    enemyDead = false;
+    combatBacklog.length = 0;
+    saveData();
 }
 
 const showCombatInfo = () => {
@@ -388,8 +537,10 @@ const showCombatInfo = () => {
                     &nbsp${nFormatter(enemy.stats.hp)}/${nFormatter(enemy.stats.hpMax)}<br>(${enemy.stats.hpPercent}%)
                 </div>
             </div>
-            <div id="dmg-container"></div>
-            <img src="./assets/sprites/${enemy.image.name}${enemy.image.type}" alt="${enemy.name}" width="${enemy.image.size}" id="enemy-sprite">
+            <div id="dmg-container" class="dmg-container"></div>
+            <div id="enemy-sprite-wrap">
+                <img src="./assets/sprites/${enemy.image.name}${enemy.image.type}" alt="${enemy.name}" id="enemy-sprite">
+            </div>
         </div>
         <div class="battle-info-panel primary-panel" id="playerPanel">
             <p id="player-combat-info"></p>
@@ -404,18 +555,15 @@ const showCombatInfo = () => {
             </div>
         </div>
         <div id="ability-bar"></div>
-        <div id="timing-wrap">
-            <div id="timingGauge"><div id="timingZone"></div><div id="timingMarker"></div></div>
-        </div>
         <div class="logBox primary-panel">
             <div id="combatLogBox"></div>
         </div>
     </div>
     `;
     renderAbilityBar();
-    const tz = document.querySelector("#timingZone");
-    if (tz) {
-        tz.style.left = timingZoneLo + "%";
-        tz.style.width = TIMING_ZONE_W + "%";
-    }
+    const logBox = document.getElementById("combatLogBox");
+    logBox.addEventListener("click", (e) => {
+        if (e.target.closest("#battleButton") && endCombatAction) endCombatAction();
+        if (e.target.closest("#fleeButton") && player.inCombat && !enemyDead && !playerDead) fleeCombat();
+    });
 }

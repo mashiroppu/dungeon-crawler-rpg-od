@@ -1,4 +1,8 @@
 let player = JSON.parse(localStorage.getItem("playerData"));
+// Migrate renamed passive
+if (player && player.skills) {
+    player.skills = player.skills.map(s => s === "Aegis Renewal" ? "Blood Tithe" : s);
+}
 let inventoryOpen = false;
 let leveled = false;
 const lvlupSelect = document.querySelector("#lvlupSelect");
@@ -59,7 +63,7 @@ const playerLoadStats = () => {
         player.stats.hp = player.stats.hpMax;
     }
     player.stats.hpPercent = Number((player.stats.hp / player.stats.hpMax) * 100).toFixed(2).replace(rx, "$1");
-    player.exp.expPercent = Number((player.exp.expCurrLvl / player.exp.expMaxLvl) * 100).toFixed(2).replace(rx, "$1");
+    player.exp.expPercent = Math.min(100, Math.max(0, Number((player.exp.expCurrLvl / player.exp.expMaxLvl) * 100))).toFixed(2).replace(rx, "$1");
 
     // Generate battle info for player if in combat
     if (player.inCombat || playerDead) {
@@ -87,6 +91,7 @@ const playerLoadStats = () => {
     playerVampElement.innerHTML = (player.stats.vamp).toFixed(2).replace(rx, "$1") + "%";
     playerCrateElement.innerHTML = (player.stats.critRate).toFixed(2).replace(rx, "$1") + "%";
     playerCdmgElement.innerHTML = (player.stats.critDmg).toFixed(2).replace(rx, "$1") + "%";
+    playerThornsElement.innerHTML = ((player.bonusStats.thorns || 0) + ((player.equippedStats && player.equippedStats.thorns) || 0)).toFixed(2).replace(rx, "$1") + "%";
 
     // Player Bonus Stats
     document.querySelector("#bonus-stats").innerHTML = `
@@ -97,15 +102,20 @@ const playerLoadStats = () => {
     <p><i class="ra ra-plain-dagger"></i>ATK.SPD+${player.bonusStats.atkSpd.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-dripping-blade"></i>VAMP+${player.bonusStats.vamp.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-lightning-bolt"></i>C.RATE+${player.bonusStats.critRate.toFixed(2).replace(rx, "$1")}%</p>
-    <p><i class="ra ra-focused-lightning"></i>C.DMG+${player.bonusStats.critDmg.toFixed(2).replace(rx, "$1")}%</p>` + (() => {
+    <p><i class="ra ra-focused-lightning"></i>C.DMG+${player.bonusStats.critDmg.toFixed(2).replace(rx, "$1")}%</p>
+    <p><i class="ra ra-crown-of-thorns"></i>THORN+${(player.bonusStats.thorns || 0).toFixed(2).replace(rx, "$1")}%</p>` + (() => {
         if (!player.activeSets) return "";
-        return Object.keys(player.activeSets).filter(k => player.activeSets[k] >= 2).map(k => {
+        const setHtml = Object.keys(player.activeSets).filter(k => player.activeSets[k] >= 2).map(k => {
             const n = player.activeSets[k];
             const d = EQUIPMENT_SETS[k];
             const bonus = n >= 4 ? d.bonus4 : d.bonus2;
             const txt = Object.keys(bonus).map(bk => `${STAT_LINE_LABEL[bk] || bk}+${bonus[bk]}${PCT_STATS.has(bk) ? "%" : ""}`).join(" ");
-            return `<p><i class="ra ra-gem"></i>${d.name} (${n}pc): ${txt}</p>`;
+            const req = n >= 4 ? d.req4 : d.req2;
+            const reqTxt = req ? Object.keys(req).map(rk => `${rk}×${req[rk]}`).join("+") : "";
+            return `<p><i class="ra ra-gem"></i>${d.name} (${reqTxt}): ${txt}</p>`;
         }).join("");
+        if (!setHtml) return "";
+        return `<details class="set-details"><summary>Set Effects</summary>${setHtml}</details>`;
     })();
 }
 
@@ -210,7 +220,8 @@ const lvlupPopup = () => {
         "atkSpd": 3,
         "vamp": 0.5,
         "critRate": 1,
-        "critDmg": 6
+        "critDmg": 6,
+        "thorns": 5
     };
     generateLvlStats(2, percentages);
 }
@@ -218,7 +229,7 @@ const lvlupPopup = () => {
 // Generates random stats for level up popup
 const generateLvlStats = (rerolls, percentages) => {
     let selectedStats = [];
-    let stats = ["hp", "atk", "def", "atkSpd", "vamp", "critRate", "critDmg"];
+    let stats = ["hp", "atk", "def", "atkSpd", "vamp", "critRate", "critDmg", "thorns"];
     while (selectedStats.length < 3) {
         let randomIndex = Math.floor(Math.random() * stats.length);
         if (!selectedStats.includes(stats[randomIndex])) {
@@ -265,7 +276,10 @@ const generateLvlStats = (rerolls, percentages) => {
             // Increase the selected stat for player
             button.addEventListener("click", function () {
                 sfxItem.play();
-                player.bonusStats[selectedStats[i]] += percentages[selectedStats[i]];
+                player.bonusStats[selectedStats[i]] = (player.bonusStats[selectedStats[i]] || 0) + percentages[selectedStats[i]];
+                if (selectedStats[i] === "thorns") {
+                    player.bonusStats.thorns = Math.min(150, player.bonusStats.thorns);
+                }
 
                 if (player.exp.lvlGained > 1) {
                     player.exp.lvlGained--;

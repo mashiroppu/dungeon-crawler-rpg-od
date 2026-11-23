@@ -91,6 +91,7 @@ window.addEventListener("load", function () {
                         consumables: [],
                         equipment: []
                     },
+                    storage: [],
                     equipped: [],
                     gold: 0,
                     playtime: 0,
@@ -212,6 +213,7 @@ window.addEventListener("load", function () {
                     <p id="run-close"><i class="fa fa-xmark"></i></p>
                 </div>
                 <p>${player.name} Lv.${player.lvl} [${(CLASSES[player.cls] || CLASSES.warrior).name}]</p>
+                <p>Difficulty: ${(DIFFICULTY_MODES[player.difficulty] || DIFFICULTY_MODES.normal).label}</p>
                 <p>Blessing Lvl.${player.blessing}</p>
                 <p>Curse Lvl.${Math.round((dungeon.settings.enemyScaling - 1) * 10)}</p>
                 <p>Kills: ${nFormatter(dungeon.statistics.kills)}</p>
@@ -477,10 +479,16 @@ const progressReset = () => {
         critDmg: 0
     };
     player.skills = [];
+    player.abilityCharges = {};
     player.abilityCds = {};
     player.combatBuffs = [];
     player.shield = 0;
     player.inCombat = false;
+    // Only legacy storage persists between runs — gear is lost on reset
+    player.storage = player.storage || [];
+    player.inventory.equipment = [];
+    player.equipped = [];
+    applyEquipmentStats();
     dungeon.progress.floor = 1;
     dungeon.progress.room = 1;
     dungeon.statistics.kills = 0;
@@ -628,6 +636,7 @@ const allocationPopup = () => {
                     <option value="mage">Mage</option>
                     <option value="rogue">Rogue</option>
                     <option value="lancer">Lancer</option>
+                    <option value="paladin">Paladin</option>
                 </select>
             </div>
             <div class="row primary-panel pad">
@@ -642,10 +651,34 @@ const allocationPopup = () => {
                     <option value="Blade Dance">Blade Dance</option>
                     <option value="Paladin's Heart">Paladin's Heart</option>
                     <option value="Aegis Thorns">Aegis Thorns</option>
+                    <option value="Blood Tithe">Blood Tithe</option>
+                    <option value="Second Wind">Second Wind</option>
+                    <option value="Adrenaline">Adrenaline</option>
+                    <option value="Executioner">Executioner</option>
+                    <option value="Glass Cannon">Glass Cannon</option>
+                    <option value="Iron Will">Iron Will</option>
+                    <option value="Momentum">Momentum</option>
+                    <option value="Leech Lord">Leech Lord</option>
                 </select>
             </div>
             <div class="row primary-panel pad">
                 <p id="skill-desc">Attacks deal extra 8% of enemies' current health on hit.</p>
+            </div>
+            <div class="row">
+                <p>Difficulty</p>
+                <select id="select-difficulty">
+                    <option value="normal">Normal</option>
+                    <option value="hard">Hard</option>
+                    <option value="inferno">Inferno</option>
+                </select>
+            </div>
+            <div class="row primary-panel pad">
+                <p id="diff-desc">Standard difficulty.</p>
+            </div>
+            <div class="row primary-panel pad" id="legacy-box" style="display:none">
+                <p>Legacy Storage (<span id="legacy-count">0</span>/${STORAGE_MAX})</p>
+                <div id="legacy-list" class="legacy-list"></div>
+                <p class="legacy-hint">Select up to ${STORAGE_EQUIP_MAX} items to start equipped.</p>
             </div>
             <button id="allocate-confirm">Confirm</button>
         </div>`;
@@ -653,6 +686,40 @@ const allocationPopup = () => {
     defaultModalElement.style.display = "flex";
     document.querySelector("#title-screen").style.filter = "brightness(50%)";
     loadContent();
+
+    // Legacy Storage: pick up to STORAGE_EQUIP_MAX items to start equipped
+    let legacySelected = [];
+    player.storage = player.storage || [];
+    const legacyBox = document.querySelector("#legacy-box");
+    if (legacyBox && player.storage.length) {
+        legacyBox.style.display = "block";
+        document.querySelector("#legacy-count").textContent = player.storage.length;
+        const legacyList = document.querySelector("#legacy-list");
+        legacyList.innerHTML = "";
+        player.storage.forEach((s, i) => {
+            const item = JSON.parse(s);
+            const icon = equipmentIcon(item.category);
+            const el = document.createElement("div");
+            el.className = "items legacy-item";
+            el.dataset.i = i;
+            el.innerHTML = `<p class="${item.rarity}">${icon}${item.rarity} ${item.category}</p>`;
+            el.onclick = () => {
+                sfxConfirm.play();
+                const idx = legacySelected.indexOf(i);
+                if (idx >= 0) {
+                    legacySelected.splice(idx, 1);
+                    el.classList.remove("selected");
+                } else if (legacySelected.length < STORAGE_EQUIP_MAX) {
+                    legacySelected.push(i);
+                    el.classList.add("selected");
+                } else {
+                    sfxDeny.play();
+                    return;
+                }
+            };
+            legacyList.appendChild(el);
+        });
+    }
 
     // Stat Allocation
     const handleStatButtons = (e) => {
@@ -672,7 +739,7 @@ const allocationPopup = () => {
             }
         } else if (e.includes("Min")) {
             let stat = e.split("Min")[0];
-            if (allocation[stat] > 5) {
+            if (allocation[stat] > 0) {
                 sfxConfirm.play();
                 allocation[stat]--;
                 points++;
@@ -721,10 +788,10 @@ const allocationPopup = () => {
             skillDesc.innerHTML = "Attacks deal extra 8% of enemies' current health on hit.";
         }
         if (selectSkill.value == "Titan's Will") {
-            skillDesc.innerHTML = "Attacks deal extra 5% of your maximum health on hit.";
+            skillDesc.innerHTML = "Attacks deal extra 6% of your maximum health on hit.";
         }
         if (selectSkill.value == "Devastator") {
-            skillDesc.innerHTML = "Deal 30% more damage but you lose 30% base attack speed.";
+            skillDesc.innerHTML = "Deal 40% more damage but you lose 30% base attack speed.";
         }
         if (selectSkill.value == "Rampager") {
             skillDesc.innerHTML = "Increase attack by 5 after each hit. Stack resets after battle.";
@@ -736,7 +803,31 @@ const allocationPopup = () => {
             skillDesc.innerHTML = "You receive 25% less damage permanently.";
         }
         if (selectSkill.value == "Aegis Thorns") {
-            skillDesc.innerHTML = "Enemies receive 15% of the damage they dealt.";
+            skillDesc.innerHTML = "Enemies receive 20% of the damage they dealt.";
+        }
+        if (selectSkill.value == "Blood Tithe") {
+            skillDesc.innerHTML = "Each attack costs 2% of your max HP. Taking damage heals 6% of your max HP.";
+        }
+        if (selectSkill.value == "Second Wind") {
+            skillDesc.innerHTML = "Once per battle, survive a lethal blow at 1 HP.";
+        }
+        if (selectSkill.value == "Adrenaline") {
+            skillDesc.innerHTML = "Below 30% HP: +40% ATK.SPD and +20% damage.";
+        }
+        if (selectSkill.value == "Executioner") {
+            skillDesc.innerHTML = "Enemies below 30% HP take +35% damage.";
+        }
+        if (selectSkill.value == "Glass Cannon") {
+            skillDesc.innerHTML = "+35% ATK but -25% max HP.";
+        }
+        if (selectSkill.value == "Iron Will") {
+            skillDesc.innerHTML = "Below 50% HP: +30% DEF.";
+        }
+        if (selectSkill.value == "Momentum") {
+            skillDesc.innerHTML = "Each attack without taking damage grants +3% damage (max +60%). Resets when hit.";
+        }
+        if (selectSkill.value == "Leech Lord") {
+            skillDesc.innerHTML = "Kill healing +35% but deal -15% damage.";
         }
     }
     let selectClass = document.querySelector("#select-class");
@@ -744,6 +835,21 @@ const allocationPopup = () => {
     selectClass.onchange = function () {
         sfxConfirm.play();
         classDesc.innerHTML = CLASSES[selectClass.value].desc;
+    }
+    const DIFF_DESCS = {
+        normal: "Standard difficulty.",
+        hard: "Enemies: +40% HP, +25% ATK, +20% DEF. Rewards x1.3.",
+        inferno: "Enemies: +100% HP, +55% ATK, +45% DEF. Rewards x1.6, better drops."
+    };
+    let selectDiff = document.querySelector("#select-difficulty");
+    let diffDesc = document.querySelector("#diff-desc");
+    if (selectDiff && diffDesc) {
+        selectDiff.value = player.difficulty || "normal";
+        diffDesc.innerHTML = DIFF_DESCS[selectDiff.value];
+        selectDiff.onchange = function () {
+            sfxConfirm.play();
+            diffDesc.innerHTML = DIFF_DESCS[selectDiff.value];
+        };
     }
 
     // Operation Buttons
@@ -772,6 +878,14 @@ const allocationPopup = () => {
         stats.atk = Math.round(stats.atk * clsDef.mult.atk);
         stats.def = Math.round(stats.def * clsDef.mult.def);
         stats.atkSpd = Number((stats.atkSpd * clsDef.mult.atkSpd).toFixed(3));
+        // Class multiplier must apply to baseStats (calculateStats reads from it)
+        player.baseStats.hp = Math.round(player.baseStats.hp * clsDef.mult.hp);
+        player.baseStats.atk = Math.round(player.baseStats.atk * clsDef.mult.atk);
+        player.baseStats.def = Math.round(player.baseStats.def * clsDef.mult.def);
+        player.baseStats.atkSpd = Number((player.baseStats.atkSpd * clsDef.mult.atkSpd).toFixed(3));
+
+        // Set difficulty mode
+        player.difficulty = document.querySelector("#select-difficulty").value;
 
         // Set player skill
         objectValidation();
@@ -796,6 +910,45 @@ const allocationPopup = () => {
         }
         if (selectSkill.value == "Aegis Thorns") {
             player.skills.push("Aegis Thorns");
+        }
+        if (selectSkill.value == "Blood Tithe") {
+            player.skills.push("Blood Tithe");
+        }
+        if (selectSkill.value == "Second Wind") {
+            player.skills.push("Second Wind");
+        }
+        if (selectSkill.value == "Adrenaline") {
+            player.skills.push("Adrenaline");
+        }
+        if (selectSkill.value == "Executioner") {
+            player.skills.push("Executioner");
+        }
+        if (selectSkill.value == "Glass Cannon") {
+            player.skills.push("Glass Cannon");
+            player.baseStats.atk = Math.round(player.baseStats.atk * 1.35);
+            player.baseStats.hp = Math.round(player.baseStats.hp * 0.75);
+        }
+        if (selectSkill.value == "Iron Will") {
+            player.skills.push("Iron Will");
+        }
+        if (selectSkill.value == "Momentum") {
+            player.skills.push("Momentum");
+        }
+        if (selectSkill.value == "Leech Lord") {
+            player.skills.push("Leech Lord");
+        }
+
+        // Equip selected legacy storage items (removed from storage, max STORAGE_EQUIP_MAX)
+        if (legacySelected.length) {
+            const picked = legacySelected.slice().sort((a, b) => b - a);
+            for (const i of picked) {
+                const item = JSON.parse(player.storage[i]);
+                player.storage.splice(i, 1);
+                player.equipped.push(item);
+            }
+            applyEquipmentStats();
+            playerLoadStats();
+            saveData();
         }
 
         // Proceed to dungeon

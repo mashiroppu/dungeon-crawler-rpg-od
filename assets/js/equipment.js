@@ -1,11 +1,32 @@
+// Set bonuses trigger by equipped item type/category combination (6 slots).
+// req2 = condition for tier-2 bonus, req4 = condition for tier-4 bonus.
+// Keys match item.type ("Weapon"/"Armor"/"Shield"/"Helmet") or item.category ("Sword"/"Dagger"/...)
 const EQUIPMENT_SETS = {
-    ember: { name: "Emberforged", bonus2: { atkPct: 6 },              bonus4: { atkPct: 12, vamp: 3 } },
-    frost: { name: "Rimescale",   bonus2: { defPct: 8, hpPct: 8 },    bonus4: { defPct: 16, hpPct: 16, atkSpd: 4 } },
-    storm: { name: "Galestep",    bonus2: { atkSpd: 6, critRate: 2 },  bonus4: { atkSpd: 12, critRate: 5, critDmg: 8 } },
-    void:  { name: "Nyxweave",    bonus2: { critRate: 4, critDmg: 8 }, bonus4: { critRate: 8, critDmg: 20, atkPct: 8 } },
+    ember:  { name: "Emberforged", req2: { Weapon: 2 },              req4: { Weapon: 4 },                    bonus2: { atkPct: 6 },                    bonus4: { atkPct: 12, vamp: 3 } },
+    frost:  { name: "Rimescale",   req2: { Armor: 1, Shield: 1 },     req4: { Armor: 1, Shield: 1, Helmet: 1 }, bonus2: { defPct: 8, hpPct: 8 },       bonus4: { defPct: 16, hpPct: 16, atkSpd: 4 } },
+    storm:  { name: "Galestep",    req2: { Weapon: 1, Helmet: 1 },    req4: { Weapon: 2, Helmet: 1 },          bonus2: { atkSpd: 6, critRate: 2 },       bonus4: { atkSpd: 12, critRate: 5, critDmg: 8 } },
+    void:   { name: "Nyxweave",    req2: { Armor: 1, Helmet: 1 },     req4: { Armor: 1, Helmet: 2 },           bonus2: { critRate: 4, critDmg: 8 },      bonus4: { critRate: 8, critDmg: 20, atkPct: 8 } },
+    blood:  { name: "Sanguine",    req2: { Shield: 1, Weapon: 1 },    req4: { Shield: 2, Weapon: 1 },          bonus2: { thorns: 8, hpPct: 6 },          bonus4: { thorns: 16, hpPct: 12, vamp: 4 } },
+    deadeye:{ name: "Deadeye",     req2: { Weapon: 3 },               req4: { Weapon: 5 },                    bonus2: { penPct: 6, critDmg: 10 },       bonus4: { penPct: 12, critDmg: 20, critRate: 4 } },
+    haste:  { name: "Quickstep",   req2: { Dagger: 1, Flail: 1 },     req4: { Dagger: 1, Flail: 2 },           bonus2: { atkSpd: 5, cdr: 4 },            bonus4: { atkSpd: 10, cdr: 13 } },
+    greed:  { name: "Gilded",      req2: { Shield: 1, Helmet: 1 },    req4: { Shield: 1, Helmet: 2 },          bonus2: { goldFind: 10, expFind: 8 },     bonus4: { goldFind: 20, expFind: 15, dodge: 3 } },
+    dread:  { name: "Nightveil",   req2: { Shield: 2 },               req4: { Shield: 3 },                    bonus2: { dodge: 4, thorns: 6 },          bonus4: { dodge: 8, thorns: 12, defPct: 8 } },
+    // ===== Expansion sets =====
+    warlord:{ name: "Warmaster",   req2: { Weapon: 5 },               req4: { Weapon: 6 },                    bonus2: { atkPct: 10 },                   bonus4: { atkPct: 18, critRate: 5 } },
+    bastion:{ name: "Bastion",     req2: { Armor: 3 },                req4: { Armor: 4 },                     bonus2: { defPct: 10, hpPct: 6 },         bonus4: { defPct: 18, hpPct: 12 } },
+    aegis:  { name: "Aegisguard",  req2: { Armor: 1, Shield: 1 },     req4: { Armor: 1, Shield: 2 },           bonus2: { defPct: 10, thorns: 6 },        bonus4: { defPct: 16, thorns: 12, hpPct: 8 } },
+    tempest:{ name: "Tempest",     req2: { Axe: 1, Scythe: 1 },       req4: { Axe: 1, Scythe: 1, Hammer: 1 },   bonus2: { atkPct: 8, critDmg: 10 },       bonus4: { atkPct: 14, critDmg: 18, atkSpd: 4 } },
+    phantom:{ name: "Phantom",     req2: { Dagger: 2 },               req4: { Dagger: 3 },                    bonus2: { critRate: 6, atkSpd: 4 },       bonus4: { critRate: 12, atkSpd: 8, cdr: 4 } },
+    bulwark:{ name: "Bulwark",     req2: { Tower: 1, Kite: 1 },       req4: { Tower: 1, Kite: 1, Buckler: 1 }, bonus2: { defPct: 8, dodge: 3 },         bonus4: { defPct: 14, dodge: 6, thorns: 8 } },
+    arcanist:{ name: "Arcanist",   req2: { Helmet: 2 },               req4: { Helmet: 3 },                    bonus2: { critDmg: 12, cdr: 4 },          bonus4: { critDmg: 20, cdr: 8, critRate: 4 } },
+    warden: { name: "Warden",      req2: { Plate: 1, Chain: 1 },      req4: { Plate: 1, Chain: 1, Leather: 1 },bonus2: { hpPct: 8, defPct: 6 },         bonus4: { hpPct: 14, defPct: 10, vamp: 3 } },
+    headsman:{ name: "Headsman",   req2: { Sword: 1, Axe: 1 },        req4: { Sword: 1, Axe: 1, Hammer: 1 },   bonus2: { atkPct: 8, penPct: 5 },         bonus4: { atkPct: 14, penPct: 10, critDmg: 10 } },
+    mirage: { name: "Mirage",      req2: { Buckler: 1, "Horned Helm": 1 },req4: { Buckler: 1, "Horned Helm": 1, Flail: 1 }, bonus2: { dodge: 5, thorns: 5 },    bonus4: { dodge: 10, thorns: 10, atkSpd: 6 } },
+    colossus:{ name: "Colossus",   req2: { Tower: 1, "Great Helm": 1 },  req4: { Tower: 1, "Great Helm": 1, Plate: 1 }, bonus2: { hpPct: 10, defPct: 8 },    bonus4: { hpPct: 18, defPct: 14, thorns: 8 } },
 };
-const SET_KEYS = Object.keys(EQUIPMENT_SETS);
-const SET_CHANCE = { Common: 0, Uncommon: 0, Rare: 0.15, Epic: 0.4, Legendary: 0.7, Heirloom: 1 };
+// Count equipped items matching a type or category key
+const countEquipped = (key) => player.equipped.filter(it => it.type === key || it.category === key).length;
+const setReqMet = (req) => Object.keys(req).every(k => countEquipped(k) >= req[k]);
 const AFFIXES = [
     { key: "atkPct",    label: "ATK",    min: 4,  max: 10, w: 3 },
     { key: "hpPct",     label: "HP",     min: 5,  max: 12, w: 3 },
@@ -19,17 +40,30 @@ const AFFIXES = [
     { key: "dodge",     label: "DODGE",  min: 2,  max: 6,  w: 1 },
     { key: "goldFind",  label: "G.FIND", min: 5,  max: 15, w: 1 },
     { key: "expFind",   label: "E.FIND", min: 5,  max: 15, w: 1 },
+    { key: "cdr",       label: "CDR",    min: 3,  max: 10, w: 1 },
+    // (abUse affix removed — legacy AB.USE stats now count as +5% CDR each in abilityEffectiveCd)
+    // ===== Special proc affixes =====
+    { key: "burst",       label: "BURST",     min: 1,  max: 5,  w: 1 },
+    { key: "fullHpDmg",   label: "PRIDE",     min: 10, max: 30, w: 1 },
+    { key: "lowHpDmg",    label: "BERSERK",   min: 10, max: 30, w: 1 },
+    { key: "attackInvuln",label: "PHASE",     min: 1.5,max: 3,  w: 1 },
+    { key: "hpTradeDmg",  label: "TRIAL",     min: 10, max: 25, w: 1, pair: { key: "hpRegen", label: "REGEN", min: 0.5, max: 3 } },
+    { key: "bloodOath",   label: "OATH",      min: 8,  max: 20, w: 1 },
 ];
+// Proc-style affixes: mutually exclusive per item, and unique across all equipped gear
+const SPECIAL_AFFIX_KEYS = new Set(["burst", "fullHpDmg", "lowHpDmg", "attackInvuln", "hpTradeDmg", "hpRegen", "bloodOath"]);
 const AFFIX_COUNT = { Rare: 1, Epic: 2, Legendary: 3, Heirloom: 4 };
-const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND" };
-const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind"]);
+const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND", cdr: "CDR", abUse: "AB.USE", burst: "BURST", fullHpDmg: "PRIDE", lowHpDmg: "BERSERK", attackInvuln: "PHASE", hpTradeDmg: "TRIAL", hpRegen: "REGEN", bloodOath: "OATH" };
+const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind", "cdr", "fullHpDmg", "lowHpDmg", "hpTradeDmg", "hpRegen", "bloodOath"]);
 const formatStatLine = (stat) => {
-    const key = Object.keys(stat)[0];
-    const label = STAT_LINE_LABEL[key] || key.replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase();
-    const val = stat[key];
-    const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-    const txt = PCT_STATS.has(key) ? val.toFixed(2).replace(rx, "$1") + "%" : String(val);
-    return `<li>${label}+${txt}</li>`;
+    const parts = Object.keys(stat).map(key => {
+        const label = STAT_LINE_LABEL[key] || key.replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase();
+        const val = stat[key];
+        const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+        const txt = PCT_STATS.has(key) ? val.toFixed(2).replace(rx, "$1") + "%" : String(val);
+        return `${label}+${txt}`;
+    });
+    return `<li>${parts.join(" ")}</li>`;
 };
 
 const rollAffixes = (equipment) => {
@@ -37,7 +71,9 @@ const rollAffixes = (equipment) => {
     equipment.affixes = [];
     const usedAffix = new Set();
     for (let i = 0; i < affixCount; i++) {
-        const pool = AFFIXES.filter(a => !usedAffix.has(a.key));
+        const hasSpecial = equipment.affixes.some(af => SPECIAL_AFFIX_KEYS.has(af.key));
+        const pool = AFFIXES.filter(a => !usedAffix.has(a.key) && !(hasSpecial && SPECIAL_AFFIX_KEYS.has(a.key)));
+        if (!pool.length) break;
         const totalW = pool.reduce((sum, a) => sum + a.w, 0);
         let r = Math.random() * totalW;
         let pick = pool[pool.length - 1];
@@ -45,8 +81,13 @@ const rollAffixes = (equipment) => {
         usedAffix.add(pick.key);
         const mult = equipment.rarity === "Heirloom" ? 1.5 : 1;
         const val = Math.round(randomizeDecimal(pick.min, pick.max) * mult * 10) / 10;
-        equipment.affixes.push({ key: pick.key, value: val });
-        equipment.stats.push({ [pick.key]: val });
+        let pairKey = null, pairVal = null;
+        if (pick.pair) {
+            pairKey = pick.pair.key;
+            pairVal = Math.round(randomizeDecimal(pick.pair.min, pick.pair.max) * mult * 10) / 10;
+        }
+        equipment.affixes.push({ key: pick.key, value: val, pairKey, pairValue: pairVal });
+        equipment.stats.push(pairKey ? { [pick.key]: val, [pairKey]: pairVal } : { [pick.key]: val });
     }
 };
 
@@ -249,10 +290,7 @@ const createEquipment = () => {
             equipment.stats.push({ [statType]: statValue });
         }
     }
-    // Set & affixes (Rare and above)
-    if (Math.random() < (SET_CHANCE[equipment.rarity] || 0)) {
-        equipment.set = SET_KEYS[Math.floor(Math.random() * SET_KEYS.length)];
-    }
+    // Affixes (Rare and above)
     rollAffixes(equipment);
     equipmentValue += equipment.affixes.reduce((sum, a) => sum + a.value, 0) * 25;
     equipment.value = Math.round(equipmentValue * 3);
@@ -320,12 +358,13 @@ const showItemInfo = (item, icon, type, i) => {
     dimContainer.style.filter = "brightness(50%)";
     itemInfo.innerHTML = `
             <div class="content">
-                <h3 class="${item.rarity}">${icon}${item.rarity} ${item.category}${item.set ? ` <span class="set-name">[${EQUIPMENT_SETS[item.set].name}]</span>` : ""}</h3>
+                <h3 class="${item.rarity}">${icon}${item.rarity} ${item.category}${item.finalized ? ' <span class="finalized-badge">★ MAX</span>' : ''}</h3>
                 <h5 class="lvltier ${item.rarity}"><b>Lv.${item.lvl} Tier ${item.tier}</b></h5>
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
                 <div class="button-container">
                     <button id="un-equip">${type}</button>
-                    ${item.affixes && item.affixes.length ? '<button id="reroll-equip"><i class="ra ra-recycle"></i>Reroll</button>' : ''}
+                    ${item.affixes && item.affixes.length && !item.finalized ? '<button id="reroll-equip"><i class="ra ra-recycle"></i>Reroll</button>' : ''}
+                    ${item.affixes && item.affixes.length && !item.finalized ? '<button id="finalize-equip"><i class="ra ra-check"></i>Finalize</button>' : ''}
                     <button id="sell-equip"><i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(item.value)}</button>
                     <button id="close-item-info">Close</button>
                 </div>
@@ -435,6 +474,63 @@ const showItemInfo = (item, icon, type, i) => {
         };
     }
 
+    // Finalize: locks affixes (no more rerolls) but upgrades all option values +40%
+    let finalizeBtn = document.querySelector("#finalize-equip");
+    if (finalizeBtn) {
+        finalizeBtn.onclick = function () {
+            const cost = Math.max(500, Math.round((item.value || 200) * 0.8));
+            if (player.gold < cost) {
+                sfxDeny.play();
+                return;
+            }
+            sfxOpen.play();
+            itemInfo.style.display = "none";
+            defaultModalElement.style.display = "flex";
+            defaultModalElement.innerHTML = `
+            <div class="content">
+                <p>Finalize <span class="${item.rarity}">${icon}${item.rarity} ${item.category}</span>?</p>
+                <p style="font-size:0.85rem;color:#999">All options +40% — reroll locked<br>Cost: <b>${nFormatter(cost)}G</b></p>
+                <div class="button-container">
+                    <button id="fin-confirm">Finalize</button>
+                    <button id="fin-cancel">Cancel</button>
+                </div>
+            </div>`;
+
+            document.querySelector("#fin-confirm").onclick = function () {
+                sfxSell.play();
+                player.gold -= cost;
+                const mult = 1.4;
+                item.affixes.forEach(af => {
+                    af.value = Math.round(af.value * mult * 10) / 10;
+                    if (af.pairValue != null) af.pairValue = Math.round(af.pairValue * mult * 10) / 10;
+                });
+                // Rewrite the affix stat lines (they are the last N entries in item.stats)
+                const affixCount = item.affixes.length;
+                const tail = item.stats.splice(item.stats.length - affixCount, affixCount);
+                item.affixes.forEach((af, j) => {
+                    tail[j] = af.pairKey ? { [af.key]: af.value, [af.pairKey]: af.pairValue } : { [af.key]: af.value };
+                });
+                item.stats.push(...tail);
+                item.finalized = true;
+                item.value = Math.round((item.value || 0) * 1.3);
+
+                defaultModalElement.style.display = "none";
+                defaultModalElement.innerHTML = "";
+                dimContainer.style.filter = "brightness(100%)";
+                playerLoadStats();
+                saveData();
+                continueExploring();
+            };
+            document.querySelector("#fin-cancel").onclick = function () {
+                sfxDecline.play();
+                defaultModalElement.style.display = "none";
+                defaultModalElement.innerHTML = "";
+                itemInfo.style.display = "flex";
+                continueExploring();
+            };
+        };
+    }
+
     // Close item info
     let close = document.querySelector("#close-item-info");
     close.onclick = function () {
@@ -521,32 +617,47 @@ const applyEquipmentStats = () => {
         thorns: 0,
         dodge: 0,
         goldFind: 0,
-        expFind: 0
+        expFind: 0,
+        cdr: 0,
+        abUse: 0,
+        burst: 0,
+        fullHpDmg: 0,
+        lowHpDmg: 0,
+        attackInvuln: 0,
+        hpTradeDmg: 0,
+        hpRegen: 0,
+        bloodOath: 0
     };
 
+    // Deduplicate proc affixes across equipped items (first equipped wins)
+    const seenSpecial = new Set();
     for (let i = 0; i < player.equipped.length; i++) {
         const item = player.equipped[i];
+        const affixStatCount = (item.affixes || []).length;
+        const baseStatCount = item.stats.length - affixStatCount;
 
         // Iterate through the stats array and update the player stats
-        item.stats.forEach(stat => {
+        item.stats.forEach((stat, idx) => {
+            const keys = Object.keys(stat);
+            const isAffixStat = idx >= baseStatCount;
+            if (isAffixStat) {
+                if (keys.some(k => SPECIAL_AFFIX_KEYS.has(k) && seenSpecial.has(k))) return;
+                keys.forEach(k => { if (SPECIAL_AFFIX_KEYS.has(k)) seenSpecial.add(k); });
+            }
             for (const key in stat) {
                 player.equippedStats[key] += stat[key];
             }
         });
     }
 
-    // Set bonuses
-    const setCounts = {};
-    for (const item of player.equipped) {
-        if (item.set && EQUIPMENT_SETS[item.set]) setCounts[item.set] = (setCounts[item.set] || 0) + 1;
-    }
+    // Set bonuses: triggered by equipped item type/category combinations
     player.activeSets = {};
-    for (const setKey in setCounts) {
-        const n = setCounts[setKey];
-        player.activeSets[setKey] = n;
+    for (const setKey in EQUIPMENT_SETS) {
         const def = EQUIPMENT_SETS[setKey];
-        const bonus = n >= 4 ? def.bonus4 : n >= 2 ? def.bonus2 : null;
-        if (bonus) {
+        const n = setReqMet(def.req4 || {}) ? 4 : setReqMet(def.req2 || {}) ? 2 : 0;
+        if (n > 0) {
+            player.activeSets[setKey] = n;
+            const bonus = n >= 4 ? def.bonus4 : def.bonus2;
             for (const k in bonus) player.equippedStats[k] = (player.equippedStats[k] || 0) + bonus[k];
         }
     }
@@ -610,7 +721,7 @@ const createEquipmentPrint = (condition) => {
     let item = createEquipment();
     let panel = `
         <div class="primary-panel" style="padding: 0.5rem; margin-top: 0.5rem;">
-                <h4 class="${item.rarity}"><b>${item.icon}${item.rarity} ${item.category}${item.set ? ` <span class="set-name">[${EQUIPMENT_SETS[item.set].name}]</span>` : ""}</b></h4>
+                <h4 class="${item.rarity}"><b>${item.icon}${item.rarity} ${item.category}</b></h4>
                 <h5 class="${item.rarity}"><b>Lv.${item.lvl} Tier ${item.tier}</b></h5>
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
         </div>`;
@@ -622,3 +733,72 @@ const createEquipmentPrint = (condition) => {
         You got <span class="${item.rarity}">${item.rarity} ${item.category}</span>.<br>${panel}`);
     }
 }
+// ===== Legacy Storage (persists across runs, max 12) =====
+const STORAGE_MAX = 12;
+const STORAGE_EQUIP_MAX = 3;
+
+// Items that can be stashed on death: inventory (JSON strings) + equipped (objects)
+const carryCandidates = () => {
+    const inv = (player.inventory.equipment || []).map((s, idx) => ({ src: "inv", idx, item: JSON.parse(s) }));
+    const eq = (player.equipped || []).map((item, idx) => ({ src: "eq", idx, item }));
+    return [...inv, ...eq];
+};
+
+const stashItem = (cand) => {
+    if (cand.src === "inv") player.inventory.equipment.splice(cand.idx, 1);
+    else player.equipped.splice(cand.idx, 1);
+    player.storage = player.storage || [];
+    player.storage.push(JSON.stringify(cand.item));
+};
+
+// Shown on death: pick ONE item to send to legacy storage, rest is lost
+const showLegacyModal = (onDone) => {
+    player.storage = player.storage || [];
+    const candidates = carryCandidates();
+    if (!candidates.length || player.storage.length >= STORAGE_MAX) { onDone(); return; }
+
+    let selected = null;
+    defaultModalElement.style.display = "flex";
+    defaultModalElement.innerHTML = `
+    <div class="content" id="legacy-modal">
+        <div class="content-head"><h3>Legacy</h3></div>
+        <p class="legacy-hint">Choose ONE item to carry into the next run. (Storage ${player.storage.length}/${STORAGE_MAX})</p>
+        <div class="legacy-list">
+            ${candidates.map((c, i) => {
+                const icon = equipmentIcon(c.item.category);
+                return `<div class="items legacy-item" data-i="${i}"><p class="${c.item.rarity}">${icon}${c.item.rarity} ${c.item.category}</p></div>`;
+            }).join("")}
+        </div>
+        <div class="button-container">
+            <button id="legacy-send">Send to Storage</button>
+            <button id="legacy-skip">Lose All</button>
+        </div>
+    </div>`;
+
+    const finish = () => {
+        defaultModalElement.style.display = "none";
+        defaultModalElement.innerHTML = "";
+        playerLoadStats();
+        saveData();
+        onDone();
+    };
+
+    defaultModalElement.querySelectorAll(".legacy-item").forEach(el => {
+        el.onclick = () => {
+            sfxConfirm.play();
+            defaultModalElement.querySelectorAll(".legacy-item").forEach(x => x.classList.remove("selected"));
+            el.classList.add("selected");
+            selected = candidates[Number(el.dataset.i)];
+        };
+    });
+    defaultModalElement.querySelector("#legacy-send").onclick = () => {
+        if (!selected) { sfxDeny.play(); return; }
+        sfxEquip.play();
+        stashItem(selected);
+        finish();
+    };
+    defaultModalElement.querySelector("#legacy-skip").onclick = () => {
+        sfxDecline.play();
+        finish();
+    };
+};

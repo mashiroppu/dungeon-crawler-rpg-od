@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FX/SFX Test — AI Dungeon Crawler</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        background: #0a0a0f;
+        color: #eee;
+        font-family: monospace;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem;
+        gap: 1.5rem;
+    }
+    h1 { font-size: 1.2rem; letter-spacing: 2px; color: #d4af37; }
+    .stage {
+        background: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%);
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    .enemy-name { font-size: 0.85rem; color: #888; }
+    /* ==== game replica: sprite wrap + fx overlay ==== */
+    #enemy-sprite-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 11rem;
+    }
+    #enemy-sprite {
+        height: 11rem;
+        width: auto;
+        image-rendering: pixelated;
+    }
+    .ability-fx {
+        position: absolute;
+        inset: -16%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 2;
+        mix-blend-mode: screen;
+    }
+    .ability-fx img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: auto;
+    }
+    .ability-fx-sheet {
+        background-repeat: no-repeat;
+        image-rendering: auto;
+        flex-shrink: 0;
+    }
+    .controls { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+    button {
+        background: #2a2a3e;
+        color: #eee;
+        border: 1px solid #555;
+        border-radius: 6px;
+        padding: 0.7rem 1.2rem;
+        font-family: monospace;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+    }
+    button:hover { background: #3a3a55; border-color: #d4af37; }
+    button:active { transform: translateY(1px); }
+    .sprite-pick { display: flex; gap: 0.5rem; align-items: center; font-size: 0.8rem; color: #888; }
+    .sprite-pick select {
+        background: #1a1a2e; color: #eee; border: 1px solid #444;
+        padding: 0.3rem 0.5rem; font-family: monospace;
+    }
+    .note { font-size: 0.75rem; color: #666; max-width: 34rem; text-align: center; line-height: 1.5; }
+</style>
+</head>
+<body>
+    <h1>FX / SFX TEST</h1>
+
+    <div class="stage">
+        <div class="sprite-pick">
+            背景スプライト:
+            <select id="spriteSelect">
+                <option value="orc_swordsmaster.png">Orc Swordmaster</option>
+                <option value="skeleton_warrior.png">Skeleton Warrior</option>
+                <option value="slime_boss.png">Slime Boss</option>
+                <option value="wolf.png">Wolf</option>
+                <option value="goblin.png">Goblin</option>
+            </select>
+        </div>
+        <div class="enemy-name" id="enemyName">Orc Swordmaster</div>
+        <div id="enemy-sprite-wrap">
+            <img src="./assets/sprites/orc_swordsmaster.png" alt="enemy" id="enemy-sprite">
+        </div>
+    </div>
+
+    <div class="controls">
+        <button data-test="holy_strike">Holy Strike</button>
+        <button data-test="thorns_nova">Thorns Nova</button>
+        <button data-test="aegis_oath">Aegis Oath</button>
+        <button data-test="cand170">FX170</button>
+        <button data-test="cand171">FX171</button>
+        <button data-test="cand172">FX172</button>
+        <button data-test="cand173">FX173</button>
+        <button data-test="cand174">FX174</button>
+        <button data-test="generic">Generic SFX (attack.wav)</button>
+    </div>
+
+    <p class="note">
+        ※ file:// で開いた場合、音声(mp3)はブラウザの制限で鳴らないことがあります。
+        その場合は <code>python -m http.server 8000</code> → http://localhost:8000/fx_test.html で開いてください。<br>
+        エフェクトの見た目は実際のゲームと同じCSS（screen合成・132%サイズ）で再現しています。
+    </p>
+
+<script>
+// ==== asset definitions (mirror of classes.js) ====
+const ABILITY_FX = {
+    holy_strike: { src: "./assets/effects/holy-strike-fast.gif", ms: 1050, dx: 4, dy: -18 },
+    thorns_nova: { src: "./assets/effects/thorns-nova.gif",   ms: 1500, dx: 0,  dy: 0  },
+    aegis_oath:  { sheet: "./assets/effects/aegis-oath.png", cols: 5, rows: 2, frames: 10, delay: 80, dx: 0, dy: 0 },
+    cand170: { src: "./assets/effects/aegis-cand170.gif", ms: 800, dx: 0, dy: 0 },
+    cand171: { src: "./assets/effects/aegis-cand171.gif", ms: 800, dx: 0, dy: 0 },
+    cand172: { src: "./assets/effects/aegis-cand172.gif", ms: 800, dx: 0, dy: 0 },
+    cand173: { src: "./assets/effects/aegis-cand173.gif", ms: 800, dx: 0, dy: 0 },
+    cand174: { src: "./assets/effects/aegis-cand174.gif", ms: 800, dx: 0, dy: 0 },
+};
+const ABILITY_SFX = {
+    holy_strike: "./assets/sfx/holy_strike.mp3",
+    thorns_nova: "./assets/sfx/thorns_nova.mp3",
+    aegis_oath:  "./assets/sfx/aegis_oath.mp3",
+    generic:     "./assets/sfx/attack.wav",
+};
+
+const wrap = document.getElementById("enemy-sprite-wrap");
+const sprite = document.getElementById("enemy-sprite");
+const enemyName = document.getElementById("enemyName");
+const spriteSelect = document.getElementById("spriteSelect");
+
+spriteSelect.addEventListener("change", () => {
+    sprite.src = "./assets/sprites/" + spriteSelect.value;
+    enemyName.textContent = spriteSelect.options[spriteSelect.selectedIndex].text;
+});
+
+function playFx(id) {
+    const fxDef = ABILITY_FX[id];
+    if (!fxDef) return;
+    const fx = document.createElement("div");
+    fx.className = "ability-fx";
+    if (fxDef.dx || fxDef.dy) fx.style.transform = `translate(${fxDef.dx || 0}%, ${fxDef.dy || 0}%)`;
+    wrap.appendChild(fx);
+    if (fxDef.sheet) {
+        const sheet = document.createElement("div");
+        sheet.className = "ability-fx-sheet";
+        const size = Math.min(fx.clientWidth, fx.clientHeight) || 176;
+        sheet.style.width = sheet.style.height = size + "px";
+        sheet.style.backgroundImage = `url("${fxDef.sheet}")`;
+        sheet.style.backgroundSize = `${fxDef.cols * 100}% ${fxDef.rows * 100}%`;
+        fx.appendChild(sheet);
+        let f = 0;
+        const timer = setInterval(() => {
+            f++;
+            if (f >= fxDef.frames) { clearInterval(timer); fx.remove(); return; }
+            const c = f % fxDef.cols, r = Math.floor(f / fxDef.cols);
+            sheet.style.backgroundPosition = `${(c * 100 / (fxDef.cols - 1))}% ${fxDef.rows > 1 ? (r * 100 / (fxDef.rows - 1)) : 0}%`;
+        }, fxDef.delay || 80);
+        return;
+    }
+    fx.innerHTML = `<img src="${fxDef.src}" alt="">`;
+    setTimeout(() => fx.remove(), fxDef.ms || 1600);
+}
+
+function playSfx(id) {
+    const src = ABILITY_SFX[id];
+    if (!src) return;
+    const audio = new Audio(src);
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+}
+
+document.querySelectorAll("button[data-test]").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const id = btn.dataset.test;
+        playFx(id);
+        playSfx(id);
+    });
+});
+</script>
+</body>
+</html>

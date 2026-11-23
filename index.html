@@ -15,6 +15,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href='https://fonts.googleapis.com/css?family=Rubik Vinyl' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/css/all.min.css">
     <link rel="stylesheet" href="./assets/css/rpg-awesome.min.css">
     <link rel="stylesheet" href="./assets/css/style.css">
@@ -52,6 +53,7 @@
                 <p id="player-exp"></p>
                 <p id="player-gold"></p>
                 <button onclick="openInventory()"><i class="fas fa-bars" style="font-size: 1.3rem;"></i></button>
+                <button onclick="showLoadoutModal()" title="アビリティ編成"><i class="ra ra-gears" style="font-size: 1.3rem;"></i></button>
             </header>
             <div class="stat-panel">
                 <div class="box">
@@ -63,6 +65,7 @@
                     <p><i class="ra ra-dripping-blade"></i>VAMP: <span id="player-vamp"></span></p>
                     <p><i class="ra ra-lightning-bolt"></i>C.RATE: <span id="player-crate"></span></p>
                     <p><i class="ra ra-focused-lightning"></i>C.DMG: <span id="player-cdmg"></span></p>
+                    <p><i class="ra ra-crown-of-thorns"></i>THORN: <span id="player-thorns"></span></p>
                 </div>
                 <div class="box" id="bonus-stats"></div>
             </div>

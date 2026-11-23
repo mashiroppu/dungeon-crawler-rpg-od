@@ -1,3 +1,11 @@
+// ===== Difficulty Modes =====
+const DIFFICULTY_MODES = {
+    normal: { label: "Normal",  hp: 1,    atk: 1,    def: 1,    atkSpd: 1,    critRate: 0,  critDmg: 1,    reward: 1,   dropRoll: 3 },
+    hard:   { label: "Hard",    hp: 1.4,  atk: 1.25, def: 1.2,  atkSpd: 1.05, critRate: 5,  critDmg: 1.1,  reward: 1.3, dropRoll: 3 },
+    inferno:{ label: "Inferno", hp: 2.0,  atk: 1.55, def: 1.45, atkSpd: 1.1,  critRate: 10, critDmg: 1.25, reward: 1.6, dropRoll: 2 },
+};
+const currentDifficulty = () => DIFFICULTY_MODES[(player && player.difficulty) || "normal"] || DIFFICULTY_MODES.normal;
+
 // Enemy
 let enemy = {
     name: null,
@@ -293,7 +301,7 @@ const setEnemyStats = (type, condition) => {
 
     if (dungeon.enemyMultipliers == undefined) {
         dungeon.enemyMultipliers = {
-            hp: 1,
+            hp: 1.4,
             atk: 1,
             def: 1,
             atkSpd: 1,
@@ -301,6 +309,11 @@ const setEnemyStats = (type, condition) => {
             critRate: 1,
             critDmg: 1
         }
+    }
+    // One-time migration: global enemy HP buff (+40%) for saves created before it
+    if (!dungeon.enemyHpBuffed && dungeon.enemyMultipliers.hp === 1) {
+        dungeon.enemyMultipliers.hp = 1.4;
+        dungeon.enemyHpBuffed = true;
     }
 
     // Apply stat scaling for enemies each level
@@ -360,6 +373,15 @@ const setEnemyStats = (type, condition) => {
         enemy.stats.critDmg = Math.min(300, enemy.stats.critDmg + lvlGap * 2);
     }
 
+    // Difficulty mode scaling
+    const diff = currentDifficulty();
+    enemy.stats.hpMax = Math.round(enemy.stats.hpMax * diff.hp);
+    enemy.stats.atk = Math.round(enemy.stats.atk * diff.atk);
+    enemy.stats.def = Math.round(enemy.stats.def * diff.def);
+    enemy.stats.atkSpd = Math.min(2.5, enemy.stats.atkSpd * diff.atkSpd);
+    enemy.stats.critRate = Math.min(80, enemy.stats.critRate + diff.critRate);
+    enemy.stats.critDmg = Math.round(enemy.stats.critDmg * diff.critDmg);
+
     // Calculate exp and gold that the monster gives
     const expYield = [];
 
@@ -376,12 +398,12 @@ const setEnemyStats = (type, condition) => {
     }
 
     let expCalculation = (expYield.reduce((acc, cur) => acc + cur, 0)) / 20;
-    enemy.rewards.exp = Math.round(expCalculation + expCalculation * (enemy.lvl * 0.1));
+    enemy.rewards.exp = Math.round((expCalculation + expCalculation * (enemy.lvl * 0.1)) * diff.reward);
     if (enemy.rewards.exp > 1000000) {
         enemy.rewards.exp = 1000000 * randomizeDecimal(0.9, 1.1);
     }
-    enemy.rewards.gold = Math.round((enemy.rewards.exp * randomizeDecimal(0.9, 1.1)) * 1.5);
-    enemy.rewards.drop = randomizeNum(1, 3);
+    enemy.rewards.gold = Math.round((enemy.rewards.exp * randomizeDecimal(0.9, 1.1)) * 1.5 * diff.reward);
+    enemy.rewards.drop = randomizeNum(1, diff.dropRoll);
     if (enemy.rewards.drop == 1) {
         enemy.rewards.drop = true;
     } else {

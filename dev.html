@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dev Mode</title>
+<style>
+    * { box-sizing: border-box; }
+    body { font-family: monospace; background: #1a1a2e; color: #eee; margin: 0; padding: 16px; }
+    h1 { color: #ffd700; font-size: 20px; }
+    h2 { color: #7ec8ff; font-size: 15px; border-bottom: 1px solid #444; padding-bottom: 4px; margin-top: 24px; }
+    .panel { background: #232344; border: 1px solid #444; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .row { display: flex; gap: 8px; align-items: center; margin: 6px 0; flex-wrap: wrap; }
+    label { min-width: 90px; color: #aaa; font-size: 12px; }
+    input, select { background: #111; color: #eee; border: 1px solid #555; padding: 4px 6px; border-radius: 4px; font-family: monospace; }
+    input[type=number] { width: 80px; }
+    button { background: #2d5a2d; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-family: monospace; }
+    button:hover { background: #3d7a3d; }
+    button.danger { background: #7a2d2d; }
+    button.danger:hover { background: #9a3d3d; }
+    button.small { padding: 2px 8px; font-size: 11px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 12px; }
+    .eq-item { background: #1a1a2e; border: 1px solid #555; border-radius: 4px; padding: 6px; margin: 4px 0; font-size: 12px; }
+    .eq-item .rm { float: right; cursor: pointer; color: #f66; }
+    .statline { display: flex; gap: 4px; margin: 3px 0; }
+    .statline select, .statline input { flex: 1; min-width: 0; }
+    .msg { color: #7fff7f; font-size: 12px; margin-top: 8px; }
+    a { color: #7ec8ff; }
+    #equippedList div { margin: 2px 0; }
+</style>
+</head>
+<body>
+<h1>DEV MODE</h1>
+<p style="color:#aaa;font-size:12px">Edits <code>localStorage.playerData</code> / <code>dungeonData</code> directly. Open <a href="index.html">index.html</a> after saving.</p>
+<div class="msg" id="msg"></div>
+
+<!-- ============ PRESETS ============ -->
+<div class="panel">
+<h2>Build Presets (one-click)</h2>
+<div class="row">
+    <button onclick="preset('phase')">PHASE Rogue</button>
+    <button onclick="preset('bloodtithe')">Blood Tithe Paladin</button>
+    <button onclick="preset('burst')">Burst Lancer</button>
+    <button onclick="preset('glass')">Glass Cannon Mage</button>
+    <button onclick="preset('oath')">Oath Edge Paladin</button>
+</div>
+<p style="color:#888;font-size:11px">Fills ALL fields and saves immediately. Open index.html to test.</p>
+</div>
+
+<!-- ============ PLAYER ============ -->
+<div class="panel">
+<h2>Player</h2>
+<div class="row"><label>Name</label><input id="p-name" style="width:140px"></div>
+<div class="row"><label>Level</label><input id="p-lvl" type="number" min="1" max="999"></div>
+<div class="row"><label>Class</label><select id="p-cls"></select></div>
+<div class="row"><label>Passive</label><select id="p-skill"></select></div>
+<div class="row"><label>Difficulty</label><select id="p-diff"><option value="normal">Normal</option><option value="hard">Hard</option><option value="inferno">Inferno</option></select></div>
+<div class="row"><label>Allocated</label><input type="checkbox" id="p-allocated" checked></div>
+<div class="row"><label>Gold</label><input id="p-gold" type="number"></div>
+<div class="row"><label>EXP cur/max</label><input id="p-expCurr" type="number" style="width:90px"><input id="p-expMax" type="number" style="width:90px"></div>
+<div class="row"><label>HP current</label><input id="p-hp" type="number" placeholder="(max on load)"></div>
+</div>
+
+<!-- ============ BASE STATS ============ -->
+<div class="panel">
+<h2>Base Stats (pre-equipment)</h2>
+<div class="grid" id="baseStats"></div>
+</div>
+
+<!-- ============ BONUS STATS (level-up %) ============ -->
+<div class="panel">
+<h2>Bonus Stats (level-up %)</h2>
+<div class="grid" id="bonusStats"></div>
+</div>
+
+<!-- ============ EQUIPMENT BUILDER ============ -->
+<div class="panel">
+<h2>Equipment Builder</h2>
+<div class="row">
+    <label>Type</label><select id="eq-type"><option value="Weapon">Weapon</option><option value="Armor">Armor</option><option value="Shield">Shield</option><option value="Helmet">Helmet</option></select>
+    <label>Category</label><select id="eq-cat"></select>
+    <label>Rarity</label><select id="eq-rarity"><option>Common</option><option>Uncommon</option><option selected>Rare</option><option>Epic</option><option>Legendary</option><option>Heirloom</option></select>
+    <label>Lv</label><input id="eq-lvl" type="number" value="50">
+    <label>Tier</label><input id="eq-tier" type="number" value="5">
+    <label>Value</label><input id="eq-value" type="number" value="1000">
+</div>
+<div id="eq-stats"></div>
+<button class="small" onclick="addStatRow()">+ stat line</button>
+<div style="margin-top:8px"><label style="min-width:0">Affixes</label></div>
+<div id="eq-affixes"></div>
+<button class="small" onclick="addAffixRow()">+ affix</button>
+<div class="row" style="margin-top:10px">
+    <button onclick="addItem('inv')">Add to Inventory</button>
+    <button onclick="addItem('eq')">Equip Directly</button>
+    <button class="danger" onclick="clearBuilder()">Clear</button>
+</div>
+</div>
+
+<!-- ============ EQUIPPED / INVENTORY ============ -->
+<div class="panel">
+<h2>Currently Equipped (<span id="eq-count">0</span>/6)</h2>
+<div id="equippedList"></div>
+<div class="row"><button class="danger" onclick="unequipAll()">Unequip All</button></div>
+</div>
+
+<!-- ============ ABILITIES ============ -->
+<div class="panel">
+<h2>Ability Loadout (max 3)</h2>
+<div id="abilityList"></div>
+<div class="row"><button onclick="fillCharges()">Fill All Charges</button></div>
+</div>
+
+<!-- ============ DUNGEON ============ -->
+<div class="panel">
+<h2>Dungeon</h2>
+<div class="row"><label>Floor</label><input id="d-floor" type="number" min="1" max="100" value="1"></div>
+<div class="row"><label>Room</label><input id="d-room" type="number" min="1" max="5" value="1"></div>
+<div class="row"><label>Enemy Scaling</label><input id="d-scaling" type="number" step="0.1" min="1" max="3" value="1.1"></div>
+<div class="row"><label>Difficulty kills</label><input id="d-kills" type="number" value="0"></div>
+</div>
+
+<div class="panel">
+<button onclick="saveAll()">SAVE &amp; APPLY</button>
+<button class="danger" onclick="wipeSave()">Wipe Save</button>
+<span class="msg" id="saveMsg"></span>
+</div>
+
+<script>
+const STAT_KEYS = ["hp","atk","def","atkSpd","vamp","critRate","critDmg","hpPct","atkPct","defPct","penPct","thorns","dodge","goldFind","expFind","cdr","abUse","burst","fullHpDmg","lowHpDmg","attackInvuln","hpTradeDmg","hpRegen","bloodOath"];
+const CLASSES = { warrior:"Warrior", mage:"Mage", rogue:"Rogue", lancer:"Lancer", paladin:"Paladin" };
+const PASSIVES = ["Remnant Razor","Titan's Will","Devastator","Blade Dance","Paladin's Heart","Aegis Thorns","Blood Tithe","Second Wind","Adrenaline","Executioner","Glass Cannon","Iron Will","Momentum","Leech Lord"];
+const ABILITIES = {
+    warrior: ["cleave","temporal_snare","shield_wall","warcry","undying_oath","execute"],
+    mage: ["fireball","petrify","flame_nova","frostbolt","stasis","mana_shield"],
+    rogue: ["backstab","fan_of_knives","venom_dagger","godspeed","deadly_precision","thousand_cuts"],
+    lancer: ["impale","dragon_thrust","afterimage","sky_piercer","dragon_roar","dragon_fall"],
+    paladin: ["holy_strike","judgment_counter","thorns_nova","aegis_oath","divine_judgement","sanctuary"]
+};
+const ABILITY_NAMES = {
+    cleave:"Cleave",temporal_snare:"Temporal Snare",shield_wall:"Shield Wall",warcry:"War Cry",undying_oath:"Undying Oath",execute:"Execute",
+    fireball:"Fireball",petrify:"Petrify",flame_nova:"Flame Nova",frostbolt:"Frostbolt",stasis:"Stasis",mana_shield:"Mana Shield",
+    backstab:"Backstab",fan_of_knives:"Fan of Knives",venom_dagger:"Venom Dagger",godspeed:"Godspeed",deadly_precision:"Deadly Precision",thousand_cuts:"Thousand Cuts",
+    impale:"Impale",dragon_thrust:"Dragon's Thrust",afterimage:"Afterimage",sky_piercer:"Sky Piercer",dragon_roar:"Dragon Roar",dragon_fall:"Dragon's Fall",
+    holy_strike:"Holy Strike",judgment_counter:"Judgment Counter",thorns_nova:"Thorns Nova",aegis_oath:"Aegis Oath",divine_judgement:"Divine Judgement",sanctuary:"Sanctuary"
+};
+const CATS = {
+    Weapon: ["Sword","Axe","Hammer","Dagger","Flail","Scythe"],
+    Armor: ["Plate","Chain","Leather"],
+    Shield: ["Tower","Kite","Buckler"],
+    Helmet: ["Great Helm","Horned Helm"]
+};
+
+let player = null, dungeon = null;
+try { player = JSON.parse(localStorage.getItem("playerData")); } catch(e) {}
+try { dungeon = JSON.parse(localStorage.getItem("dungeonData")); } catch(e) {}
+if (!player) {
+    player = { name:"Dev", lvl:1, cls:"warrior", difficulty:"normal", allocated:true,
+        stats:{hp:0,hpMax:0,atk:0,def:0,pen:0,atkSpd:0,vamp:0,critRate:0,critDmg:50,hpPercent:100},
+        baseStats:{hp:500,atk:100,def:50,pen:0,atkSpd:0.6,vamp:0,critRate:0,critDmg:50},
+        equippedStats:{}, bonusStats:{hp:0,atk:0,def:0,atkSpd:0,vamp:0,critRate:0,critDmg:0,thorns:0},
+        exp:{expCurr:0,expMax:100,expCurrLvl:0,expMaxLvl:100,lvlGained:0},
+        inventory:{consumables:[],equipment:[]}, storage:[], equipped:[], skills:[],
+        abilityLoadout:[], abilityCharges:{}, abilityCds:{}, combatBuffs:[], shield:0,
+        gold:0, playtime:0, kills:0, deaths:0, inCombat:false, blessing:1 };
+}
+player.allocated = true;
+if (!dungeon) dungeon = { rating:500, grade:"E", progress:{floor:1,room:1,floorLimit:100,roomLimit:5}, settings:{enemyBaseLvl:1,enemyLvlGap:5,enemyBaseStats:1,enemyScaling:1.1}, status:{exploring:false,paused:true,event:false}, statistics:{kills:0,runtime:0}, backlog:[], action:0 };
+
+const $ = id => document.getElementById(id);
+const msg = t => { $("msg").textContent = t; $("saveMsg").textContent = t; };
+
+// ---------- populate ----------
+["warrior","mage","rogue","lancer","paladin"].forEach(c => $("p-cls").innerHTML += `<option value="${c}">${CLASSES[c]}</option>`);
+PASSIVES.forEach(s => $("p-skill").innerHTML += `<option>${s}</option>`);
+
+function numInputs(containerId, obj, keys) {
+    const el = $(containerId); el.innerHTML = "";
+    keys.forEach(k => {
+        const d = document.createElement("div");
+        d.innerHTML = `<label>${k}</label><input type="number" step="any" data-k="${k}" value="${obj[k] ?? 0}">`;
+        el.appendChild(d);
+    });
+}
+numInputs("baseStats", player.baseStats || {}, ["hp","atk","def","atkSpd","vamp","critRate","critDmg"]);
+numInputs("bonusStats", player.bonusStats || {}, ["hp","atk","def","atkSpd","vamp","critRate","critDmg","thorns"]);
+
+function collectInputs(containerId) {
+    const out = {};
+    $(containerId).querySelectorAll("input[data-k]").forEach(i => out[i.dataset.k] = parseFloat(i.value) || 0);
+    return out;
+}
+
+// ---------- equipment builder ----------
+function refreshCats() {
+    const t = $("eq-type").value;
+    $("eq-cat").innerHTML = CATS[t].map(c => `<option>${c}</option>`).join("");
+}
+$("eq-type").onchange = refreshCats;
+refreshCats();
+
+function statRow(key="", val="") {
+    const d = document.createElement("div");
+    d.className = "statline";
+    d.innerHTML = `<select class="s-key">${STAT_KEYS.map(k=>`<option ${k===key?'selected':''}>${k}</option>`).join("")}</select>
+        <input class="s-val" type="number" step="any" value="${val}"><button class="small danger" onclick="this.parentElement.remove()">x</button>`;
+    $("eq-stats").appendChild(d);
+}
+function affixRow(key="", val="") {
+    const d = document.createElement("div");
+    d.className = "statline";
+    d.innerHTML = `<select class="a-key">${STAT_KEYS.map(k=>`<option ${k===key?'selected':''}>${k}</option>`).join("")}</select>
+        <input class="a-val" type="number" step="any" value="${val}"><button class="small danger" onclick="this.parentElement.remove()">x</button>`;
+    $("eq-affixes").appendChild(d);
+}
+function addStatRow() { statRow(); }
+function addAffixRow() { affixRow(); }
+function clearBuilder() { $("eq-stats").innerHTML=""; $("eq-affixes").innerHTML=""; }
+
+function buildItem() {
+    const type = $("eq-type").value, cat = $("eq-cat").value;
+    const stats = [];
+    document.querySelectorAll("#eq-stats .statline").forEach(r => {
+        const k = r.querySelector(".s-key").value, v = parseFloat(r.querySelector(".s-val").value);
+        if (k && !isNaN(v)) stats.push({ [k]: v });
+    });
+    const affixes = [];
+    document.querySelectorAll("#eq-affixes .statline").forEach(r => {
+        const k = r.querySelector(".a-key").value, v = parseFloat(r.querySelector(".a-val").value);
+        if (k && !isNaN(v)) affixes.push({ key: k, value: v });
+    });
+    if (!stats.length && !affixes.length) { msg("Item needs at least one stat or affix"); return null; }
+    // affix values also go into stats (game expects both)
+    affixes.forEach(a => stats.push({ [a.key]: a.value }));
+    return {
+        category: cat,
+        attribute: type === "Weapon" ? "Damage" : "Defense",
+        type: type,
+        rarity: $("eq-rarity").value,
+        lvl: parseInt($("eq-lvl").value) || 1,
+        tier: parseInt($("eq-tier").value) || 1,
+        value: parseInt($("eq-value").value) || 0,
+        stats: stats,
+        affixes: affixes
+    };
+}
+
+function addItem(where) {
+    const item = buildItem();
+    if (!item) return;
+    if (where === "eq") {
+        if ((player.equipped||[]).length >= 6) { msg("Equipment slots full (6)"); return; }
+        player.equipped.push(item);
+    } else {
+        player.inventory.equipment.push(JSON.stringify(item));
+    }
+    renderEquipped();
+    msg(`Item ${where === "eq" ? "equipped" : "added to inventory"}: ${item.rarity} ${item.category}`);
+}
+
+function renderEquipped() {
+    const eq = player.equipped || [];
+    $("eq-count").textContent = eq.length;
+    $("equippedList").innerHTML = eq.map((it,i) =>
+        `<div class="eq-item"><span class="rm" onclick="unequipOne(${i})">x</span>
+        <b>${it.rarity} ${it.category}</b> <span style="color:#888">Lv${it.lvl}</span><br>
+        <span style="color:#aaa;font-size:11px">${it.stats.map(s=>Object.entries(s).map(([k,v])=>`${k}:${v}`).join(" ")).join(" | ")}</span></div>`
+    ).join("") || "<i style='color:#666'>none</i>";
+}
+function unequipOne(i) {
+    const it = player.equipped.splice(i,1)[0];
+    player.inventory.equipment.push(JSON.stringify(it));
+    renderEquipped();
+}
+function unequipAll() { player.equipped = []; renderEquipped(); }
+
+// ---------- abilities ----------
+function renderAbilities() {
+    const cls = $("p-cls").value;
+    const el = $("abilityList"); el.innerHTML = "";
+    (ABILITIES[cls]||[]).forEach(id => {
+        const d = document.createElement("label");
+        d.style.cssText = "display:block;margin:3px 0;color:#ccc";
+        d.innerHTML = `<input type="checkbox" value="${id}" ${ (player.abilityLoadout||[]).includes(id) ? "checked" : ""}> ${ABILITY_NAMES[id]||id}`;
+        el.appendChild(d);
+    });
+}
+$("p-cls").onchange = renderAbilities;
+renderAbilities();
+
+function fillCharges() {
+    player.abilityCharges = player.abilityCharges || {};
+    (ABILITIES[$("p-cls").value]||[]).forEach(id => player.abilityCharges[id] = 99);
+    msg("Ability charges filled (99 each)");
+}
+
+// ---------- save ----------
+function saveAll() {
+    player.name = $("p-name").value || "Dev";
+    player.lvl = parseInt($("p-lvl").value) || 1;
+    player.cls = $("p-cls").value;
+    // Primary passive from dropdown + preserve any extra passives already on the save (presets can stack)
+    const extraSkills = (player.skills || []).filter(s => s !== $("p-skill").value);
+    player.skills = [$("p-skill").value, ...extraSkills];
+    player.difficulty = $("p-diff").value;
+    player.allocated = $("p-allocated").checked;
+    player.gold = parseInt($("p-gold").value) || 0;
+    player.exp = player.exp || {};
+    player.exp.expCurr = parseInt($("p-expCurr").value) || 0;
+    player.exp.expMax = parseInt($("p-expMax").value) || 100;
+    player.exp.expCurrLvl = player.exp.expCurr;
+    player.exp.expMaxLvl = 100;
+    player.exp.lvlGained = 0;
+    player.baseStats = collectInputs("baseStats");
+    player.baseStats.pen = 0;
+    if (player.baseStats.critDmg == null) player.baseStats.critDmg = 50;
+    player.bonusStats = collectInputs("bonusStats");
+    // ensure all bonus keys exist
+    ["hp","atk","def","atkSpd","vamp","critRate","critDmg","thorns"].forEach(k => { if (player.bonusStats[k]==null) player.bonusStats[k]=0; });
+    // recalc live stats roughly like calculateStats (flat part only; game recalcs fully on load)
+    player.stats = player.stats || {};
+    player.stats.hpMax = Math.round((player.baseStats.hp||0) * (1 + ((player.bonusStats.hp||0) + 0) / 100));
+    player.stats.hp = player.stats.hpMax;
+    const hpCur = parseInt($("p-hp").value);
+    if (!isNaN(hpCur) && hpCur > 0) player.stats.hp = Math.min(hpCur, player.stats.hpMax);
+    player.stats.hpPercent = 100;
+    // abilities
+    player.abilityLoadout = [...document.querySelectorAll("#abilityList input:checked")].map(c => c.value).slice(0,3);
+    // dungeon
+    dungeon.progress.floor = parseInt($("d-floor").value) || 1;
+    dungeon.progress.room = parseInt($("d-room").value) || 1;
+    dungeon.settings.enemyScaling = parseFloat($("d-scaling").value) || 1.1;
+    dungeon.statistics.kills = parseInt($("d-kills").value) || 0;
+    dungeon.status = { exploring:false, paused:true, event:false };
+
+    localStorage.setItem("playerData", JSON.stringify(player));
+    localStorage.setItem("dungeonData", JSON.stringify(dungeon));
+    msg("Saved! Open index.html to play.");
+}
+
+function wipeSave() {
+    if (confirm("Delete playerData & dungeonData?")) {
+        localStorage.removeItem("playerData");
+        localStorage.removeItem("dungeonData");
+        localStorage.removeItem("enemyData");
+        msg("Save wiped. Reload this page.");
+        setTimeout(()=>location.reload(), 800);
+    }
+}
+
+// ---------- presets ----------
+const mkItem = (type, cat, rarity, lvl, stats, affixes=[]) => ({
+    category: cat, attribute: type === "Weapon" ? "Damage" : "Defense",
+    type, rarity, lvl, tier: Math.min(10, Math.ceil(lvl/10)), value: 5000,
+    stats: [...stats, ...affixes.map(a => ({[a.k]: a.v}))],
+    affixes: affixes.map(a => ({key: a.k, value: a.v}))
+});
+const A = (k,v) => ({k, v});
+
+function preset(which) {
+    const p = JSON.parse(JSON.stringify(player));
+    p.lvl = 50; p.gold = 999999; p.allocated = true; p.inCombat = false;
+    p.inventory = { consumables: [], equipment: [] };
+    p.storage = []; p.abilityCds = {}; p.combatBuffs = []; p.shield = 0;
+    p.exp = { expCurr: 0, expMax: 1000, expCurrLvl: 0, expMaxLvl: 100, lvlGained: 0 };
+    p.blessing = p.blessing || 1;
+    dungeon.progress.floor = 30; dungeon.progress.room = 1; dungeon.settings.enemyScaling = 2.0;
+    dungeon.statistics.kills = 0;
+
+    const bonus = { hp:0, atk:0, def:0, atkSpd:0, vamp:0, critRate:0, critDmg:0, thorns:0 };
+
+    if (which === "phase") {
+        // PHASE Rogue: attackInvuln + ATK.SPD + crit, Phantom set (Dagger x3)
+        p.name = "PhaseRogue"; p.cls = "rogue"; p.skills = ["Blade Dance"];
+        p.difficulty = "inferno";
+        p.baseStats = { hp:400, atk:120, def:40, pen:0, atkSpd:1.4, vamp:0, critRate:12, critDmg:60 };
+        p.bonusStats = { ...bonus, atkSpd:80, critRate:40, critDmg:60, hp:20 };
+        p.abilityLoadout = ["fan_of_knives","thousand_cuts","godspeed"];
+        p.abilityCharges = { fan_of_knives:5, thousand_cuts:5, godspeed:2 };
+        p.equipped = [
+            mkItem("Weapon","Dagger","Heirloom",100,[{atk:300},{atkSpd:8},{critRate:5}],[A("attackInvuln",3),A("atkSpd",8),A("critRate",3)]),
+            mkItem("Weapon","Dagger","Legendary",95,[{atk:250},{atkSpd:6}],[A("atkSpd",8),A("critDmg",10)]),
+            mkItem("Weapon","Dagger","Legendary",95,[{atk:250},{critRate:4}],[A("critRate",4),A("cdr",6)]),
+            mkItem("Weapon","Flail","Epic",90,[{atk:200},{atkSpd:5}],[A("abUse",1)]),
+            mkItem("Armor","Leather","Epic",90,[{hp:400},{def:60}],[A("hpPct",8),A("atkSpd",4)]),
+            mkItem("Helmet","Great Helm","Epic",90,[{def:80},{hp:300}],[A("critDmg",12),A("vamp",1.5)])
+        ];
+    } else if (which === "bloodtithe") {
+        // Blood Tithe Paladin: HP/THORN/Sanguine+Nightveil
+        p.name = "BloodPaladin"; p.cls = "paladin"; p.skills = ["Blood Tithe"];
+        p.difficulty = "inferno";
+        p.baseStats = { hp:3000, atk:30, def:60, pen:0, atkSpd:0.4, vamp:0, critRate:0, critDmg:50 };
+        p.bonusStats = { ...bonus, hp:60, thorns:60, def:30 };
+        p.abilityLoadout = ["holy_strike","aegis_oath","sanctuary"];
+        p.abilityCharges = { holy_strike:4, aegis_oath:2, sanctuary:2 };
+        p.equipped = [
+            mkItem("Weapon","Hammer","Legendary",100,[{hp:500},{def:80}],[A("thorns",12),A("hpPct",8)]),
+            mkItem("Weapon","Sword","Epic",90,[{atk:150},{def:40}],[A("hpPct",6)]),
+            mkItem("Armor","Plate","Legendary",100,[{hp:600},{def:100}],[A("hpPct",10),A("defPct",8)]),
+            mkItem("Armor","Chain","Epic",90,[{hp:400},{def:80}],[A("thorns",8),A("hpPct",6)]),
+            mkItem("Shield","Tower","Legendary",100,[{def:120},{hp:400}],[A("thorns",10),A("hpPct",8)]),
+            mkItem("Helmet","Great Helm","Epic",90,[{def:90},{hp:300}],[A("thorns",8),A("hpPct",6)])
+        ];
+    } else if (which === "burst") {
+        // Burst Lancer: burst stacks + PEN + Deadeye set (Weapon x3+)
+        p.name = "BurstLancer"; p.cls = "lancer"; p.skills = ["Blade Dance"];
+        p.difficulty = "hard";
+        p.baseStats = { hp:800, atk:150, def:60, pen:0, atkSpd:0.9, vamp:0, critRate:5, critDmg:60 };
+        p.bonusStats = { ...bonus, atk:30, critDmg:40, atkSpd:20 };
+        p.abilityLoadout = ["impale","dragon_thrust","sky_piercer"];
+        p.abilityCharges = { impale:4, dragon_thrust:4, sky_piercer:2 };
+        p.equipped = [
+            mkItem("Weapon","Sword","Heirloom",100,[{atk:350},{atkSpd:5}],[A("burst",5),A("penPct",8)]),
+            mkItem("Weapon","Axe","Legendary",95,[{atk:300}],[A("penPct",6),A("critDmg",12)]),
+            mkItem("Weapon","Scythe","Legendary",95,[{atk:280},{critRate:3}],[A("atkPct",8)]),
+            mkItem("Weapon","Hammer","Epic",90,[{atk:220},{def:50}],[A("critDmg",10)]),
+            mkItem("Armor","Plate","Epic",90,[{hp:500},{def:80}],[A("atkPct",6)]),
+            mkItem("Helmet","Great Helm","Epic",90,[{def:70},{hp:250}],[A("penPct",4),A("critRate",3)])
+        ];
+    } else if (which === "glass") {
+        // Glass Cannon Mage: PRIDE + BERSERK (can't both — PRIDE here) + nuke
+        p.name = "GlassMage"; p.cls = "mage"; p.skills = ["Glass Cannon"];
+        p.difficulty = "hard";
+        p.baseStats = { hp:200, atk:200, def:20, pen:0, atkSpd:0.8, vamp:0, critRate:5, critDmg:75 };
+        p.bonusStats = { ...bonus, atk:50, critDmg:80, critRate:30 };
+        p.abilityLoadout = ["fireball","petrify","flame_nova"];
+        p.abilityCharges = { fireball:4, petrify:3, flame_nova:3 };
+        p.equipped = [
+            mkItem("Weapon","Flail","Heirloom",100,[{atk:400},{atkSpd:6},{critDmg:10}],[A("fullHpDmg",30),A("critDmg",15)]),
+            mkItem("Weapon","Dagger","Legendary",95,[{atk:300},{critRate:4}],[A("critRate",5),A("cdr",8)]),
+            mkItem("Weapon","Scythe","Legendary",95,[{atk:320}],[A("atkPct",10)]),
+            mkItem("Armor","Leather","Epic",90,[{hp:150},{def:20}],[A("atkPct",8)]),
+            mkItem("Helmet","Horned Helm","Epic",90,[{def:30},{atk:80}],[A("critDmg",12),A("cdr",5)]),
+            mkItem("Shield","Buckler","Epic",90,[{def:40}],[A("dodge",5),A("goldFind",10)])
+        ];
+    } else if (which === "oath") {
+        // Oath Edge Paladin: BERSERK + TRIAL + OATH + Blood Tithe — 瀬戸際ビルド
+        p.name = "OathEdge"; p.cls = "paladin"; p.skills = ["Blood Tithe","Iron Will"];
+        p.difficulty = "inferno";
+        p.baseStats = { hp:2500, atk:40, def:50, pen:0, atkSpd:0.4, vamp:0, critRate:0, critDmg:50 };
+        p.bonusStats = { ...bonus, hp:50, thorns:40, def:20 };
+        p.abilityLoadout = ["judgment_counter","thorns_nova","sanctuary"];
+        p.abilityCharges = { judgment_counter:2, thorns_nova:3, sanctuary:2 };
+        p.equipped = [
+            mkItem("Weapon","Flail","Legendary",100,[{hp:400},{def:60}],[A("lowHpDmg",30)]),
+            mkItem("Weapon","Hammer","Epic",90,[{hp:300},{def:50}],[A("thorns",8)]),
+            mkItem("Armor","Plate","Legendary",100,[{hp:550},{def:90}],[A("hpTradeDmg",25),A("hpRegen",3)]),
+            mkItem("Armor","Chain","Epic",90,[{hp:350},{def:70}],[A("bloodOath",20),A("hpPct",6)]),
+            mkItem("Shield","Tower","Legendary",100,[{def:110},{hp:350}],[A("thorns",10),A("hpPct",8)]),
+            mkItem("Helmet","Great Helm","Epic",90,[{def:80},{hp:280}],[A("thorns",8),A("hpPct",6)])
+        ];
+    }
+
+    player = p;
+    // push values into the form fields too
+    $("p-name").value = p.name; $("p-lvl").value = p.lvl; $("p-cls").value = p.cls;
+    $("p-skill").value = p.skills[0] || "Blood Tithe"; $("p-diff").value = p.difficulty;
+    $("p-gold").value = p.gold; $("p-expCurr").value = p.exp ? p.exp.expCurr : 0; $("p-expMax").value = p.exp ? p.exp.expMax : 100; $("d-floor").value = dungeon.progress.floor;
+    $("d-scaling").value = dungeon.settings.enemyScaling;
+    numInputs("baseStats", p.baseStats, ["hp","atk","def","atkSpd","vamp","critRate","critDmg"]);
+    numInputs("bonusStats", p.bonusStats, ["hp","atk","def","atkSpd","vamp","critRate","critDmg","thorns"]);
+    renderAbilities(); renderEquipped();
+    saveAll();
+    msg(`Preset "${which}" applied & saved!`);
+}
+
+// init form
+$("p-name").value = player.name || "Dev";
+$("p-lvl").value = player.lvl || 1;
+$("p-cls").value = player.cls || "warrior";
+$("p-skill").value = (player.skills && player.skills[0]) || "Blood Tithe";
+$("p-diff").value = player.difficulty || "normal";
+$("p-gold").value = player.gold || 0;
+$("p-expCurr").value = player.exp ? (player.exp.expCurr || 0) : 0;
+$("p-expMax").value = player.exp ? (player.exp.expMax || 100) : 100;
+$("d-floor").value = dungeon.progress.floor;
+$("d-room").value = dungeon.progress.room;
+$("d-scaling").value = dungeon.settings.enemyScaling;
+$("d-kills").value = dungeon.statistics.kills;
+renderEquipped();
+</script>
+</body>
+</html>
