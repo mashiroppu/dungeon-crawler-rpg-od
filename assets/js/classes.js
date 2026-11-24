@@ -165,7 +165,7 @@ const petrifyOnHit = () => {
     if (enemy.petrifyStacks >= 5) {
         enemy.petrifyStacks = 0;
         enemy.petrifiedUntil = Date.now() + 4000;
-        addCombatLog(`${enemy.name} is petrified solid! (Cannot attack for 4s, takes +25% damage)`);
+        addCombatLog(tParams("cb.ab.petrified4s", { name: enemy.name }));
     }
 };
 const petrifyDamageMult = () => isEnemyPetrified() ? 1.25 : 1;
@@ -196,7 +196,7 @@ const abilityDamage = (mult, defScale = 1) => {
         hitSprite.classList.add("ability-hit");
         setTimeout(() => hitSprite.classList.remove("ability-hit"), 450);
     }
-    addCombatLog(`${player.name} unleashed an ability, dealing ` + nFormatter(damage) + ` damage to ${enemy.name}.`);
+    addCombatLog(tParams("cb.ab.unleashed", { name: player.name, dmg: nFormatter(damage), target: enemy.name }));
     spawnDamageNumber(damage, crit);
     hpValidation();
     playerLoadStats();
@@ -278,7 +278,7 @@ const useAbility = (id) => {
         applyPlayerHeal(Math.round(player.stats.hpMax * pct / 100));
         const healed = player.stats.hp - before;
         if (healed > 0) {
-            addCombatLog(`${player.name} recovers ${nFormatter(healed)} HP!`);
+            addCombatLog(tParams("cb.ab.recovers", { name: player.name, hp: nFormatter(healed) }));
         }
     };
     switch (id) {
@@ -287,26 +287,26 @@ const useAbility = (id) => {
         case "temporal_snare":
             abilityDamage(1.5);
             pushEnemyDebuff("atkSpdMult", 0.5, 6);
-            addCombatLog(`${enemy.name}'s time slows! (ATK.SPD -50% for 6s)`);
+            addCombatLog(tParams("cb.ab.timeSlows", { name: enemy.name }));
             break;
         case "shield_wall":
             player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.25));
             pushPlayerBuff("defMult", 1.3, 8);
-            addCombatLog(`${player.name} raises a shield wall! (Shield: ${nFormatter(player.shield)}, DEF +30% for 8s)`);
+            addCombatLog(tParams("cb.ab.shieldWall", { name: player.name, s: nFormatter(player.shield) }));
             break;
         case "warcry":
             pushPlayerBuff("atkMult", 1.35, 12);
-            addCombatLog(`${player.name} lets out a war cry! (+35% damage for 12s)`);
+            addCombatLog(tParams("cb.ab.warcry", { name: player.name }));
             break;
         case "undying_oath":
             abilityDamage(1.0);
             player.hot = { dps: Math.round(player.stats.hpMax * 0.03), ticks: 10 };
-            addCombatLog(`${player.name} swears an undying oath! (Regen 3% max HP/s for 10s)`);
+            addCombatLog(tParams("cb.ab.oath", { name: player.name }));
             break;
         case "execute": {
             const mult = enemy.stats.hp / enemy.stats.hpMax < 0.3 ? 5.5 : 2.2;
             abilityDamage(mult);
-            if (mult > 3) addCombatLog(`${player.name} executes ${enemy.name}!`);
+            if (mult > 3) addCombatLog(tParams("cb.ab.executes", { name: player.name, target: enemy.name }));
             break;
         }
         // ===== Mage =====
@@ -318,50 +318,50 @@ const useAbility = (id) => {
             if (enemy.petrifyStacks >= 5) {
                 enemy.petrifyStacks = 0;
                 enemy.petrifiedUntil = now + 4000;
-                addCombatLog(`${enemy.name} is petrified solid! (Cannot attack for 4s, takes +25% damage)`);
+                addCombatLog(tParams("cb.ab.petrified4s", { name: enemy.name }));
             } else {
-                addCombatLog(`${enemy.name} is petrifying... (${enemy.petrifyStacks}/5 stacks)`);
+                addCombatLog(tParams("cb.ab.petrifying", { name: enemy.name, n: enemy.petrifyStacks }));
             }
             break;
         }
         case "flame_nova":
             abilityDamage(2.0);
             enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.015), ticks: 8 };
-            addCombatLog(`${enemy.name} is engulfed in flames!`);
+            addCombatLog(tParams("cb.ab.flames", { name: enemy.name }));
             break;
         case "frostbolt":
             abilityDamage(1.8);
             pushEnemyDebuff("atkSpdMult", 0.65, 6);
-            addCombatLog(`${enemy.name}'s movements slow down!`);
+            addCombatLog(tParams("cb.ab.movementsSlow", { name: enemy.name }));
             break;
         case "stasis":
             pushEnemyDebuff("atkSpdMult", 0.05, 2);
-            addCombatLog(`${enemy.name} is frozen in stasis!`);
+            addCombatLog(tParams("cb.ab.frozenStasis", { name: enemy.name }));
             break;
         case "mana_shield":
             player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.45));
-            addCombatLog(`${player.name} surrounds themself in mana! (Shield: ${nFormatter(player.shield)})`);
+            addCombatLog(tParams("cb.ab.manaShield", { name: player.name, s: nFormatter(player.shield) }));
             break;
         // ===== Rogue =====
         case "backstab": abilityDamage(3.5); break;
         case "fan_of_knives":
             abilityDamage(1.8);
             pushPlayerBuff("atkSpdMult", 1.3, 6);
-            addCombatLog(`${player.name} fans a volley of knives! (+30% ATK.SPD for 6s)`);
+            addCombatLog(tParams("cb.ab.fanKnives", { name: player.name }));
             break;
         case "venom_dagger":
             abilityDamage(1.2);
             enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.0125), ticks: 8 };
-            addCombatLog(`${enemy.name} is envenomed!`);
+            addCombatLog(tParams("cb.ab.envenomed", { name: enemy.name }));
             break;
         case "godspeed":
             pushPlayerBuff("atkSpdMult", 2.0, 10);
-            addCombatLog(`${player.name} shifts into godspeed! (+100% ATK.SPD for 10s)`);
+            addCombatLog(tParams("cb.ab.godspeed", { name: player.name }));
             break;
         case "deadly_precision":
             abilityDamage(3.0);
             pushPlayerBuff("critRateAdd", 1, 8, 30);
-            addCombatLog(`${player.name} enters a deadly stance! (+30% crit rate for 8s)`);
+            addCombatLog(tParams("cb.ab.deadlyStance", { name: player.name }));
             break;
         case "thousand_cuts":
             for (let i = 0; i < 7; i++) abilityDamage(0.7);
@@ -371,22 +371,22 @@ const useAbility = (id) => {
         case "dragon_thrust":
             abilityDamage(2.2);
             pushPlayerBuff("atkSpdMult", 1.4, 5);
-            addCombatLog(`${player.name} surges forward! (+40% ATK.SPD for 5s)`);
+            addCombatLog(tParams("cb.ab.surges", { name: player.name }));
             break;
         case "afterimage":
             abilityDamage(1.0);
             pushPlayerBuff("afterimage", 1, 8);
-            addCombatLog(`${player.name} splits into afterimages! (30% double strike for 8s)`);
+            addCombatLog(tParams("cb.ab.afterimageSplit", { name: player.name }));
             break;
         case "sky_piercer":
             abilityDamage(2.8, 0.4);
             pushEnemyDebuff("atkSpdMult", 0.1, 1);
-            addCombatLog(`${enemy.name} is impaled from above!`);
+            addCombatLog(tParams("cb.ab.impaled", { name: enemy.name }));
             break;
         case "dragon_roar":
             abilityDamage(1.8);
             pushEnemyDebuff("atkMult", 0.6, 5);
-            addCombatLog(`${enemy.name} reels from the dragon's roar! (ATK -40% for 5s)`);
+            addCombatLog(tParams("cb.ab.dragonRoar", { name: enemy.name }));
             break;
         case "dragon_fall": abilityDamage(4.5, 0.5); break;
         // ===== Paladin =====
@@ -398,31 +398,31 @@ const useAbility = (id) => {
         case "judgment_counter":
             pushPlayerBuff("reflectPct", 1, 8, 200);
             pushPlayerBuff("damageTakenMult", 1.3, 8);
-            addCombatLog(`${player.name} calls down judgment! (Reflect 200%, but takes +30% damage for 8s)`);
+            addCombatLog(tParams("cb.ab.judgment", { name: player.name }));
             break;
         case "thorns_nova":
             playAbilityFx(id);
             abilityDamage(1.5);
             pushPlayerBuff("thornsNova", 1, 10);
-            addCombatLog(`${player.name} blooms with thorns! (Reflected damage +50% burst for 10s)`);
+            addCombatLog(tParams("cb.ab.thornsNova", { name: player.name }));
             break;
         case "aegis_oath":
             playAbilityFx(id);
             player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.30));
             pushPlayerBuff("reflectPct", 1, 10, 50);
-            addCombatLog(`${player.name} swears the aegis oath! (Shield: ${nFormatter(player.shield)}, reflect 50% for 10s)`);
+            addCombatLog(tParams("cb.ab.aegisOath", { name: player.name, s: nFormatter(player.shield) }));
             break;
         case "divine_judgement": {
             const shielded = (player.shield || 0) > 0;
             abilityDamage(shielded ? 5.0 : 3.0);
-            if (shielded) addCombatLog(`${player.name}'s judgement is empowered by the aegis!`);
+            if (shielded) addCombatLog(tParams("cb.ab.aegisEmpowered", { name: player.name }));
             break;
         }
         case "sanctuary":
             healPlayer(30);
             player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.20));
             pushPlayerBuff("reflectPct", 1, 12, 40);
-            addCombatLog(`${player.name} calls down sanctuary! (Heal 30%, Shield 20%, reflect 40% for 12s)`);
+            addCombatLog(tParams("cb.ab.sanctuary", { name: player.name }));
             break;
     }
     updateAbilityBar();

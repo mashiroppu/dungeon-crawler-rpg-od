@@ -195,7 +195,7 @@ const continueExploring = () => {
 // Shows the level up popup
 const lvlupPopup = () => {
     sfxLvlUp.play();
-    addCombatLog(`You leveled up! (Lv.${player.lvl - player.exp.lvlGained} > Lv.${player.lvl})`);
+    addCombatLog(tParams("cb.levelUp", { from: player.lvl - player.exp.lvlGained, to: player.lvl }));
 
     // Recover 20% extra hp on level up
     player.stats.hp += Math.round((player.stats.hpMax * 20) / 100);

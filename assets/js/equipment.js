@@ -739,8 +739,7 @@ const createEquipmentPrint = (condition) => {
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
         </div>`;
     if (condition == "combat") {
-        addCombatLog(`
-        ${enemy.name} dropped <span class="${item.rarity}">${itemName(item)}</span>.<br>${panel}`);
+        addCombatLog(tParams("cb.itemDropped", { name: enemy.name, r: item.rarity, item: itemName(item), panel }));
     } else if (condition == "dungeon") {
         addDungeonLog(tParams("eq.gotItem", { r: item.rarity, item: `${item.icon}${itemName(item)}`, panel }));
     }

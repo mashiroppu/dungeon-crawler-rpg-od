@@ -21,14 +21,14 @@ const hpValidation = () => {
         if (player.skills.includes("Second Wind") && !player.secondWindUsed) {
             player.secondWindUsed = true;
             player.stats.hp = 1;
-            addCombatLog(`${player.name} refuses to fall! (Second Wind)`);
+            addCombatLog(tParams("cb.secondWind", { name: player.name }));
             playerLoadStats();
             return;
         }
         player.stats.hp = 0;
         playerDead = true;
         player.deaths++;
-        addCombatLog(`You died!`);
+        addCombatLog(t("cb.died"));
         endCombatAction = () => {
             sfxConfirm.play();
             playerDead = false;
@@ -55,7 +55,7 @@ const hpValidation = () => {
         if (enemy.mods && enemy.mods.includes("volatile")) {
             const boom = Math.round(player.stats.hpMax * 0.08);
             player.stats.hp -= boom;
-            addCombatLog(`${enemy.name} explodes! You take ${nFormatter(boom)} damage.`);
+            addCombatLog(tParams("cb.explode", { name: enemy.name, dmg: nFormatter(boom) }));
             if (player.stats.hp < 1) {
                 player.stats.hp = 0;
                 hpValidation();
@@ -64,11 +64,11 @@ const hpValidation = () => {
         }
         player.kills++;
         dungeon.statistics.kills++;
-        addCombatLog(`${enemy.name} died! (${new Date(combatSeconds * 1000).toISOString().substring(14, 19)})`);
-        addCombatLog(`You earned ${nFormatter(enemy.rewards.exp)} exp.`)
+        addCombatLog(tParams("cb.enemyDied", { name: enemy.name, time: new Date(combatSeconds * 1000).toISOString().substring(14, 19) }));
+        addCombatLog(tParams("cb.earnedExp", { exp: nFormatter(enemy.rewards.exp) }))
         playerExpGain();
         const goldGain = Math.round(enemy.rewards.gold * (1 + ((player.equippedStats && player.equippedStats.goldFind) || 0) / 100));
-        addCombatLog(`${enemy.name} dropped <i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(goldGain)} gold.`)
+        addCombatLog(tParams("cb.droppedGold", { name: enemy.name, icon: '<i class="fas fa-coins" style="color: #FFD700;"></i>', g: nFormatter(goldGain) }))
         player.gold += goldGain;
         playerLoadStats();
         if (enemy.rewards.drop) {
@@ -85,7 +85,7 @@ const hpValidation = () => {
             const vampHeal = Math.round(enemy.stats.hpMax * vampPct / 100);
             if (vampHeal > 0) {
                 applyPlayerHeal(vampHeal);
-                addCombatLog(`${player.name} drains ${nFormatter(vampHeal)} HP from the kill!`);
+                addCombatLog(tParams("cb.drainKill", { name: player.name, hp: nFormatter(vampHeal) }));
             }
         }
 
@@ -200,7 +200,7 @@ const playerAttack = () => {
     if (player.skills.includes("Blood Tithe") && damage > 0) {
         player.stats.hp = Math.max(1, player.stats.hp - Math.round(player.stats.hpMax * 0.02));
     }
-    addCombatLog(`${player.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${enemy.name}.`);
+    addCombatLog(tParams("cb.dealt", { name: player.name, dmg: tParams("cb.dmgTypeLabel", { dmg: nFormatter(damage), type: dmgtype === "crit damage" ? t("cb.dmgCrit") : t("cb.dmgNormal") }), target: enemy.name }));
     // Phase: attacking grants brief invulnerability
     const invulnSec = Math.min((player.equippedStats && player.equippedStats.attackInvuln) || 0, 3);
     if (invulnSec > 0) {
@@ -216,7 +216,7 @@ const playerAttack = () => {
             enemy.stats.hp -= bonus;
             spawnDamageNumber(bonus, false);
         }
-        if (chains) addCombatLog(`${player.name}'s afterimages strike ${chains} more time${chains > 1 ? "s" : ""}!`);
+        if (chains) addCombatLog(tParams("cb.afterimages", { name: player.name, n: chains, s: chains > 1 ? "s" : "" }));
     }
     // Burst: each stack explodes into a separate fragment hit (10% of damage each)
     const burstStacks = player.burstStacks || 0;
@@ -228,7 +228,7 @@ const playerAttack = () => {
             spawnDamageNumber(frag, false);
             frags++;
         }
-        if (frags) addCombatLog(`${player.name}'s attack bursts into ${frags} fragment${frags > 1 ? "s" : ""}!`);
+        if (frags) addCombatLog(tParams("cb.fragments", { name: player.name, n: frags, s: frags > 1 ? "s" : "" }));
     }
     hpValidation();
     playerLoadStats();
@@ -285,14 +285,14 @@ const enemyAttack = () => {
     if (isEnemyPetrified()) {
         damage = 0;
         lifesteal = 0;
-        addCombatLog(`${enemy.name} is petrified solid and cannot attack!`);
+        addCombatLog(tParams("cb.petrifiedNoAtk", { name: enemy.name }));
     }
 
     // Dodge affix: chance to avoid the hit entirely
     if (damage > 0 && Math.random() * 100 < ((player.equippedStats && player.equippedStats.dodge) || 0)) {
         damage = 0;
         lifesteal = 0;
-        addCombatLog(`${enemy.name}'s attack misses ${player.name}!`);
+        addCombatLog(tParams("cb.attackMisses", { name: enemy.name, target: player.name }));
     }
 
     // Trial: above 50% HP you take increased damage
@@ -303,11 +303,11 @@ const enemyAttack = () => {
     // Phase: invulnerable for a short window after attacking — but hits dealing 10%+ max HP pierce it
     if (damage > 0 && player.invulnUntil && Date.now() < player.invulnUntil) {
         if (damage >= player.stats.hpMax * 0.10) {
-            addCombatLog(`${enemy.name}'s attack pierces ${player.name}'s guard!`);
+            addCombatLog(tParams("cb.piercesGuard", { name: enemy.name, target: player.name }));
         } else {
             damage = 0;
             lifesteal = 0;
-            addCombatLog(`${enemy.name}'s attack passes through ${player.name}!`);
+            addCombatLog(tParams("cb.passesThrough", { name: enemy.name, target: player.name }));
         }
     }
 
@@ -361,11 +361,16 @@ const enemyAttack = () => {
     if (reflectPct > 0 && damage > 0) {
         const refDmg = Math.round(damage * reflectPct / 100);
         enemy.stats.hp -= refDmg;
-        addCombatLog(`${player.name} reflects ${nFormatter(refDmg)} damage!`);
+        addCombatLog(tParams("cb.reflects", { name: player.name, dmg: nFormatter(refDmg) }));
         spawnDamageNumber(refDmg, false);
     }
     enemy.stats.hp += lifesteal;
-    addCombatLog(`${enemy.name} dealt ` + nFormatter(damage) + ` ${dmgtype} to ${player.name}.` + (absorbed > 0 ? ` (Shield absorbed ${nFormatter(absorbed)})` : ""));
+    addCombatLog(tParams("cb.dealtShield", {
+        name: enemy.name,
+        dmg: tParams("cb.dmgTypeLabel", { dmg: nFormatter(damage), type: dmgtype === "crit damage" ? t("cb.dmgCrit") : t("cb.dmgNormal") }),
+        target: player.name,
+        abs: absorbed > 0 ? tParams("cb.shieldAbsorbed", { abs: nFormatter(absorbed) }) : ""
+    }));
     hpValidation();
     playerLoadStats();
     enemyLoadStats();
@@ -412,14 +417,14 @@ const updateCombatLog = () => {
     if (enemyDead) {
         let button = document.createElement("div");
         button.className = "decision-panel";
-        button.innerHTML = `<button id="battleButton">Claim</button>`;
+        button.innerHTML = `<button id="battleButton">${t("cb.claim")}</button>`;
         combatLogBox.appendChild(button);
     }
 
     if (playerDead) {
         let button = document.createElement("div");
         button.className = "decision-panel";
-        button.innerHTML = `<button id="battleButton">Back to Menu</button>`;
+        button.innerHTML = `<button id="battleButton">${t("cb.backToMenu")}</button>`;
         combatLogBox.appendChild(button);
     }
 
@@ -427,7 +432,7 @@ const updateCombatLog = () => {
     if (!enemyDead && !playerDead && combatSeconds >= 60) {
         let fleePanel = document.createElement("div");
         fleePanel.className = "decision-panel";
-        fleePanel.innerHTML = `<button id="fleeButton">Flee</button>`;
+        fleePanel.innerHTML = `<button id="fleeButton">${t("cb.flee")}</button>`;
         combatLogBox.appendChild(fleePanel);
     }
 

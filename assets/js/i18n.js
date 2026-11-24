@@ -142,6 +142,9 @@ const STRINGS = {
     "dgn.log.fleeFrom":     { en: "You fled from {name}.", ja: "{name}から逃げた。" },
     "dgn.log.abilityNew":   { en: "New ability learned: <b>{name}</b> — {desc}", ja: "新しいアビリティを習得：<b>{name}</b> — {desc}" },
     "combat.fleeReady":     { en: "You can flee from battle now!", ja: "今なら戦闘から逃げられる！" },
+    "cb.claim":             { en: "Claim", ja: "受け取る" },
+    "cb.backToMenu":        { en: "Back to Menu", ja: "メニューに戻る" },
+    "cb.flee":              { en: "Flee", ja: "逃げる" },
 
     // ---- Equipment / Inventory ----
     "eq.equip":             { en: "Equip", ja: "装備" },
@@ -161,6 +164,58 @@ const STRINGS = {
     "legacy.hint":          { en: "Choose ONE item to carry into the next run. (Storage {n}/{max})", ja: "次のランに持ち越すアイテムを1つ選んでください。（保管庫 {n}/{max}）" },
     "legacy.send":          { en: "Send to Storage", ja: "保管庫へ送る" },
     "legacy.lose":          { en: "Lose All", ja: "すべて失う" },
+
+    // ---- Combat log ----
+    "cb.secondWind":        { en: "{name} refuses to fall! (Second Wind)", ja: "{name}は倒れない！（Second Wind）" },
+    "cb.died":              { en: "You died!", ja: "あなたは死亡した！" },
+    "cb.explode":           { en: "{name} explodes! You take {dmg} damage.", ja: "{name}が爆発した！{dmg}のダメージを受けた。" },
+    "cb.enemyDied":         { en: "{name} died! ({time})", ja: "{name}を倒した！（{time}）" },
+    "cb.earnedExp":         { en: "You earned {exp} exp.", ja: "{exp} EXPを獲得した。" },
+    "cb.droppedGold":       { en: "{name} dropped {icon}{g} gold.", ja: "{name}が{icon}{g}ゴールドを落とした。" },
+    "cb.drainKill":         { en: "{name} drains {hp} HP from the kill!", ja: "{name}がキルから{hp}HPを吸収した！" },
+    "cb.dealt":             { en: "{name} dealt {dmg} {type} to {target}.", ja: "{name}が{target}に{dmg}{type}のダメージを与えた。" },
+    "cb.afterimages":       { en: "{name}'s afterimages strike {n} more time{s}!", ja: "{name}の残像がさらに{n}回攻撃した！" },
+    "cb.fragments":         { en: "{name}'s attack bursts into {n} fragment{s}!", ja: "{name}の攻撃が{n}つの破片に分裂した！" },
+    "cb.petrifiedNoAtk":    { en: "{name} is petrified solid and cannot attack!", ja: "{name}は石化して攻撃できない！" },
+    "cb.attackMisses":      { en: "{name}'s attack misses {target}!", ja: "{name}の攻撃は{target}を外れた！" },
+    "cb.piercesGuard":      { en: "{name}'s attack pierces {target}'s guard!", ja: "{name}の攻撃は{target}の防御を貫いた！" },
+    "cb.passesThrough":     { en: "{name}'s attack passes through {target}!", ja: "{name}の攻撃は{target}を通り抜けた！" },
+    "cb.reflects":          { en: "{name} reflects {dmg} damage!", ja: "{name}が{dmg}のダメージを反射した！" },
+    "cb.dealtShield":       { en: "{name} dealt {dmg} {type} to {target}.{abs}", ja: "{name}が{target}に{dmg}{type}のダメージを与えた。{abs}" },
+    "cb.shieldAbsorbed":    { en: " (Shield absorbed {abs})", ja: "（シールドが{abs}を吸収）" },
+    "cb.levelUp":           { en: "You leveled up! (Lv.{from} > Lv.{to})", ja: "レベルアップした！（Lv.{from} > Lv.{to}）" },
+    "cb.itemDropped":       { en: "{name} dropped <span class=\"{r}\">{item}</span>.<br>{panel}", ja: "{name}が<span class=\"{r}\">{item}</span>を落とした。<br>{panel}" },
+    "cb.dmgNormal":         { en: "damage", ja: "ダメージ" },
+    "cb.dmgCrit":           { en: "crit damage", ja: "クリティカルダメージ" },
+    "cb.dmgTypeLabel":      { en: "{dmg} {type}", ja: "{dmg}{type}" },
+
+    // ---- Combat log: abilities ----
+    "cb.ab.petrified4s":    { en: "{name} is petrified solid! (Cannot attack for 4s, takes +25% damage)", ja: "{name}は完全に石化した！（4秒間攻撃不可、被ダメ+25%）" },
+    "cb.ab.unleashed":      { en: "{name} unleashed an ability, dealing {dmg} damage to {target}.", ja: "{name}がアビリティを放ち、{target}に{dmg}のダメージを与えた。" },
+    "cb.ab.recovers":       { en: "{name} recovers {hp} HP!", ja: "{name}は{hp}HPを回復した！" },
+    "cb.ab.timeSlows":      { en: "{name}'s time slows! (ATK.SPD -50% for 6s)", ja: "{name}の時間が遅くなった！（6秒間ATK.SPD-50%）" },
+    "cb.ab.shieldWall":     { en: "{name} raises a shield wall! (Shield: {s}, DEF +30% for 8s)", ja: "{name}がシールドの壁を展開した！（シールド:{s}、8秒間DEF+30%）" },
+    "cb.ab.warcry":         { en: "{name} lets out a war cry! (+35% damage for 12s)", ja: "{name}が戦意を高らかに上げた！（12秒間ダメージ+35%）" },
+    "cb.ab.oath":           { en: "{name} swears an undying oath! (Regen 3% max HP/s for 10s)", ja: "{name}が不死の誓いを立てた！（10秒間最大HPの3%/秒回復）" },
+    "cb.ab.executes":       { en: "{name} executes {target}!", ja: "{name}が{target}を処刑した！" },
+    "cb.ab.petrifying":     { en: "{name} is petrifying... ({n}/5 stacks)", ja: "{name}が石化しつつある…（{n}/5スタック）" },
+    "cb.ab.flames":         { en: "{name} is engulfed in flames!", ja: "{name}が炎に包まれた！" },
+    "cb.ab.movementsSlow":  { en: "{name}'s movements slow down!", ja: "{name}の動きが鈍くなった！" },
+    "cb.ab.frozenStasis":   { en: "{name} is frozen in stasis!", ja: "{name}がスタシスに凍りついた！" },
+    "cb.ab.manaShield":     { en: "{name} surrounds themself in mana! (Shield: {s})", ja: "{name}がマナに包まれた！（シールド:{s}）" },
+    "cb.ab.fanKnives":      { en: "{name} fans a volley of knives! (+30% ATK.SPD for 6s)", ja: "{name}がナイフの一斉攻撃を放った！（6秒間ATK.SPD+30%）" },
+    "cb.ab.envenomed":      { en: "{name} is envenomed!", ja: "{name}が毒に侵された！" },
+    "cb.ab.godspeed":       { en: "{name} shifts into godspeed! (+100% ATK.SPD for 10s)", ja: "{name}が神速にシフトした！（10秒間ATK.SPD+100%）" },
+    "cb.ab.deadlyStance":   { en: "{name} enters a deadly stance! (+30% crit rate for 8s)", ja: "{name}が致命的な構えに入った！（8秒間クリティカル率+30%）" },
+    "cb.ab.surges":         { en: "{name} surges forward! (+40% ATK.SPD for 5s)", ja: "{name}が前方に突進した！（5秒間ATK.SPD+40%）" },
+    "cb.ab.afterimageSplit":{ en: "{name} splits into afterimages! (30% double strike for 8s)", ja: "{name}が残像に分裂した！（8秒間30%の確率で二重攻撃）" },
+    "cb.ab.impaled":        { en: "{name} is impaled from above!", ja: "{name}が上空から串刺しにされた！" },
+    "cb.ab.dragonRoar":     { en: "{name} reels from the dragon's roar! (ATK -40% for 5s)", ja: "{name}がドラゴンの咆哮にひるんだ！（5秒間ATK-40%）" },
+    "cb.ab.judgment":       { en: "{name} calls down judgment! (Reflect 200%, but takes +30% damage for 8s)", ja: "{name}がジャッジメントを呼び降ろした！（8秒間反射200%、ただし被ダメ+30%）" },
+    "cb.ab.thornsNova":     { en: "{name} blooms with thorns! (Reflected damage +50% burst for 10s)", ja: "{name}が茨の花を咲かせた！（10秒間反射ダメージ+50%バースト）" },
+    "cb.ab.aegisOath":      { en: "{name} swears the aegis oath! (Shield: {s}, reflect 50% for 10s)", ja: "{name}がイージスの誓いを立てた！（シールド:{s}、10秒間反射50%）" },
+    "cb.ab.aegisEmpowered": { en: "{name}'s judgement is empowered by the aegis!", ja: "{name}のジャッジメントがイージスに強化された！" },
+    "cb.ab.sanctuary":      { en: "{name} calls down sanctuary! (Heal 30%, Shield 20%, reflect 40% for 12s)", ja: "{name}がサンクチュアリを呼び降ろした！（12秒間回復30%、シールド20%、反射40%）" },
 
     // ---- Character creation (stat allocation) ----
     "cc.alloc":             { en: "Allocate Stats", ja: "ステータス配分" },
@@ -260,7 +315,7 @@ const tParams = (key, params) => {
 };
 
 // ---- Item display localization (rarity + category names) ----
-const RARITY_JA = { Common: "コモン", Uncommon: "アンコモン", Rare: "レア", Epic: "エピック", Legendary: "レジェンダリー", Heirloom: "ヒアローム" };
+const RARITY_JA = { Common: "コモン", Uncommon: "アンコモン", Rare: "レア", Epic: "エピック", Legendary: "レジェンダリー", Heirloom: "ヒアローム", All: "すべて" };
 const CAT_JA = {
     Sword: "ソード", Axe: "アクス", Hammer: "ハンマー", Dagger: "ダガー", Flail: "メイス", Scythe: "サイズ",
     Plate: "プレート", Chain: "チェイン", Leather: "レザー", Tower: "タワー", Kite: "カイト", Buckler: "バックラー",
@@ -281,6 +336,11 @@ const applyStaticI18n = () => {
     if (statsTitle) statsTitle.textContent = t("stats.title");
     const bonusBox = document.querySelector("#bonus-stats h4");
     if (bonusBox) bonusBox.textContent = t("bonus.title");
+    // Sell-rarity dropdown labels
+    document.querySelectorAll("#sell-rarity option, select option").forEach(el => {
+        const v = el.value;
+        if (RARITY_JA[v]) el.textContent = rarityLabel(v);
+    });
     // Dungeon header controls reflect current pause state
     if (typeof dungeon !== "undefined" && dungeonActivity) {
         dungeonActivity.textContent = dungeon.status.paused ? t("dgn.explore") : t("dgn.pause");
