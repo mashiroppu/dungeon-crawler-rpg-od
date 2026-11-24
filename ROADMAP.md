@@ -61,12 +61,13 @@ A tag is a non-empty **ordered** combination of these letters → **9 types**:
 
 **Loadout overlap rule (被り)** for the 6-slot system:
 
-- Two abilities "overlap" when one's tag is a prefix of the other, or they
-  are identical: `A`↔`AD`, `A`↔`AS`, `D`↔`DA`, `D`↔`DS`, `S`↔`SA`, `S`↔`SD`,
-  and any identical pair (`SA`↔`SA`, etc.)
-- **Identical tags can never coexist** (complete overlap is forbidden)
-- Non-identical overlapping tags may each be equipped **once** — e.g. `S`
-  and `SA` can both be slotted
+- Two abilities "overlap" (被る) when one's tag is a prefix of the other:
+  `A`↔`AD`, `A`↔`AS`, `D`↔`DA`, `D`↔`DS`, `S`↔`SA`, `S`↔`SD` —
+  these are **partial matches (一部一致)**
+- **Exact matches (完全一致)** — identical tags like `A`↔`A`, `SA`↔`SA` —
+  can never coexist
+- Partial matches may each be equipped **once** — e.g. `S` and `SA` can
+  both be slotted
 - Valid 6-slot example: `D, AD, S, AS, SA, DA`
 
 This forces loadout diversity: with only 9 type tags, a 6-slot loadout must
