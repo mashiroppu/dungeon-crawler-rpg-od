@@ -99,6 +99,8 @@ const rollAffixes = (equipment) => {
     }
 };
 
+const genItemUid = () => "eq_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+
 const createEquipment = () => {
     const equipment = {
         category: null,
@@ -109,6 +111,7 @@ const createEquipment = () => {
         tier: null,
         value: null,
         stats: [],
+        uid: genItemUid(),
     };
 
     // Generate random equipment attribute
@@ -745,8 +748,23 @@ const createEquipmentPrint = (condition) => {
     }
 }
 // ===== Legacy Storage (persists across runs, max 12) =====
-const STORAGE_MAX = 12;
+const STORAGE_BASE = 20;
+const STORAGE_MAX_TIER = 3; // 20 -> 40 -> 80 -> 160
+const STORAGE_EXPAND_COST = 200000;
 const STORAGE_EQUIP_MAX = 3;
+const storageTier = () => player.storageTier || 0;
+const storageMax = () => STORAGE_BASE * Math.pow(2, Math.min(storageTier(), STORAGE_MAX_TIER));
+const storageFull = () => (player.storage || []).length >= storageMax();
+const expandStorage = () => {
+    if (storageTier() >= STORAGE_MAX_TIER || player.gold < STORAGE_EXPAND_COST) { sfxDeny.play(); return false; }
+    player.gold -= STORAGE_EXPAND_COST;
+    player.storageTier = storageTier() + 1;
+    sfxConfirm.play();
+    addDungeonLog(tParams("wh.expanded", { max: storageMax() }));
+    saveData();
+    playerLoadStats();
+    return true;
+};
 
 // Items that can be stashed on death: inventory (JSON strings) + equipped (objects)
 const carryCandidates = () => {
@@ -762,18 +780,47 @@ const stashItem = (cand) => {
     player.storage.push(JSON.stringify(cand.item));
 };
 
+// Equip-preset support: presets store item uids (reference type, no duplication).
+// Pulls the referenced items out of equipped/inventory/storage and equips them in order.
+const applyEquipPreset = (uids) => {
+    const found = [];
+    for (const uid of uids) {
+        if (!uid) continue;
+        let idx = player.equipped.findIndex(it => it.uid === uid);
+        if (idx >= 0) {
+            found.push(player.equipped.splice(idx, 1)[0]);
+            continue;
+        }
+        for (const pool of [player.inventory.equipment, player.storage || []]) {
+            idx = pool.findIndex(s => { try { return JSON.parse(s).uid === uid; } catch (e) { return false; } });
+            if (idx >= 0) {
+                found.push(JSON.parse(pool.splice(idx, 1)[0]));
+                break;
+            }
+        }
+    }
+    // Return currently equipped items that are not part of the preset to inventory
+    for (const it of player.equipped) {
+        player.inventory.equipment.push(JSON.stringify(it));
+    }
+    player.equipped = found.slice(0, 6);
+    playerLoadStats();
+    saveData();
+    return found.length;
+};
+
 // Shown on death: pick ONE item to send to legacy storage, rest is lost
 const showLegacyModal = (onDone) => {
     player.storage = player.storage || [];
     const candidates = carryCandidates();
-    if (!candidates.length || player.storage.length >= STORAGE_MAX) { onDone(); return; }
+    if (!candidates.length || storageFull()) { onDone(); return; }
 
     let selected = null;
     defaultModalElement.style.display = "flex";
     defaultModalElement.innerHTML = `
     <div class="content" id="legacy-modal">
         <div class="content-head"><h3>${t("legacy.title")}</h3></div>
-        <p class="legacy-hint">${tParams("legacy.hint", { n: player.storage.length, max: STORAGE_MAX })}</p>
+        <p class="legacy-hint">${tParams("legacy.hint", { n: player.storage.length, max: storageMax() })}</p>
         <div class="legacy-list">
             ${candidates.map((c, i) => {
                 const icon = equipmentIcon(c.item.category);
@@ -809,6 +856,59 @@ const showLegacyModal = (onDone) => {
         finish();
     };
     defaultModalElement.querySelector("#legacy-skip").onclick = () => {
+        sfxDecline.play();
+        finish();
+    };
+};
+
+// Mid-run stash point (every 5 floors): pick ONE item to send to the warehouse
+const showStashModal = (onDone) => {
+    player.storage = player.storage || [];
+    const candidates = carryCandidates();
+    if (!candidates.length || storageFull()) { onDone(); return; }
+
+    let selected = null;
+    defaultModalElement.style.display = "flex";
+    defaultModalElement.innerHTML = `
+    <div class="content" id="legacy-modal">
+        <div class="content-head"><h3>${t("legacy.title")}</h3></div>
+        <p class="legacy-hint">${tParams("legacy.hint", { n: player.storage.length, max: storageMax() })}</p>
+        <div class="legacy-list">
+            ${candidates.map((c, i) => {
+                const icon = equipmentIcon(c.item.category);
+                return `<div class="items legacy-item" data-i="${i}"><p class="${c.item.rarity}">${icon}${itemName(c.item)}</p></div>`;
+            }).join("")}
+        </div>
+        <div class="button-container">
+            <button id="stash-send">${t("dgn.c.stashSend")}</button>
+            <button id="stash-cancel">${t("stash.cancel")}</button>
+        </div>
+    </div>`;
+
+    const finish = () => {
+        defaultModalElement.style.display = "none";
+        defaultModalElement.innerHTML = "";
+        playerLoadStats();
+        saveData();
+        onDone();
+    };
+
+    defaultModalElement.querySelectorAll(".legacy-item").forEach(el => {
+        el.onclick = () => {
+            sfxConfirm.play();
+            defaultModalElement.querySelectorAll(".legacy-item").forEach(x => x.classList.remove("selected"));
+            el.classList.add("selected");
+            selected = candidates[Number(el.dataset.i)];
+        };
+    });
+    defaultModalElement.querySelector("#stash-send").onclick = () => {
+        if (!selected) { sfxDeny.play(); return; }
+        sfxEquip.play();
+        stashItem(selected);
+        addDungeonLog(tParams("stash.stored", { r: selected.item.rarity, item: itemName(selected.item) }));
+        finish();
+    };
+    defaultModalElement.querySelector("#stash-cancel").onclick = () => {
         sfxDecline.play();
         finish();
     };

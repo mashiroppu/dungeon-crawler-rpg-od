@@ -13,7 +13,7 @@ as "Done" once implemented.
 
 #### Goals
 
-- **Loadout slots: 3 → 8** (`MAX_ABILITY_SLOTS` in `classes.js`) — final goal is 8; going through 6 is fine
+- **Loadout slots: 3 → 6** (`MAX_ABILITY_SLOTS` in `classes.js`) — **6 is the final maximum**
 - **Abilities per class: ~20** (currently 6 × 5 classes = 30 → target ~100 total)
 
 #### Design direction
@@ -22,12 +22,12 @@ as "Done" once implemented.
 
 - During combat the player **actively chooses one equipped ability to unleash**
 - With 3 slots: 1–2 are on cooldown, so the choice is passive — "pick the least bad one"
-- With 8 slots: several are usually Ready → the choice becomes **"pick the best move for this moment"**
+- With 6 slots: several are usually Ready → the choice becomes **"pick the best move for this moment"**
 - This shift is the essence of the strategy upgrade. **Just adding numbers is not enough**
 
 ##### Prioritize kits where "the optimal pick changes by situation"
 
-If all 8 slots are damage abilities, the player just presses the biggest nuke
+If all 6 slots are damage abilities, the player just presses the biggest nuke
 every time and the choice dies. Keep this balance in mind:
 
 | Situation | Abilities that could be optimal |
@@ -69,23 +69,23 @@ distinct abilities** (copies of the same effect reduce strategic depth).
 
 ##### 2. Balance impact (important)
 
-- 3 → 8 slots is a large effective DPS increase → **enemy HP/attack and
+- 3 → 6 slots is a large effective DPS increase → **enemy HP/attack and
   floor scaling must be revisited**
 - Tune CD / `uses` / `rec` so "something is always Ready, but not everything
   can be fired" tension is preserved
-- Save compatibility: `player.abilityLoadout` is an ID array, so 8 slots is
-  compatible — but existing players instantly get 8 slots, so balance shifts
+- Save compatibility: `player.abilityLoadout` is an ID array, so 6 slots is
+  compatible — but existing players instantly get 6 slots, so balance shifts
   at once
 
 ##### 3. UI/UX
 
-- Combat ability bar grows to 8 buttons → check fit on small screens
-- Loadout screen (`showLoadoutModal`) needs 8-slot support
+- Combat ability bar grows to 6 buttons → check fit on small screens
+- Loadout screen (`showLoadoutModal`) needs 6-slot support
 - Consider showing a role tag or short category label on ability descriptions
 
 ##### 4. Save data
 
-- `player.abilityLoadout`: ID array → just allow up to 8 entries
+- `player.abilityLoadout`: ID array → just allow up to 6 entries
 - `player.abilityCharges` / `abilityCds` / `abilityRecs`: ID-keyed objects →
   new abilities work as-is
 - Old saves with removed IDs are harmless thanks to the
@@ -93,7 +93,7 @@ distinct abilities** (copies of the same effect reduce strategic depth).
 
 #### Phased rollout
 
-1. Change `MAX_ABILITY_SLOTS` to 8 (6 first is also fine) → feel-test balance
+1. Change `MAX_ABILITY_SLOTS` to 6 → feel-test balance
    with the current 6 abilities per class
 2. Fine-tune enemy stats / scaling
 3. Add 3–4 mechanically distinct abilities per class (~9–10 total) and observe

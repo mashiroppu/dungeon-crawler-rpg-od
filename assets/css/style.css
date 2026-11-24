@@ -1410,3 +1410,102 @@ html, body {
     font-size: 0.96rem;
     padding: 0.45rem 0.7rem 0.5rem;
 }
+
+/* Warehouse bar (inventory footer) */
+.warehouse-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.4rem 0.7rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.warehouse-bar span {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+.warehouse-bar button {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    white-space: nowrap;
+}
+.warehouse-bar button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Loadout presets */
+.preset-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.preset-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+.preset-btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.3rem;
+}
+.preset-btn.filled {
+    border-color: var(--gold-dim, #b08d3e);
+}
+.preset-btn.on {
+    background: linear-gradient(180deg, #3d3d58 0%, #26263a 100%);
+    border-color: #ffd700;
+    color: #ffd700;
+}
+#presetSave {
+    margin-left: auto;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.7rem;
+}
+
+/* Named monster tag */
+.named-tag {
+    color: #ffd700;
+    font-size: 0.75rem;
+    border: 1px solid #ffd700;
+    border-radius: 0.25rem;
+    padding: 0.05rem 0.3rem;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+
+/* Japanese mode: stat allocation modal + narrower selects so labels stay horizontal */
+body[data-lang="ja"] #allocate-stats {
+    width: 20rem;
+}
+
+/* Japanese mode: narrower selects in stat allocation so labels stay horizontal */
+body[data-lang="ja"] #allocate-stats .row select {
+    width: 70%;
+    flex: none;
+}
+
+/* Tips table of contents */
+.tip-toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--gold-dim);
+    margin-bottom: 0.2rem;
+}
+.tip-toc-btn {
+    font-size: 0.68rem;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid var(--gold-dim);
+    border-radius: 0.25rem;
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--ink);
+    cursor: pointer;
+}
+.tip-toc-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}

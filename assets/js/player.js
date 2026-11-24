@@ -110,6 +110,23 @@ const playerLoadStats = () => {
     <p><i class="ra ra-crown-of-thorns"></i>THORN+${(player.bonusStats.thorns || 0).toFixed(2).replace(rx, "$1")}%</p>`;
 }
 
+// Warehouse bar inside the inventory modal
+const updateWarehouseBar = () => {
+    const info = document.querySelector("#warehouse-info");
+    const btn = document.querySelector("#warehouse-expand");
+    if (!info || !btn) return;
+    player.storage = player.storage || [];
+    info.textContent = tParams("wh.info", { n: player.storage.length, max: storageMax() });
+    if (storageTier() >= STORAGE_MAX_TIER) {
+        btn.textContent = t("wh.maxed");
+        btn.disabled = true;
+    } else {
+        btn.textContent = tParams("wh.expand", { c: nFormatter(STORAGE_EXPAND_COST) });
+        btn.disabled = player.gold < STORAGE_EXPAND_COST;
+    }
+    btn.onclick = () => { if (expandStorage()) updateWarehouseBar(); };
+};
+
 // Opens inventory
 const openInventory = () => {
     sfxOpen.play();
@@ -169,6 +186,7 @@ const openInventory = () => {
         let rarity = sellRarityElement.value;
         sellRarityElement.className = rarity;
     };
+    updateWarehouseBar();
 }
 
 // Closes inventory

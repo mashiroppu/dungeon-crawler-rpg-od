@@ -10,7 +10,7 @@ let dungeon = {
     progress: {
         floor: 1,
         room: 1,
-        floorLimit: 100,
+        floorLimit: 1000,
         roomLimit: 5,
     },
     settings: {
@@ -93,6 +93,13 @@ const loadDungeonProgress = () => {
             dungeon.progress.floor++;
         }
     }
+    // Curse stage resets every 100 floors (each difficulty band)
+    const band = diffTierOfFloor(dungeon.progress.floor);
+    if (dungeon.curseBand !== undefined && dungeon.curseBand !== band) {
+        dungeon.settings.enemyScaling = 1.1;
+        addDungeonLog(t("dgn.log.curseReset"));
+    }
+    dungeon.curseBand = band;
     floorCount.innerHTML = `${t("dgn.floor")} ${dungeon.progress.floor}`;
     roomCount.innerHTML = `${t("dgn.room")} ${dungeon.progress.room}`;
 }
@@ -100,6 +107,8 @@ const loadDungeonProgress = () => {
 // ========== Events in the Dungeon ==========
 const dungeonEvent = () => {
     if (dungeon.status.exploring && !dungeon.status.event) {
+        // Warehouse stash point: once per 5-floor milestone (5, 10, ... 100)
+        if (stashPointReady()) { stashPointEvent(); return; }
         dungeon.action++;
         let choices;
         let eventRoll;
@@ -279,6 +288,32 @@ const dungeonEvent = () => {
     }
 }
 
+// ========= Warehouse Stash Point (every 5 floors) ==========
+const stashFloorsUsed = () => player.stashUsedFloors || (player.stashUsedFloors = {});
+const stashPointReady = () => {
+    const f = dungeon.progress.floor;
+    if (f % 5 !== 0 || stashFloorsUsed()[f]) return false;
+    const hasItems = (player.inventory.equipment || []).length + (player.equipped || []).length > 0;
+    if (!hasItems || storageFull()) { stashFloorsUsed()[f] = true; return false; }
+    return true;
+};
+const stashPointEvent = () => {
+    stashFloorsUsed()[dungeon.progress.floor] = true;
+    dungeon.status.event = true;
+    const choices = `
+        <div class="decision-panel">
+            <button id="choice1">${t("dgn.c.stash")}</button>
+            <button id="choice2">${t("dgn.c.ignore")}</button>
+        </div>`;
+    addDungeonLog(t("dgn.log.stashPoint"), choices);
+    document.querySelector("#choice1").onclick = function () {
+        showStashModal(() => { dungeon.status.event = false; });
+    };
+    document.querySelector("#choice2").onclick = function () {
+        ignoreEvent();
+    };
+};
+
 // ========= Dungeon Choice Events ==========
 // Starts the battle
 const engageBattle = () => {
@@ -301,6 +336,8 @@ const mimicBattle = (type) => {
 const guardianBattle = () => {
     incrementRoom();
     generateRandomEnemy("guardian");
+    // Guardian on a band-end floor (100, 200, ... 1000) is the stage boss
+    enemy.stageBoss = (dungeon.progress.floor % 100 === 0);
     showCombatInfo();
     startCombat(bgmBattleGuardian);
     addCombatLog(tParams("dgn.log.guardian", { name: enemy.name }));

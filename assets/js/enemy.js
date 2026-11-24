@@ -1,10 +1,34 @@
-// ===== Difficulty Modes =====
-const DIFFICULTY_MODES = {
-    normal: { label: "Normal",  hp: 1,    atk: 1,    def: 1,    atkSpd: 1,    critRate: 0,  critDmg: 1,    reward: 1,   dropRoll: 3 },
-    hard:   { label: "Hard",    hp: 1.4,  atk: 1.25, def: 1.2,  atkSpd: 1.05, critRate: 5,  critDmg: 1.1,  reward: 1.3, dropRoll: 3 },
-    inferno:{ label: "Inferno", hp: 2.0,  atk: 1.55, def: 1.45, atkSpd: 1.1,  critRate: 10, critDmg: 1.25, reward: 1.6, dropRoll: 2 },
+// ===== Difficulty Tiers (10 bands of 100 floors, floors 1-1000) =====
+// Columns: enemy HP / ATK.SPD / ATK / DEF bonuses vs NORMAL. Each band = one tier.
+const DIFFICULTY_TIERS = [
+    { key: "normal",     label: "NORMAL",     hp: 1.00, atkSpd: 1.00, atk: 1.00, def: 1.00, reward: 1.00, dropRoll: 3, critRate: 0,  critDmg: 1.00 },
+    { key: "hard",       label: "HARD",       hp: 1.15, atkSpd: 1.10, atk: 1.05, def: 1.10, reward: 1.15, dropRoll: 3, critRate: 2,  critDmg: 1.05 },
+    { key: "terror",     label: "TERROR",     hp: 1.25, atkSpd: 1.15, atk: 1.10, def: 1.15, reward: 1.30, dropRoll: 3, critRate: 4,  critDmg: 1.10 },
+    { key: "abyss",      label: "ABYSS",      hp: 1.40, atkSpd: 1.20, atk: 1.25, def: 1.20, reward: 1.45, dropRoll: 3, critRate: 6,  critDmg: 1.15 },
+    { key: "inferno",    label: "INFERNO",    hp: 1.50, atkSpd: 1.25, atk: 1.30, def: 1.25, reward: 1.60, dropRoll: 2, critRate: 8,  critDmg: 1.20 },
+    { key: "eclipse",    label: "ECLIPSE",    hp: 1.60, atkSpd: 1.30, atk: 1.40, def: 1.30, reward: 1.75, dropRoll: 2, critRate: 10, critDmg: 1.25 },
+    { key: "oblivion",   label: "OBLIVION",   hp: 1.80, atkSpd: 1.30, atk: 1.50, def: 1.35, reward: 1.90, dropRoll: 2, critRate: 12, critDmg: 1.30 },
+    { key: "genesis",    label: "GENESIS",    hp: 2.00, atkSpd: 1.50, atk: 1.60, def: 1.40, reward: 2.05, dropRoll: 2, critRate: 14, critDmg: 1.35 },
+    { key: "apocalypse", label: "APOCALYPSE", hp: 2.30, atkSpd: 1.60, atk: 1.80, def: 1.45, reward: 2.20, dropRoll: 2, critRate: 16, critDmg: 1.40 },
+    { key: "omega",      label: "OMEGA",      hp: 2.60, atkSpd: 1.75, atk: 2.00, def: 1.50, reward: 2.40, dropRoll: 2, critRate: 20, critDmg: 1.50 },
+];
+const DIFFICULTY_MODES = Object.fromEntries(DIFFICULTY_TIERS.map(d => [d.key, d]));
+// Tier index for a floor: floors 1-100 -> 0, 101-200 -> 1, ... 901-1000 -> 9
+const diffTierOfFloor = (floor) => Math.max(0, Math.min(DIFFICULTY_TIERS.length - 1, Math.floor((floor - 1) / 100)));
+// First floor of each difficulty's band (NORMAL=1, HARD=101, ... OMEGA=901)
+const diffStartFloor = (tier) => tier * 100 + 1;
+const diffKeyToTier = (key) => {
+    const i = DIFFICULTY_TIERS.findIndex(d => d.key === key);
+    return i >= 0 ? i : 0;
 };
-const currentDifficulty = () => DIFFICULTY_MODES[(player && player.difficulty) || "normal"] || DIFFICULTY_MODES.normal;
+// Highest unlocked tier (sequential unlock; legacy saves map old keys)
+const maxDiffTier = () => {
+    if (typeof player.maxDiffTier === "number") return player.maxDiffTier;
+    const legacy = { normal: 0, hard: 1, inferno: 4 };
+    return legacy[player.difficulty] ?? 0;
+};
+const playerDiffTier = () => diffKeyToTier(player.difficulty);
+const currentDifficulty = () => DIFFICULTY_TIERS[diffTierOfFloor(dungeon.progress.floor)] || DIFFICULTY_TIERS[0];
 
 // Enemy
 let enemy = {
@@ -44,6 +68,7 @@ const ENEMY_MODS = {
 
 const applyElite = () => {
     enemy.elite = true;
+    enemy.named = true;
     enemy.name = "Elite " + enemy.name;
     enemy.stats.hpMax = Math.round(enemy.stats.hpMax * 1.6);
     enemy.stats.atk = Math.round(enemy.stats.atk * 1.4);
@@ -76,6 +101,8 @@ const applyEnemyModifiers = (condition) => {
 
 const generateRandomEnemy = (condition) => {
     enemy.elite = false;
+    enemy.named = false;
+    enemy.stageBoss = false;
     enemy.mods = [];
     enemy.combatDebuffs = [];
     delete enemy.dot;
@@ -232,6 +259,9 @@ const generateRandomEnemy = (condition) => {
         enemy.name = "Mimic";
     } else if (condition == "door") {
         enemy.name = "Door Mimic";
+    }
+    if (condition == "guardian" || condition == "sboss") {
+        enemy.named = true;
     }
     setEnemyImg();
     if (!condition && Math.random() < 0.12) {

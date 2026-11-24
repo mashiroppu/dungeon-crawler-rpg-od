@@ -2,24 +2,30 @@
 const TIPS = [
     // ---- Basics ----
     { cat: "Basics", title: "Stats", titleJa: "ステータス", text: "ATK = attack power, DEF = damage reduction, ATK.SPD = attacks per second (cap 3.0). VAMP heals you for % of the enemy's max HP on kill. C.RATE / C.DMG = critical rate / critical damage.", textJa: "ATK=攻撃力、DEF=ダメージ軽減、ATK.SPD=攻撃速度/秒（上限3.0）。VAMPは敵撃破時に最大HPの%を回復。C.RATE/C.DMG=クリティカル率/クリティカルダメージ。" },
-    { cat: "Basics", title: "Level Up", titleJa: "レベルアップ", text: "Each level offers 3 random stat boosts — pick one per level. N.ATK is an uncommon option (~20% chance) that ONLY boosts normal attacks, not abilities. THORN improves slowly (+0.1% per pick, cap 10%).", textJa: "レベルアップごとに3つのランダムなステータス強化から1つ選びます。N.ATKはまれに出る選択肢（約20%）で通常攻撃のみ強化（アビリティには無効）。THORNは1回+0.1%ずつ（上限10%）。" },
+    { cat: "Basics", title: "Level Up", titleJa: "レベルアップ", text: "Each level offers 3 random stat boosts — pick one per level. N.ATK is an uncommon option (~20% chance) that ONLY boosts normal attacks, not abilities. THORN improves slowly (+0.1% per pick, cap 10%). Level cap is 200.", textJa: "レベルアップごとに3つのランダムなステータス強化から1つ選びます。N.ATKはまれに出る選択肢（約20%）で通常攻撃のみ強化（アビリティには無効）。THORNは1回+0.1%ずつ（上限10%）。レベル上限は200。" },
     { cat: "Basics", title: "THORN", titleJa: "THORN", text: "THORN reflects damage when you are hit: reflect = damage taken × THORN% × (ATK/10). It scales with your ATTACK, not defense — pair it with a hard-hitting build.", textJa: "THORNは被弾時にダメージを反射：反射量=被ダメージ×THORN%×(ATK/10)。防御ではなく攻撃力に比例するので、高火力ビルドとの相性が良い。" },
     { cat: "Basics", title: "N.ATK", titleJa: "N.ATK", text: "N.ATK (Normal Attack) boosts ONLY your auto-attack damage — abilities are unaffected. Level-up investment caps at 300%; equipment N.ATK is a minor bonus.", textJa: "N.ATK（通常攻撃）はオート攻撃のみ強化し、アビリティには無効。レベルアップでの上限は300%、装備のN.ATKは小さめのボーナス。" },
     // ---- Equipment ----
     { cat: "Equipment", title: "Rarity", titleJa: "レアリティ", text: "Common → Uncommon → Rare → Epic → Legendary → Heirloom. Higher rarity = more affixes and stronger values. Heirloom rolls get a 1.5x value multiplier.", textJa: "Common → Uncommon → Rare → Epic → Legendary → Heirloom。レアリティが高いほどオプション数と効果量が上がる。Heirloomは効果値が1.5倍。" },
     { cat: "Equipment", title: "Affixes", titleJa: "オプション", text: "Equipment options (ATK%, HP%, CDR, proc effects...) are rolled per item. Use Reroll to re-roll them, or Finalize to lock them in exchange for +40% on all options.", textJa: "装備のオプション（ATK%、HP%、CDR、発動効果など）はアイテムごとにランダム。Rerollで振り直し、Finalizeで全オプション+40%を払って確定できる。" },
     { cat: "Equipment", title: "Proc Affixes", titleJa: "発動系オプション", text: "Special options: BURST (attacks stack bonus fragment hits), PRIDE (bonus dmg at full HP), BERSERK (bonus dmg at low HP), PHASE (brief invuln on attack), TRIAL+REGEN (HP trade), OATH (bonus THORN under 50% HP). Proc affixes are unique per equipped set.", textJa: "特殊オプション：BURST（攻撃ごとに追加ダメージ蓄積）、PRIDE（満HP時ボーナス）、BERSERK（低HP時ボーナス）、PHASE（攻撃時に短時間無敵）、TRIAL+REGEN（HP消費と引き換えに回復）、OATH（HP50%以下でTHORN増加）。同時装備では1種類のみ。" },
-    { cat: "Equipment", title: "Set Effects", titleJa: "セット効果", text: "Matching equipment combinations grant hidden set bonuses. Conditions are strict — most sets need 3-5 coordinated pieces. The bonuses are NOT displayed; discover them by feeling the difference.", textJa: "特定の組み合わせで隠しセットボーナスが発動する。条件は厳しく、3〜5個の部位を揃える必要がある。ボーナスは表示されないので、強さの違いで気づくしかない。" },
+    { cat: "Equipment", title: "Set Effects", titleJa: "セット効果", text: "Matching equipment combinations grant hidden set bonuses. Conditions are strict — most sets need 3-5 coordinated pieces. Currently active sets are listed in the 'Active Set Effects' section at the bottom of this window.", textJa: "特定の組み合わせでセットボーナスが発動する。条件は厳しく、3〜5個の部位を揃える必要がある。発動中のセットはこのウィンドウ下部の「発動中のセット効果」に表示される。" },
     { cat: "Equipment", title: "Hidden Stats", titleJa: "隠しステータス", text: "Some bonuses exist but are never shown — on items or in your stats. If a build feels stronger than the numbers suggest, it probably has a secret bonus.", textJa: "一部のボーナスはアイテムにもステータス欄にも表示されない。数値以上に強く感じたら、隠しボーナスが付いている可能性がある。" },
     // ---- Combat ----
     { cat: "Combat", title: "Abilities", titleJa: "アビリティ", text: "Abilities have limited charges per battle plus individual cooldowns. Check the ability bar — greyed-out abilities are recharging. Some abilities heal, shield, buff, or reflect damage.", textJa: "アビリティは戦闘ごとの使用回数と個別クールダウンがある。アビリティバーがグレーのものは再充填中。一部は回復・シールド・バフ・反射も行う。" },
     { cat: "Combat", title: "Reflect & Shields", titleJa: "反射とシールド", text: "Judgment Counter reflects 200% but you take +30% damage. Aegis Oath grants a shield plus 50% reflect. Sanctuary heals and reflects. Reflect damage is separate from THORN.", textJa: "Judgment Counterは被ダメの200%を反射するが被ダメ+30%。Aegis Oathはシールド＋50%反射。Sanctuaryは回復＋反射。これらの反射はTHORNとは別系統。" },
     { cat: "Combat", title: "Fleeing", titleJa: "逃走", text: "You can flee most battles, but it can fail — especially against bosses. Bosses hit hard but drop better loot.", textJa: "多くの戦闘からは逃走できるが、失敗することもある（特にボス戦）。ボスは強いがドロップが良い。" },
     // ---- Progression ----
-    { cat: "Progression", title: "Dungeon", titleJa: "ダンジョン", text: "Each floor has several rooms ending in a Guardian boss. Floor 100 is the final stretch — once reached, you can keep exploring it endlessly for loot and levels.", textJa: "各フロアは複数のルームで構成され、最後にガーディアンのボスが待つ。100階到達後はその階を無限周回でき、戦利品とレベルを稼げる。" },
+    { cat: "Progression", title: "Dungeon", titleJa: "ダンジョン", text: "The dungeon has 1000 floors. Every 100 floors the difficulty rises one tier and floors keep scaling — enemies grow stronger with each band. Defeat the Guardian at the end of a 100-floor band to unlock the next difficulty. Reaching floor 1000 lets you farm it endlessly.", textJa: "ダンジョンは全1000階。100階ごとに難易度が1段階上がり、フロアもスケーリングする。各100階帯の最後のガーディアンを倒すと次の難易度が解放される。1000階到達後はその階を無限周回できる。" },
+    { cat: "Progression", title: "Difficulty Tiers", titleJa: "難易度ティア", text: "10 tiers: NORMAL (1-100) → HARD (101-200) → TERROR (201-300) → ABYSS (301-400) → INFERNO (401-500) → ECLIPSE (501-600) → OBLIVION (601-700) → GENESIS (701-800) → APOCALYPSE (801-900) → OMEGA (901-1000). Each starts tougher and grants better rewards. Select an unlocked difficulty when starting a run — you begin at that band's first floor.", textJa: "10段階：NORMAL(1-100)→HARD(101-200)→TERROR(201-300)→ABYSS(301-400)→INFERNO(401-500)→ECLIPSE(501-600)→OBLIVION(601-700)→GENESIS(701-800)→APOCALYPSE(801-900)→OMEGA(901-1000)。解放済みの難易度をラン開始時に選ぶと、その帯の先頭フロアから開始できる。" },
+    { cat: "Progression", title: "Named Monsters", titleJa: "ネームドモンスター", text: "Enemies marked with a gold NAMED tag are elites — significantly stronger than normal monsters, but they drop much better loot. Watch your HP before engaging.", textJa: "金色の「ネームド」タグが付いた敵はエリートモンスター。通常よりかなり強いが、ドロップは大幅に良い。HPに注意して挑もう。" },
     { cat: "Progression", title: "Dungeon Monarch", titleJa: "ダンジョンモナーク", text: "Rare 'mysterious chamber' events awaken the Dungeon Monarch — an extremely powerful boss with massive stats. Only attempt it when over-leveled and well-geared.", textJa: "まれに出る「謎の部屋」イベントでダンジョンモナークが目覚める。非常に強力なボスなので、レベルと装備が整ってから挑むべき。" },
-    { cat: "Progression", title: "Death & Legacy", titleJa: "死亡とレガシー", text: "Dying ends the run, but you can carry ONE item into the next run via Legacy. Plan which item is worth saving before pushing deep floors.", textJa: "死亡するとランは終了するが、レガシーでアイテムを1つだけ次のランに持ち越せる。深い階層に挑む前に、残す価値のあるアイテムを決めておこう。" },
-    { cat: "Progression", title: "Gold", titleJa: "ゴールド", text: "Gold drops scale with floor depth. G.FIND equipment boosts gold gain — useful if you're saving for Finalize costs or rerolls.", textJa: "ゴールドのドロップ量は階層に比例する。G.FIND装備でゴールド獲得が増える。Finalize費用やリロール代を貯めたい時に有効。" },
+    { cat: "Progression", title: "Death & Legacy", titleJa: "死亡とレガシー", text: "Dying ends the run. Your warehouse contents persist between runs, and on death you may send ONE extra item into it. Plan which item is worth saving before pushing deep floors.", textJa: "死亡するとランは終了する。倉庫の中身はランを跨いで保持され、死亡時にさらにアイテムを1つ送れる。深い階層に挑む前に、残す価値のあるアイテムを決めておこう。" },
+    { cat: "Progression", title: "Gold", titleJa: "ゴールド", text: "Gold drops scale with floor depth and difficulty. Spend it on Reroll/Finalize, warehouse expansion (200k per tier), or the revive service — which consumes your ENTIRE purse (500k minimum).", textJa: "ゴールドのドロップ量は階層と難易度に比例する。リロール/Finalize、倉庫拡張（1段階20万）、復活サービス（所持金全額・最低50万）に使える。" },
+    // ---- Systems ----
+    { cat: "Systems", title: "Warehouse", titleJa: "倉庫", text: "Wayside caches appear every 5 floors — open one to send a single item from your inventory or equipment into the warehouse (once per floor). Capacity starts at 20 and expands ×2 (40→80→160) for 200k gold each, via the warehouse bar in the inventory.", textJa: "5階ごとに道端の物置が出現し、インベントリ/装備からアイテムを1つ倉庫へ送れる（各フロア1個まで）。容量は初期20で、20万ゴールドで×2ずつ拡張（40→80→160）。インベントリ下部の倉庫バーから拡張可能。" },
+    { cat: "Systems", title: "Revive", titleJa: "復活", text: "Once per 100-floor band, if you fall in battle with at least 500,000 gold you can spend your ENTIRE purse to revive on the spot — the enemy is finished and the battle ends. Any gold above the minimum is also consumed.", textJa: "100階帯ごとに1回、戦闘で倒れても所持金50万以上あれば全額を消費してその場で復活できる。敵は撃破扱いで戦闘終了。最低額を超えた分も全て消費される。" },
+    { cat: "Systems", title: "Ability Presets", titleJa: "編成プリセット", text: "The ability loadout screen has P1–P3 preset slots. Saving stores your ability picks AND your currently equipped gear — by reference, so items are moved, never duplicated. Click a preset to restore the full build.", textJa: "アビリティ編成画面にP1〜P3のプリセットスロットがある。保存するとアビリティ編成と現在の装備をまとめて記録する（参照型なのでアイテムは移動するだけで複製されない）。プリセットをクリックでビルド全体を復元。" },
 ];
 
 const showTips = () => {
@@ -42,18 +48,24 @@ const showTips = () => {
         const reqTxt = req ? Object.keys(req).map(rk => `${rk}×${req[rk]}`).join("+") : "";
         return `<div class="tip-item"><b>${d.name} (${reqTxt})</b><p>${txt}</p></div>`;
     }).join("");
-    const setSection = setHtml
-        ? `<h4 class="tip-cat">${t("tips.activeSets")}</h4>${setHtml}`
-        : `<h4 class="tip-cat">${t("tips.activeSets")}</h4><div class="tip-item"><p>${t("tips.noSets")}</p></div>`;
+    const setSection = `<h4 class="tip-cat" id="tip-sec-sets">${t("tips.activeSets")}</h4>` + (setHtml
+        ? setHtml
+        : `<div class="tip-item"><p>${t("tips.noSets")}</p></div>`);
+
+    // Table of contents: category buttons scroll to their section
     modal.innerHTML = `
     <div class="content tip-content">
         <div class="content-head">
             <h3>${t("tips.title")}</h3>
             <p id="tip-close"><i class="fa fa-xmark"></i></p>
         </div>
+        <div class="tip-toc">
+            ${cats.map((c, i) => `<button class="tip-toc-btn" data-target="tip-sec-${i}">${t("tipcat." + c)}</button>`).join("")}
+            <button class="tip-toc-btn" data-target="tip-sec-sets">${t("tips.activeSets")}</button>
+        </div>
         <div class="tip-list">
-            ${cats.map(c => `
-                <h4 class="tip-cat">${t("tipcat." + c)}</h4>
+            ${cats.map((c, ci) => `
+                <h4 class="tip-cat" id="tip-sec-${ci}">${t("tipcat." + c)}</h4>
                 ${TIPS.filter(t => t.cat === c).map(tip => `
                     <div class="tip-item">
                         <b>${(LANG === "ja" && tip.titleJa) ? tip.titleJa : tip.title}</b>
@@ -63,6 +75,13 @@ const showTips = () => {
             ${setSection}
         </div>
     </div>`;
+
+    modal.querySelectorAll(".tip-toc-btn").forEach(btn => {
+        btn.onclick = () => {
+            const target = modal.querySelector("#" + btn.dataset.target);
+            if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        };
+    });
 
     document.querySelector("#tip-close").onclick = function () {
         if (typeof sfxDecline !== "undefined") sfxDecline.play();

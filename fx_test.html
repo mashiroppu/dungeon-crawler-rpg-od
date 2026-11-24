@@ -77,12 +77,20 @@
     }
     button:hover { background: #3a3a55; border-color: #d4af37; }
     button:active { transform: translateY(1px); }
+    button.has-fx { border-color: #d4af37; }
     .sprite-pick { display: flex; gap: 0.5rem; align-items: center; font-size: 0.8rem; color: #888; }
     .sprite-pick select {
         background: #1a1a2e; color: #eee; border: 1px solid #444;
         padding: 0.3rem 0.5rem; font-family: monospace;
+        max-width: 22rem;
+    }
+    .cls-group { margin-top: 1rem; }
+    .cls-group h2 {
+        font-size: 0.85rem; color: #7ec8ff; margin-bottom: 0.5rem;
+        border-bottom: 1px solid #333; padding-bottom: 0.2rem;
     }
     .note { font-size: 0.75rem; color: #666; max-width: 34rem; text-align: center; line-height: 1.5; }
+    .gold { color: #d4af37; }
 </style>
 </head>
 <body>
@@ -91,13 +99,7 @@
     <div class="stage">
         <div class="sprite-pick">
             背景スプライト:
-            <select id="spriteSelect">
-                <option value="orc_swordsmaster.png">Orc Swordmaster</option>
-                <option value="skeleton_warrior.png">Skeleton Warrior</option>
-                <option value="slime_boss.png">Slime Boss</option>
-                <option value="wolf.png">Wolf</option>
-                <option value="goblin.png">Goblin</option>
-            </select>
+            <select id="spriteSelect"></select>
         </div>
         <div class="enemy-name" id="enemyName">Orc Swordmaster</div>
         <div id="enemy-sprite-wrap">
@@ -105,22 +107,25 @@
         </div>
     </div>
 
-    <div class="controls">
-        <button data-test="holy_strike">Holy Strike</button>
-        <button data-test="thorns_nova">Thorns Nova</button>
-        <button data-test="aegis_oath">Aegis Oath</button>
-        <button data-test="cand170">FX170</button>
-        <button data-test="cand171">FX171</button>
-        <button data-test="cand172">FX172</button>
-        <button data-test="cand173">FX173</button>
-        <button data-test="cand174">FX174</button>
-        <button data-test="generic">Generic SFX (attack.wav)</button>
+    <div class="cls-group">
+        <h2>Special FX candidates</h2>
+        <div class="controls">
+            <button data-test="holy_strike" class="has-fx">Holy Strike</button>
+            <button data-test="thorns_nova" class="has-fx">Thorns Nova</button>
+            <button data-test="aegis_oath" class="has-fx">Aegis Oath</button>
+            <button data-test="generic">Generic SFX (attack.wav)</button>
+        </div>
+    </div>
+
+    <div class="cls-group">
+        <h2>All abilities <span class="gold">(gold border = custom FX)</span> — others use generic FX/SFX</h2>
+        <div id="abilityButtons"></div>
     </div>
 
     <p class="note">
         ※ file:// で開いた場合、音声(mp3)はブラウザの制限で鳴らないことがあります。
         その場合は <code>python -m http.server 8000</code> → http://localhost:8000/fx_test.html で開いてください。<br>
-        エフェクトの見た目は実際のゲームと同じCSS（screen合成・132%サイズ）で再現しています。
+        エフェクトの見た目は実際のゲームと同じCSS（screen合成）で再現しています。
     </p>
 
 <script>
@@ -129,11 +134,6 @@ const ABILITY_FX = {
     holy_strike: { src: "./assets/effects/holy-strike-fast.gif", ms: 1050, dx: 4, dy: -18 },
     thorns_nova: { src: "./assets/effects/thorns-nova.gif",   ms: 1500, dx: 0,  dy: 0  },
     aegis_oath:  { sheet: "./assets/effects/aegis-oath.png", cols: 5, rows: 2, frames: 10, delay: 80, dx: 0, dy: 0 },
-    cand170: { src: "./assets/effects/aegis-cand170.gif", ms: 800, dx: 0, dy: 0 },
-    cand171: { src: "./assets/effects/aegis-cand171.gif", ms: 800, dx: 0, dy: 0 },
-    cand172: { src: "./assets/effects/aegis-cand172.gif", ms: 800, dx: 0, dy: 0 },
-    cand173: { src: "./assets/effects/aegis-cand173.gif", ms: 800, dx: 0, dy: 0 },
-    cand174: { src: "./assets/effects/aegis-cand174.gif", ms: 800, dx: 0, dy: 0 },
 };
 const ABILITY_SFX = {
     holy_strike: "./assets/sfx/holy_strike.mp3",
@@ -142,15 +142,73 @@ const ABILITY_SFX = {
     generic:     "./assets/sfx/attack.wav",
 };
 
+// All abilities per class (mirror of classes.js)
+const ABILITIES = {
+    Warrior: [
+        ["cleave","Cleave"],["temporal_snare","Temporal Snare"],["shield_wall","Shield Wall"],
+        ["warcry","War Cry"],["undying_oath","Undying Oath"],["execute","Execute"]
+    ],
+    Mage: [
+        ["fireball","Fireball"],["petrify","Petrify"],["flame_nova","Flame Nova"],
+        ["frostbolt","Frostbolt"],["stasis","Stasis"],["mana_shield","Mana Shield"]
+    ],
+    Rogue: [
+        ["backstab","Backstab"],["fan_of_knives","Fan of Knives"],["venom_dagger","Venom Dagger"],
+        ["godspeed","Godspeed"],["deadly_precision","Deadly Precision"],["thousand_cuts","Thousand Cuts"]
+    ],
+    Lancer: [
+        ["impale","Impale"],["dragon_thrust","Dragon's Thrust"],["afterimage","Afterimage"],
+        ["sky_piercer","Sky Piercer"],["dragon_roar","Dragon Roar"],["dragon_fall","Dragon's Fall"]
+    ],
+    Paladin: [
+        ["holy_strike","Holy Strike"],["judgment_counter","Judgment Counter"],["thorns_nova","Thorns Nova"],
+        ["aegis_oath","Aegis Oath"],["divine_judgement","Divine Judgement"],["sanctuary","Sanctuary"]
+    ],
+};
+
+const SPRITES = [
+    "orc_swordsmaster.png","skeleton_warrior.png","slime_boss.png","wolf.png","goblin.png",
+    "alfadriel.png","ant_queen.png","behemoth.png","berthelot.png","bm-feral.png",
+    "cerberus_ptolemaios.png","da-reaper.png","fallen_king.png","firelord.png","hellhound.png",
+    "icemaiden.png","mimic.png","mimic_door.png","orc_archer.png","orc_axe.png","orc_mage.png",
+    "skeleton_archer.png","skeleton_boss.png","skeleton_dragon.png","skeleton_knight.png",
+    "skeleton_mage1.png","skeleton_mage2.png","skeleton_pirate.png","skeleton_samurai.png",
+    "skeleton_swordsmaster.png","slime.png","slime_angel.png","slime_crusader.png","slime_knight.png",
+    "spider.png","spider_boss.png","spider_dragon.png","spider_fire.png","spider_green.png",
+    "spider_red.png","spider_spirit.png","thanatos.png","tiamat.png","wolf_black.png",
+    "wolf_boss.png","wolf_winter.png","zalaras.png","zodiac_aries.png","zodiac_cancer.png"
+];
+
 const wrap = document.getElementById("enemy-sprite-wrap");
 const sprite = document.getElementById("enemy-sprite");
 const enemyName = document.getElementById("enemyName");
 const spriteSelect = document.getElementById("spriteSelect");
 
+spriteSelect.innerHTML = SPRITES.map(s =>
+    `<option value="${s}">${s.replace(/\.png$/, "").replace(/_/g, " ")}</option>`).join("");
 spriteSelect.addEventListener("change", () => {
     sprite.src = "./assets/sprites/" + spriteSelect.value;
     enemyName.textContent = spriteSelect.options[spriteSelect.selectedIndex].text;
 });
+
+// Build ability buttons grouped by class
+const abContainer = document.getElementById("abilityButtons");
+for (const cls in ABILITIES) {
+    const g = document.createElement("div");
+    g.className = "cls-group";
+    g.innerHTML = `<h2>${cls}</h2>`;
+    const row = document.createElement("div");
+    row.className = "controls";
+    ABILITIES[cls].forEach(([id, name]) => {
+        const b = document.createElement("button");
+        b.dataset.test = id;
+        b.textContent = name;
+        if (ABILITY_FX[id]) b.classList.add("has-fx");
+        row.appendChild(b);
+    });
+    g.appendChild(row);
+    abContainer.appendChild(g);
+}
 
 function playFx(id) {
     const fxDef = ABILITY_FX[id];
@@ -181,8 +239,7 @@ function playFx(id) {
 }
 
 function playSfx(id) {
-    const src = ABILITY_SFX[id];
-    if (!src) return;
+    const src = ABILITY_SFX[id] || ABILITY_SFX.generic;
     const audio = new Audio(src);
     audio.volume = 0.8;
     audio.play().catch(() => {});

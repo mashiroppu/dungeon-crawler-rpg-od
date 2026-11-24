@@ -34,7 +34,7 @@ window.addEventListener("load", function () {
             if (playerName.length < 3) {
                 document.querySelector("#alert").innerHTML = t("name.err.short");
             } else if (!isValidNameWidth(playerName)) {
-                document.querySelector("#alert").innerHTML = t("name.err.long");
+                document.querySelector("#alert").innerHTML = tParams("name.err.long", { w: NAME_MAX_WIDTH });
             } else {
                 player = {
                     name: playerName,
@@ -242,7 +242,7 @@ window.addEventListener("load", function () {
                     } else if (newName.length < 3) {
                         alertEl.innerHTML = t("name.err.short");
                     } else if (!isValidNameWidth(newName)) {
-                        alertEl.innerHTML = t("name.err.long");
+                        alertEl.innerHTML = tParams("name.err.long", { w: NAME_MAX_WIDTH });
                     } else {
                         sfxConfirm.play();
                         player.name = newName;
@@ -269,7 +269,7 @@ window.addEventListener("load", function () {
                     <p id="run-close"><i class="fa fa-xmark"></i></p>
                 </div>
                 <p>${player.name} Lv.${player.lvl} [${(CLASSES[player.cls] || CLASSES.warrior).name}]</p>
-                <p>${t("run.difficulty")} ${(DIFFICULTY_MODES[player.difficulty] || DIFFICULTY_MODES.normal).label}</p>
+                <p>${t("run.difficulty")} <select id="run-diff-select">${DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}" ${player.difficulty === d.key ? "selected" : ""}>${d.label}</option>` : "").join("")}</select></p>
                 <p>${t("run.blessing")}${player.blessing}</p>
                 <p>${t("run.curse")} ${Math.round((dungeon.settings.enemyScaling - 1) * 10)}</p>
                 <p>${t("run.kills")} ${nFormatter(dungeon.statistics.kills)}</p>
@@ -284,6 +284,14 @@ window.addEventListener("load", function () {
                 defaultModalElement.innerHTML = "";
                 menuModalElement.style.display = "flex";
             };
+            const runDiffSelect = document.querySelector("#run-diff-select");
+            if (runDiffSelect) {
+                runDiffSelect.onchange = function () {
+                    sfxConfirm.play();
+                    player.difficulty = runDiffSelect.value;
+                    saveData();
+                };
+            }
         };
 
         // Quit the current run
@@ -543,10 +551,14 @@ const progressReset = () => {
     player.inCombat = false;
     // Only legacy storage persists between runs — gear is lost on reset
     player.storage = player.storage || [];
+    player.stashUsedFloors = {};
+    player.reviveUsedBands = {};
     player.inventory.equipment = [];
     player.equipped = [];
     applyEquipmentStats();
-    dungeon.progress.floor = 1;
+    // New run starts at the selected difficulty's band head (NORMAL=1 ... OMEGA=901)
+    dungeon.progress.floor = diffStartFloor(playerDiffTier());
+    dungeon.progress.floorLimit = 1000;
     dungeon.progress.room = 1;
     dungeon.statistics.kills = 0;
     dungeon.status = {
@@ -724,16 +736,14 @@ const allocationPopup = () => {
             <div class="row">
                 <p>${t("cc.difficulty")}</p>
                 <select id="select-difficulty">
-                    <option value="normal">${t("cc.optNormal")}</option>
-                    <option value="hard">${t("cc.optHard")}</option>
-                    <option value="inferno">${t("cc.optInferno")}</option>
+                    ${DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}">${d.label}</option>` : "").join("")}
                 </select>
             </div>
             <div class="row primary-panel pad">
                 <p id="diff-desc">${t("cc.diffdesc.normal")}</p>
             </div>
             <div class="row primary-panel pad" id="legacy-box" style="display:none">
-                <p>${tParams("cc.legacy", { n: `<span id="legacy-count">0</span>`, max: STORAGE_MAX })}</p>
+                <p>${tParams("cc.legacy", { n: `<span id="legacy-count">0</span>`, max: storageMax() })}</p>
                 <div id="legacy-list" class="legacy-list"></div>
                 <p class="legacy-hint">${tParams("cc.legacyHint", { n: STORAGE_EQUIP_MAX })}</p>
             </div>
@@ -852,7 +862,9 @@ const allocationPopup = () => {
     let selectDiff = document.querySelector("#select-difficulty");
     let diffDesc = document.querySelector("#diff-desc");
     if (selectDiff && diffDesc) {
-        selectDiff.value = player.difficulty || "normal";
+        const unlocked = DIFFICULTY_TIERS.filter((d, i) => i <= maxDiffTier());
+        const curKey = DIFFICULTY_TIERS[playerDiffTier()] ? player.difficulty : "normal";
+        selectDiff.value = unlocked.some(d => d.key === curKey) ? curKey : unlocked[unlocked.length - 1].key;
         diffDesc.innerHTML = t(`cc.diffdesc.${selectDiff.value}`);
         selectDiff.onchange = function () {
             sfxConfirm.play();
@@ -988,7 +1000,7 @@ const allocationPopup = () => {
         document.querySelector(`#atkAllo`).innerHTML = allocation.atk;
         document.querySelector(`#defAllo`).innerHTML = allocation.def;
         document.querySelector(`#atkSpdAllo`).innerHTML = allocation.atkSpd;
-        document.querySelector(`#alloPts`).innerHTML = `Stat Points: ${points}`;
+        document.querySelector(`#alloPts`).innerHTML = tParams("cc.statPoints", { p: points });
     }
     close.onclick = function () {
         sfxDecline.play();

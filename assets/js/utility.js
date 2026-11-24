@@ -28,8 +28,8 @@ const randomizeDecimal = (min, max) => {
     return Math.random() * (max - min) + min;
 }
 
-// Name display width: ASCII = 1, non-ASCII (e.g. Japanese) = 2. Max allowed width is 12 ('a' x 12)
-const NAME_MAX_WIDTH = 12;
+// Name display width: ASCII = 1, non-ASCII (e.g. Japanese) = 2. Max allowed width is 16 ('a' x 16)
+const NAME_MAX_WIDTH = 16;
 const nameWidth = (name) => {
     let w = 0;
     for (const ch of name) {

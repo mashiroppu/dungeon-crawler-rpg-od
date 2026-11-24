@@ -1,7 +1,8 @@
 # Dungeon Crawler RPG OD
 
-A browser-based roguelite dungeon crawler. Climb 100 floors of procedurally
-generated dungeons, loot Diablo-style equipment, and build your perfect run.
+A browser-based roguelite dungeon crawler. Climb 1000 floors of procedurally
+generated dungeons across 10 difficulty tiers, loot Diablo-style equipment,
+and build your perfect run.
 No build step required — just open `index.html`.
 
 > 日本語版: [README.ja.md](README.ja.md)
@@ -25,6 +26,8 @@ Each class has 6 abilities unlocked by level, shown on the ability bar
 during combat. Abilities use a charge + cooldown + recovery system and
 cover nukes, multi-hit, damage-over-time, crowd control, buffs, shields,
 and heals. Up to 3 abilities can be slotted in the loadout.
+**P1–P3 presets** save your ability picks plus currently equipped gear
+(by reference — items are moved, never duplicated).
 
 ### Equipment & Loot
 - 6 equipment rarities: Common, Uncommon, Rare, Epic, Legendary, Heirloom
@@ -41,21 +44,32 @@ and heals. Up to 3 abilities can be slotted in the loadout.
 
 ### Enemies
 - **Elites**: empowered monsters with boosted stats and guaranteed drops
+- **Named monsters**: gold `NAMED` tag marks elite-grade enemies with
+  boosted stats and better loot
 - **Modifiers**: enemies can spawn with traits like Burning, Frenzy,
   Vampiric, Regenerating, Armored, and Volatile (explodes on death)
 
 ### Progression
-- Procedurally generated floors up to 100 — reaching floor 100 loops it
-  endlessly with fresh guardians each run
+- **1000 floors / 10 difficulty tiers** — NORMAL, HARD, TERROR, ABYSS,
+  INFERNO, ECLIPSE, OBLIVION, GENESIS, APOCALYPSE, OMEGA. Difficulty rises
+  every 100 floors; defeat the band-end Guardian to unlock the next tier.
+  Each difficulty starts at its band's first floor (e.g. HARD = floor 101).
+  Reaching floor 1000 loops it endlessly
 - Level cap 200. Level up by choosing 1 of 3 stat boosts (with rerolls);
-  rare picks include **N.ATK** (+6% normal attack damage, cap 300%) and
-  **THORN** (damage reflect, cap 10%)
-- Death resets your run, but equipment is kept
+  rare picks include **N.ATK** (+6% normal attack damage, ~20% drop rate,
+  cap 300%) and **THORN** (damage reflect, cap 10%)
+- **Revive**: once per 100-floor band, spend your entire gold purse
+  (minimum 500,000) to revive mid-battle — the enemy is finished
+- **Warehouse**: wayside caches every 5 floors let you stash 1 item per
+  floor (up to 20 per band). Capacity starts at 20 and expands ×2
+  (40→80→160) for 200k gold each; contents persist between runs
+- Death ends your run — on death you may send ONE item into the warehouse;
+  everything else from the run is lost
 - Rename your character from Menu → Statistics
 
 ### Extras
 - **TIP menu**: in-game knowledge base (stats, affixes, combat,
-  progression) plus your active set effects
+  progression, systems) with a category index, plus your active set effects
 - Grid-room animated battle backdrop
 - **Language toggle**: Menu → Language switches English / 日本語
 
@@ -69,7 +83,7 @@ and heals. Up to 3 abilities can be slotted in the loadout.
 ## Planned
 
 See [ROADMAP.md](ROADMAP.md) for upcoming features — currently the
-ability overhaul: 6 loadout slots, ~20 abilities per class,
+ability overhaul: 6 loadout slots (final maximum), ~20 abilities per class,
 data-driven ability definitions, and balance notes.
 
 ## Tech

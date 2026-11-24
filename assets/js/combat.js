@@ -89,6 +89,22 @@ const hpValidation = () => {
             }
         }
 
+        // Stage boss kill on a band-end floor clears that difficulty tier
+        if (enemy.stageBoss) {
+            const tier = diffTierOfFloor(dungeon.progress.floor);
+            dungeon.clearedTiers = dungeon.clearedTiers || {};
+            if (!dungeon.clearedTiers[tier]) {
+                dungeon.clearedTiers[tier] = true;
+                if (tier >= DIFFICULTY_TIERS.length - 1) {
+                    addCombatLog(t("cb.dungeonClear"));
+                } else if (tier + 1 > maxDiffTier()) {
+                    player.maxDiffTier = tier + 1;
+                    addCombatLog(tParams("cb.diffUnlocked", { name: DIFFICULTY_TIERS[tier + 1].label }));
+                    saveData();
+                }
+            }
+        }
+
         // Close the battle panel
         endCombatAction = () => {
             sfxConfirm.play();
@@ -426,6 +442,13 @@ const updateCombatLog = () => {
         button.className = "decision-panel";
         button.innerHTML = `<button id="battleButton">${t("cb.backToMenu")}</button>`;
         combatLogBox.appendChild(button);
+        // Revive: once per 100-floor band, spend ALL gold (min 500K) to end the battle as a win
+        if (reviveAvailable()) {
+            let revivePanel = document.createElement("div");
+            revivePanel.className = "decision-panel";
+            revivePanel.innerHTML = `<button id="reviveButton">${tParams("cb.revive", { g: nFormatter(player.gold) })}</button>`;
+            combatLogBox.appendChild(revivePanel);
+        }
     }
 
     // Flee becomes available 60s into combat
@@ -525,6 +548,28 @@ const combatCounter = () => {
     }
 }
 
+// ========== Revive (once per 100-floor band, costs ALL gold, min 500K) ==========
+const REVIVE_MIN_GOLD = 500000;
+const reviveBand = () => diffTierOfFloor(dungeon.progress.floor);
+const reviveAvailable = () => {
+    player.reviveUsedBands = player.reviveUsedBands || {};
+    return !player.reviveUsedBands[reviveBand()] && player.gold >= REVIVE_MIN_GOLD;
+};
+const reviveCombat = () => {
+    if (!reviveAvailable()) { sfxDeny.play(); return; }
+    sfxConfirm.play();
+    player.reviveUsedBands[reviveBand()] = true;
+    player.gold = 0;
+    player.stats.hp = Math.max(1, Math.round(player.stats.hpMax * 0.5));
+    player.stats.hpPercent = Math.round((player.stats.hp / player.stats.hpMax) * 100);
+    playerDead = false;
+    // The battle ends as a victory: enemy is defeated and rewards are granted
+    enemy.stats.hp = 0;
+    hpValidation();
+    playerLoadStats();
+    saveData();
+};
+
 // Flee mid-combat: no rewards, return to dungeon exploration
 const fleeCombat = () => {
     sfxConfirm.play();
@@ -593,7 +638,7 @@ const showCombatInfo = () => {
                 <i class="ray" style="--a:26.5651deg;--r:0.55902"></i>
                 </div>
             </div></div>
-            <p>${enemy.name} Lv.${enemy.lvl}${enemyModLabel()}</p>
+            <p>${enemy.name} Lv.${enemy.lvl}${enemyModLabel()}${enemy.named ? ` <span class="named-tag">${t("cb.named")}</span>` : ""}</p>
             <div class="battle-bar empty-bar hp bb-hp">
                 <div class="battle-bar dmg bb-hp" id="enemy-hp-dmg"></div>
                 <div class="battle-bar current bb-hp" id="enemy-hp-battle"></div>
@@ -626,6 +671,7 @@ const showCombatInfo = () => {
     const logBox = document.getElementById("combatLogBox");
     logBox.addEventListener("click", (e) => {
         if (e.target.closest("#battleButton") && endCombatAction) endCombatAction();
+        if (e.target.closest("#reviveButton") && playerDead) reviveCombat();
         if (e.target.closest("#fleeButton") && player.inCombat && !enemyDead && !playerDead) fleeCombat();
     });
 }

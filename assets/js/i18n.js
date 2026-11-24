@@ -16,7 +16,7 @@ const STRINGS = {
     "common.confirm":       { en: "Confirm", ja: "決定" },
     "name.err.special":     { en: "Name cannot contain special characters!", ja: "名前に記号は使えません！" },
     "name.err.short":       { en: "Name should be at least 3 characters!", ja: "名前は3文字以上にしてください！" },
-    "name.err.long":        { en: "Name is too long! (max width: 12 'a')", ja: "名前が長すぎます！（最大幅: a12個分）" },
+    "name.err.long":        { en: "Name is too long! (max width: {w} 'a')", ja: "名前が長すぎます！（最大幅: a{w}個分）" },
 
     // ---- Dungeon header ----
     "dgn.explore":          { en: "Explore", ja: "探索" },
@@ -100,12 +100,15 @@ const STRINGS = {
     "tipcat.Equipment":     { en: "Equipment", ja: "装備" },
     "tipcat.Combat":        { en: "Combat", ja: "戦闘" },
     "tipcat.Progression":   { en: "Progression", ja: "進行" },
+    "tipcat.Systems":       { en: "Systems", ja: "システム" },
 
     // ---- Ability loadout ----
     "loadout.title":        { en: "Ability Loadout", ja: "アビリティ編成" },
     "loadout.hint":         { en: "{c} — slot up to {n} abilities", ja: "{c} — 最大{n}つまでセット可能" },
     "loadout.cancel":       { en: "Cancel", ja: "キャンセル" },
     "loadout.confirm":      { en: "Confirm", ja: "決定" },
+    "loadout.presets":      { en: "Presets", ja: "プリセット" },
+    "loadout.savePreset":   { en: "Save", ja: "保存" },
 
     // ---- Dungeon exploration ----
     "dgn.c.enter":          { en: "Enter", ja: "進む" },
@@ -137,6 +140,7 @@ const STRINGS = {
     "dgn.log.nothing5":     { en: "There is nothing in this area.", ja: "この辺りには何もない。" },
     "dgn.log.blessGain":    { en: "You gained {v}% bonus {s} from the blessing. (Blessing Lv.{a} > Blessing Lv.{b})", ja: "祝福によりボーナス{s}が{v}%上昇した。（祝福Lv.{a} > 祝福Lv.{b}）" },
     "dgn.log.curseGain":    { en: "The monsters in the dungeon became stronger and the loot quality improved. (Curse Lv.{a} > Curse Lv.{b})", ja: "ダンジョンのモンスターが強化され、戦利品の質が上がった。（呪いLv.{a} > 呪いLv.{b}）" },
+    "dgn.log.curseReset":   { en: "You feel the curse lift... (Curse stage reset)", ja: "呪いが解けていく気がする…（呪い段階リセット）" },
     "dgn.log.ignore":       { en: "You ignored it and decided to move on.", ja: "無視して先へ進んだ。" },
     "dgn.log.gold":         { en: 'You found <i class="fas fa-coins" style="color: #FFD700;"></i>{g}.', ja: '<i class="fas fa-coins" style="color: #FFD700;"></i>{g}を見つけた。' },
     "dgn.log.fleeFrom":     { en: "You fled from {name}.", ja: "{name}から逃げた。" },
@@ -145,6 +149,10 @@ const STRINGS = {
     "cb.claim":             { en: "Claim", ja: "受け取る" },
     "cb.backToMenu":        { en: "Back to Menu", ja: "メニューに戻る" },
     "cb.flee":              { en: "Flee", ja: "逃げる" },
+    "cb.named":             { en: "NAMED", ja: "ネームド" },
+    "cb.revive":            { en: "Revive — spend ALL gold ({g})", ja: "復活 — ゴールド全額を消費（{g}）" },
+    "cb.diffUnlocked":      { en: "New difficulty unlocked: {name}!", ja: "新しい難易度が解放された：{name}！" },
+    "cb.dungeonClear":      { en: "You have cleared the dungeon!", ja: "ダンジョンを制覇した！" },
 
     // ---- Equipment / Inventory ----
     "eq.equip":             { en: "Equip", ja: "装備" },
@@ -164,6 +172,20 @@ const STRINGS = {
     "legacy.hint":          { en: "Choose ONE item to carry into the next run. (Storage {n}/{max})", ja: "次のランに持ち越すアイテムを1つ選んでください。（保管庫 {n}/{max}）" },
     "legacy.send":          { en: "Send to Storage", ja: "保管庫へ送る" },
     "legacy.lose":          { en: "Lose All", ja: "すべて失う" },
+    "stash.cancel":         { en: "Cancel", ja: "キャンセル" },
+    "stash.stored":         { en: "You stored <span class=\"{r}\">{item}</span> in the warehouse.", ja: "<span class=\"{r}\">{item}</span>を倉庫に保管した。" },
+
+    // ---- Warehouse ----
+    "wh.info":              { en: "Warehouse {n}/{max}", ja: "倉庫 {n}/{max}" },
+    "wh.expand":            { en: "Expand — {c}G", ja: "拡張 — {c}G" },
+    "wh.maxed":             { en: "MAX", ja: "MAX" },
+    "wh.expanded":          { en: "Warehouse expanded! Capacity: {max}", ja: "倉庫を拡張した！容量: {max}" },
+    "wh.full":              { en: "Warehouse is full.", ja: "倉庫がいっぱいです。" },
+
+    // ---- Stash point (every 5 floors) ----
+    "dgn.log.stashPoint":   { en: "You found a wayside cache. You may send ONE item to your warehouse.", ja: "道端の物置を見つけた。アイテムを1つ倉庫へ送ることができる。" },
+    "dgn.c.stash":          { en: "Open cache", ja: "物置を開ける" },
+    "dgn.c.stashSend":      { en: "Send to Warehouse", ja: "倉庫へ送る" },
 
     // ---- Combat log ----
     "cb.secondWind":        { en: "{name} refuses to fall! (Second Wind)", ja: "{name}は倒れない！（Second Wind）" },
@@ -234,9 +256,16 @@ const STRINGS = {
     "cc.classdesc.rogue":   { en: "Speed star. High ATK.SPD and crit rate.", ja: "スピードスター。高いATK.SPDとクリティカル率。" },
     "cc.classdesc.lancer":  { en: "Reach fighter. High ATK.SPD, solid ATK/DEF.", ja: "リーチファイター。高いATK.SPDと安定したATK/DEF。" },
     "cc.classdesc.paladin": { en: "Holy defender. Reflects damage, shields and heals.", ja: "聖なる防御者。ダメージ反射・シールド・回復。" },
-    "cc.diffdesc.normal":   { en: "Standard difficulty.", ja: "標準の難易度。" },
-    "cc.diffdesc.hard":     { en: "Enemies: +40% HP, +25% ATK, +20% DEF. Rewards x1.3.", ja: "敵: HP+40%、ATK+25%、DEF+20%。報酬x1.3。" },
-    "cc.diffdesc.inferno":  { en: "Enemies: +100% HP, +55% ATK, +45% DEF. Rewards x1.6, better drops.", ja: "敵: HP+100%、ATK+55%、DEF+45%。報酬x1.6、ドロップ率上昇。" },
+    "cc.diffdesc.normal":   { en: "Floors 1-100. The baseline difficulty.", ja: "フロア1-100。基準となる難易度。" },
+    "cc.diffdesc.hard":     { en: "Floors 101-200. Enemies: +15% HP, +10% ATK.SPD, +5% ATK, +10% DEF.", ja: "フロア101-200。敵: HP+15%、ATK.SPD+10%、ATK+5%、DEF+10%。" },
+    "cc.diffdesc.terror":   { en: "Floors 201-300. Enemies: +25% HP, +15% ATK.SPD, +10% ATK, +15% DEF.", ja: "フロア201-300。敵: HP+25%、ATK.SPD+15%、ATK+10%、DEF+15%。" },
+    "cc.diffdesc.abyss":    { en: "Floors 301-400. Enemies: +40% HP, +20% ATK.SPD, +25% ATK, +20% DEF.", ja: "フロア301-400。敵: HP+40%、ATK.SPD+20%、ATK+25%、DEF+20%。" },
+    "cc.diffdesc.inferno":  { en: "Floors 401-500. Enemies: +50% HP, +25% ATK.SPD, +30% ATK, +25% DEF.", ja: "フロア401-500。敵: HP+50%、ATK.SPD+25%、ATK+30%、DEF+25%。" },
+    "cc.diffdesc.eclipse":  { en: "Floors 501-600. Enemies: +60% HP, +30% ATK.SPD, +40% ATK, +30% DEF.", ja: "フロア501-600。敵: HP+60%、ATK.SPD+30%、ATK+40%、DEF+30%。" },
+    "cc.diffdesc.oblivion": { en: "Floors 601-700. Enemies: +80% HP, +30% ATK.SPD, +50% ATK, +35% DEF.", ja: "フロア601-700。敵: HP+80%、ATK.SPD+30%、ATK+50%、DEF+35%。" },
+    "cc.diffdesc.genesis":  { en: "Floors 701-800. Enemies: +100% HP, +50% ATK.SPD, +60% ATK, +40% DEF.", ja: "フロア701-800。敵: HP+100%、ATK.SPD+50%、ATK+60%、DEF+40%。" },
+    "cc.diffdesc.apocalypse": { en: "Floors 801-900. Enemies: +130% HP, +60% ATK.SPD, +80% ATK, +45% DEF.", ja: "フロア801-900。敵: HP+130%、ATK.SPD+60%、ATK+80%、DEF+45%。" },
+    "cc.diffdesc.omega":    { en: "Floors 901-1000. Enemies: +160% HP, +75% ATK.SPD, +100% ATK, +50% DEF. Final difficulty.", ja: "フロア901-1000。敵: HP+160%、ATK.SPD+75%、ATK+100%、DEF+50%。最終難易度。" },
 };
 
 // Passive skill descriptions (character creation)
@@ -329,6 +358,7 @@ const tierLabel = () => (LANG === "ja") ? "ティア" : "Tier";
 
 // Update static DOM labels (elements tagged with data-i18n or known ids)
 const applyStaticI18n = () => {
+    document.body.dataset.lang = LANG;
     document.querySelectorAll("[data-i18n]").forEach(el => {
         el.textContent = t(el.dataset.i18n);
     });

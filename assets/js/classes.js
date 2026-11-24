@@ -499,6 +499,11 @@ const showLoadoutModal = () => {
                         <span class="loadout-lv">Lv.${a.lvl}</span>
                     </label>`).join("")}
             </div>
+            <div class="preset-row">
+                <span class="preset-label">${t("loadout.presets")}:</span>
+                ${[0, 1, 2].map(i => `<button class="preset-btn" data-p="${i}">P${i + 1}</button>`).join("")}
+                <button id="presetSave">${t("loadout.savePreset")}</button>
+            </div>
             <div class="loadout-actions">
                 <button id="loadoutCancel">${t("loadout.cancel")}</button>
                 <button id="loadoutSave">${t("loadout.confirm")}</button>
@@ -518,6 +523,52 @@ const showLoadoutModal = () => {
     };
     boxes.forEach(b => b.onchange = sync);
     sync();
+
+    // Loadout presets: 3 saved slots storing ability ids + equipped item uids
+    // (reference type — items are moved, not duplicated). Legacy array format = abilities only.
+    player.abilityPresets = player.abilityPresets || [null, null, null];
+    while (player.abilityPresets.length < 3) player.abilityPresets.push(null);
+    const presetAbilities = (p) => Array.isArray(p) ? p : (p && p.abilities) || [];
+    const presetHasData = (p) => presetAbilities(p).length > 0 || (!!p && !Array.isArray(p) && (p.equip || []).length > 0);
+    let activePreset = -1;
+    const presetBtns = [...overlay.querySelectorAll(".preset-btn")];
+    presetBtns.forEach((b, i) => {
+        if (presetHasData(player.abilityPresets[i])) b.classList.add("filled");
+        b.onclick = () => {
+            const p = player.abilityPresets[i];
+            if (!presetHasData(p)) { sfxDeny.play(); return; }
+            const valid = new Set(unlocked.map(a => a.id));
+            const ids = presetAbilities(p).filter(id => valid.has(id));
+            boxes.forEach(bx => { bx.checked = ids.includes(bx.value); });
+            sync();
+            if (!Array.isArray(p) && p.equip && p.equip.length) {
+                applyEquipPreset(p.equip);
+            }
+            activePreset = i;
+            presetBtns.forEach((x, j) => x.classList.toggle("on", j === i));
+            sfxConfirm.play();
+        };
+    });
+    overlay.querySelector("#presetSave").onclick = () => {
+        let target = activePreset;
+        if (target < 0) {
+            target = player.abilityPresets.findIndex(p => !presetHasData(p));
+            if (target < 0) target = 0;
+        }
+        const equipUids = player.equipped.map(it => it.uid || (it.uid = genItemUid()));
+        player.abilityPresets[target] = {
+            abilities: boxes.filter(b => b.checked).map(b => b.value),
+            equip: equipUids,
+        };
+        activePreset = target;
+        presetBtns.forEach((x, j) => {
+            x.classList.toggle("on", j === target);
+            x.classList.toggle("filled", presetHasData(player.abilityPresets[j]));
+        });
+        saveData();
+        sfxConfirm.play();
+    };
+
     overlay.querySelector("#loadoutCancel").onclick = () => overlay.remove();
     overlay.querySelector("#loadoutSave").onclick = () => {
         const sel = boxes.filter(b => b.checked).map(b => b.value);
