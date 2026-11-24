@@ -647,7 +647,7 @@ const allocationPopup = () => {
         defaultModalElement.innerHTML = `
         <div class="content" id="allocate-stats">
             <div class="content-head">
-                <h3>Allocate Stats</h3>
+                <h3>${t("cc.alloc")}</h3>
                 <p id="allocate-close"><i class="fa fa-xmark"></i></p>
             </div>
             <div class="row">
@@ -683,11 +683,11 @@ const allocationPopup = () => {
                 </div>
             </div>
             <div class="row">
-                <p id="alloPts">Stat Points: ${points}</p>
-                <button id="allocate-reset">Reset</button>
+                <p id="alloPts">${tParams("cc.statPoints", { p: points })}</p>
+                <button id="allocate-reset">${t("common.reset")}</button>
             </div>
             <div class="row">
-                <p>Class</p>
+                <p>${t("cc.class")}</p>
                 <select id="select-class">
                     <option value="warrior">Warrior</option>
                     <option value="mage">Mage</option>
@@ -697,10 +697,10 @@ const allocationPopup = () => {
                 </select>
             </div>
             <div class="row primary-panel pad">
-                <p id="class-desc">Frontline fighter. High HP/ATK/DEF.</p>
+                <p id="class-desc">${t("cc.classdesc.warrior")}</p>
             </div>
             <div class="row">
-                <p>Passive</p>
+                <p>${t("cc.passive")}</p>
                 <select id="select-skill">
                     <option value="Remnant Razor">Remnant Razor</option>
                     <option value="Titan's Will">Titan's Will</option>
@@ -719,25 +719,25 @@ const allocationPopup = () => {
                 </select>
             </div>
             <div class="row primary-panel pad">
-                <p id="skill-desc">Attacks deal extra 8% of enemies' current health on hit.</p>
+                <p id="skill-desc">${skillDescText("Remnant Razor")}</p>
             </div>
             <div class="row">
-                <p>Difficulty</p>
+                <p>${t("cc.difficulty")}</p>
                 <select id="select-difficulty">
-                    <option value="normal">Normal</option>
-                    <option value="hard">Hard</option>
-                    <option value="inferno">Inferno</option>
+                    <option value="normal">${t("cc.optNormal")}</option>
+                    <option value="hard">${t("cc.optHard")}</option>
+                    <option value="inferno">${t("cc.optInferno")}</option>
                 </select>
             </div>
             <div class="row primary-panel pad">
-                <p id="diff-desc">Standard difficulty.</p>
+                <p id="diff-desc">${t("cc.diffdesc.normal")}</p>
             </div>
             <div class="row primary-panel pad" id="legacy-box" style="display:none">
-                <p>Legacy Storage (<span id="legacy-count">0</span>/${STORAGE_MAX})</p>
+                <p>${tParams("cc.legacy", { n: `<span id="legacy-count">0</span>`, max: STORAGE_MAX })}</p>
                 <div id="legacy-list" class="legacy-list"></div>
-                <p class="legacy-hint">Select up to ${STORAGE_EQUIP_MAX} items to start equipped.</p>
+                <p class="legacy-hint">${tParams("cc.legacyHint", { n: STORAGE_EQUIP_MAX })}</p>
             </div>
-            <button id="allocate-confirm">Confirm</button>
+            <button id="allocate-confirm">${t("common.confirm")}</button>
         </div>`;
     }
     defaultModalElement.style.display = "flex";
@@ -759,7 +759,7 @@ const allocationPopup = () => {
             const el = document.createElement("div");
             el.className = "items legacy-item";
             el.dataset.i = i;
-            el.innerHTML = `<p class="${item.rarity}">${icon}${item.rarity} ${item.category}</p>`;
+            el.innerHTML = `<p class="${item.rarity}">${icon}${itemName(item)}</p>`;
             el.onclick = () => {
                 sfxConfirm.play();
                 const idx = legacySelected.indexOf(i);
@@ -790,7 +790,7 @@ const allocationPopup = () => {
                 updateStats();
                 document.querySelector(`#${stat}Display`).innerHTML = `${stat.replace(/([A-Z])/g, ' $1').trim().replace(/ /g, '.').toUpperCase()}: ${stats[stat].toFixed(2).replace(rx, "$1")}`;
                 document.querySelector(`#${stat}Allo`).innerHTML = allocation[stat];
-                document.querySelector(`#alloPts`).innerHTML = `Stat Points: ${points}`;
+                document.querySelector(`#alloPts`).innerHTML = tParams("cc.statPoints", { p: points });
             } else {
                 sfxDeny.play();
             }
@@ -803,7 +803,7 @@ const allocationPopup = () => {
                 updateStats();
                 document.querySelector(`#${stat}Display`).innerHTML = `${stat.replace(/([A-Z])/g, ' $1').trim().replace(/ /g, '.').toUpperCase()}: ${stats[stat].toFixed(2).replace(rx, "$1")}`;
                 document.querySelector(`#${stat}Allo`).innerHTML = allocation[stat];
-                document.querySelector(`#alloPts`).innerHTML = `Stat Points: ${points}`;
+                document.querySelector(`#alloPts`).innerHTML = tParams("cc.statPoints", { p: points });
             } else {
                 sfxDeny.play();
             }
@@ -841,71 +841,22 @@ const allocationPopup = () => {
         sfxConfirm.play();
     }
     selectSkill.onchange = function () {
-        if (selectSkill.value == "Remnant Razor") {
-            skillDesc.innerHTML = "Attacks deal extra 8% of enemies' current health on hit.";
-        }
-        if (selectSkill.value == "Titan's Will") {
-            skillDesc.innerHTML = "Attacks deal extra 6% of your maximum health on hit.";
-        }
-        if (selectSkill.value == "Devastator") {
-            skillDesc.innerHTML = "Deal 40% more damage but you lose 30% base attack speed.";
-        }
-        if (selectSkill.value == "Rampager") {
-            skillDesc.innerHTML = "Increase attack by 5 after each hit. Stack resets after battle.";
-        }
-        if (selectSkill.value == "Blade Dance") {
-            skillDesc.innerHTML = "Gain increased attack speed after each hit. Stack resets after battle.";
-        }
-        if (selectSkill.value == "Paladin's Heart") {
-            skillDesc.innerHTML = "You receive 25% less damage permanently.";
-        }
-        if (selectSkill.value == "Aegis Thorns") {
-            skillDesc.innerHTML = "Enemies receive 20% of the damage they dealt.";
-        }
-        if (selectSkill.value == "Blood Tithe") {
-            skillDesc.innerHTML = "Each attack costs 2% of your max HP. Taking damage heals 6% of your max HP.";
-        }
-        if (selectSkill.value == "Second Wind") {
-            skillDesc.innerHTML = "Once per battle, survive a lethal blow at 1 HP.";
-        }
-        if (selectSkill.value == "Adrenaline") {
-            skillDesc.innerHTML = "Below 30% HP: +40% ATK.SPD and +20% damage.";
-        }
-        if (selectSkill.value == "Executioner") {
-            skillDesc.innerHTML = "Enemies below 30% HP take +35% damage.";
-        }
-        if (selectSkill.value == "Glass Cannon") {
-            skillDesc.innerHTML = "+35% ATK but -25% max HP.";
-        }
-        if (selectSkill.value == "Iron Will") {
-            skillDesc.innerHTML = "Below 50% HP: +30% DEF.";
-        }
-        if (selectSkill.value == "Momentum") {
-            skillDesc.innerHTML = "Each attack without taking damage grants +3% damage (max +60%). Resets when hit.";
-        }
-        if (selectSkill.value == "Leech Lord") {
-            skillDesc.innerHTML = "Kill healing +35% but deal -15% damage.";
-        }
+        skillDesc.innerHTML = skillDescText(selectSkill.value);
     }
     let selectClass = document.querySelector("#select-class");
     let classDesc = document.querySelector("#class-desc");
     selectClass.onchange = function () {
         sfxConfirm.play();
-        classDesc.innerHTML = CLASSES[selectClass.value].desc;
+        classDesc.innerHTML = t(`cc.classdesc.${selectClass.value}`);
     }
-    const DIFF_DESCS = {
-        normal: "Standard difficulty.",
-        hard: "Enemies: +40% HP, +25% ATK, +20% DEF. Rewards x1.3.",
-        inferno: "Enemies: +100% HP, +55% ATK, +45% DEF. Rewards x1.6, better drops."
-    };
     let selectDiff = document.querySelector("#select-difficulty");
     let diffDesc = document.querySelector("#diff-desc");
     if (selectDiff && diffDesc) {
         selectDiff.value = player.difficulty || "normal";
-        diffDesc.innerHTML = DIFF_DESCS[selectDiff.value];
+        diffDesc.innerHTML = t(`cc.diffdesc.${selectDiff.value}`);
         selectDiff.onchange = function () {
             sfxConfirm.play();
-            diffDesc.innerHTML = DIFF_DESCS[selectDiff.value];
+            diffDesc.innerHTML = t(`cc.diffdesc.${selectDiff.value}`);
         };
     }
 

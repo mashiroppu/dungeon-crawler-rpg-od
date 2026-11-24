@@ -366,15 +366,15 @@ const showItemInfo = (item, icon, type, i) => {
     dimContainer.style.filter = "brightness(50%)";
     itemInfo.innerHTML = `
             <div class="content">
-                <h3 class="${item.rarity}">${icon}${item.rarity} ${item.category}${item.finalized ? ' <span class="finalized-badge">★ MAX</span>' : ''}</h3>
-                <h5 class="lvltier ${item.rarity}"><b>Lv.${item.lvl} Tier ${item.tier}</b></h5>
+                <h3 class="${item.rarity}">${icon}${itemName(item)}${item.finalized ? ' <span class="finalized-badge">★ MAX</span>' : ''}</h3>
+                <h5 class="lvltier ${item.rarity}"><b>Lv.${item.lvl} ${tierLabel()} ${item.tier}</b></h5>
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
                 <div class="button-container">
-                    <button id="un-equip">${type}</button>
-                    ${item.affixes && item.affixes.length && !item.finalized ? '<button id="reroll-equip"><i class="ra ra-recycle"></i>Reroll</button>' : ''}
-                    ${item.affixes && item.affixes.length && !item.finalized ? '<button id="finalize-equip"><i class="ra ra-check"></i>Finalize</button>' : ''}
+                    <button id="un-equip">${type === "Equip" ? t("eq.equip") : t("eq.unequip")}</button>
+                    ${item.affixes && item.affixes.length && !item.finalized ? `<button id="reroll-equip"><i class="ra ra-recycle"></i>${t("eq.reroll")}</button>` : ''}
+                    ${item.affixes && item.affixes.length && !item.finalized ? `<button id="finalize-equip"><i class="ra ra-check"></i>${t("eq.finalize")}</button>` : ''}
                     <button id="sell-equip"><i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(item.value)}</button>
-                    <button id="close-item-info">Close</button>
+                    <button id="close-item-info">${t("eq.close")}</button>
                 </div>
             </div>`;
 
@@ -421,10 +421,10 @@ const showItemInfo = (item, icon, type, i) => {
         defaultModalElement.style.display = "flex";
         defaultModalElement.innerHTML = `
         <div class="content">
-            <p>Sell <span class="${item.rarity}">${icon}${item.rarity} ${item.category}</span>?</p>
+            <p>${tParams("eq.sellQ", { r: item.rarity, item: `${icon}${itemName(item)}` })}</p>
             <div class="button-container">
-                <button id="sell-confirm">Sell</button>
-                <button id="sell-cancel">Cancel</button>
+                <button id="sell-confirm">${t("eq.sell")}</button>
+                <button id="sell-cancel">${t("common.cancel")}</button>
             </div>
         </div>`;
 
@@ -496,11 +496,11 @@ const showItemInfo = (item, icon, type, i) => {
             defaultModalElement.style.display = "flex";
             defaultModalElement.innerHTML = `
             <div class="content">
-                <p>Finalize <span class="${item.rarity}">${icon}${item.rarity} ${item.category}</span>?</p>
-                <p style="font-size:0.85rem;color:#999">All options +40% — reroll locked<br>Cost: <b>${nFormatter(cost)}G</b></p>
+                <p>${tParams("eq.finQ", { r: item.rarity, item: `${icon}${itemName(item)}` })}</p>
+                <p style="font-size:0.85rem;color:#999">${tParams("eq.finNote", { c: nFormatter(cost) })}</p>
                 <div class="button-container">
-                    <button id="fin-confirm">Finalize</button>
-                    <button id="fin-cancel">Cancel</button>
+                    <button id="fin-confirm">${t("eq.finalize")}</button>
+                    <button id="fin-cancel">${t("common.cancel")}</button>
                 </div>
             </div>`;
 
@@ -560,7 +560,7 @@ const showInventory = () => {
     playerInventoryList.innerHTML = "";
 
     if (player.inventory.equipment.length == 0) {
-        playerInventoryList.innerHTML = "There are no items available.";
+        playerInventoryList.innerHTML = t("eq.empty");
     }
 
     for (let i = 0; i < player.inventory.equipment.length; i++) {
@@ -570,7 +570,7 @@ const showInventory = () => {
         let itemDiv = document.createElement('div');
         let icon = equipmentIcon(item.category);
         itemDiv.className = "items";
-        itemDiv.innerHTML = `<p class="${item.rarity}">${icon}${item.rarity} ${item.category}</p>`;
+        itemDiv.innerHTML = `<p class="${item.rarity}">${icon}${itemName(item)}</p>`;
         itemDiv.addEventListener('click', function () {
             let type = "Equip";
             showItemInfo(item, icon, type, i);
@@ -589,7 +589,7 @@ const showEquipment = () => {
 
     // Show a message if a player has no equipment
     if (player.equipped.length == 0) {
-        playerEquipmentList.innerHTML = "Nothing equipped.";
+        playerEquipmentList.innerHTML = t("eq.nothing");
     }
 
     for (let i = 0; i < player.equipped.length; i++) {
@@ -734,16 +734,15 @@ const createEquipmentPrint = (condition) => {
     let item = createEquipment();
     let panel = `
         <div class="primary-panel" style="padding: 0.5rem; margin-top: 0.5rem;">
-                <h4 class="${item.rarity}"><b>${item.icon}${item.rarity} ${item.category}</b></h4>
-                <h5 class="${item.rarity}"><b>Lv.${item.lvl} Tier ${item.tier}</b></h5>
+                <h4 class="${item.rarity}"><b>${item.icon}${itemName(item)}</b></h4>
+                <h5 class="${item.rarity}"><b>Lv.${item.lvl} ${tierLabel()} ${item.tier}</b></h5>
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
         </div>`;
     if (condition == "combat") {
         addCombatLog(`
-        ${enemy.name} dropped <span class="${item.rarity}">${item.rarity} ${item.category}</span>.<br>${panel}`);
+        ${enemy.name} dropped <span class="${item.rarity}">${itemName(item)}</span>.<br>${panel}`);
     } else if (condition == "dungeon") {
-        addDungeonLog(`
-        You got <span class="${item.rarity}">${item.rarity} ${item.category}</span>.<br>${panel}`);
+        addDungeonLog(tParams("eq.gotItem", { r: item.rarity, item: `${item.icon}${itemName(item)}`, panel }));
     }
 }
 // ===== Legacy Storage (persists across runs, max 12) =====
@@ -774,17 +773,17 @@ const showLegacyModal = (onDone) => {
     defaultModalElement.style.display = "flex";
     defaultModalElement.innerHTML = `
     <div class="content" id="legacy-modal">
-        <div class="content-head"><h3>Legacy</h3></div>
-        <p class="legacy-hint">Choose ONE item to carry into the next run. (Storage ${player.storage.length}/${STORAGE_MAX})</p>
+        <div class="content-head"><h3>${t("legacy.title")}</h3></div>
+        <p class="legacy-hint">${tParams("legacy.hint", { n: player.storage.length, max: STORAGE_MAX })}</p>
         <div class="legacy-list">
             ${candidates.map((c, i) => {
                 const icon = equipmentIcon(c.item.category);
-                return `<div class="items legacy-item" data-i="${i}"><p class="${c.item.rarity}">${icon}${c.item.rarity} ${c.item.category}</p></div>`;
+                return `<div class="items legacy-item" data-i="${i}"><p class="${c.item.rarity}">${icon}${itemName(c.item)}</p></div>`;
             }).join("")}
         </div>
         <div class="button-container">
-            <button id="legacy-send">Send to Storage</button>
-            <button id="legacy-skip">Lose All</button>
+            <button id="legacy-send">${t("legacy.send")}</button>
+            <button id="legacy-skip">${t("legacy.lose")}</button>
         </div>
     </div>`;
 

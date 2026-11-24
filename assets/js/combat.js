@@ -516,7 +516,7 @@ const combatCounter = () => {
     combatSeconds++;
     combatSecondTick();
     if (combatSeconds === 60 && player.inCombat && !enemyDead && !playerDead) {
-        addCombatLog(`You can flee from battle now!`);
+        addCombatLog(t("combat.fleeReady"));
     }
 }
 
@@ -524,7 +524,7 @@ const combatCounter = () => {
 const fleeCombat = () => {
     sfxConfirm.play();
     endCombat();
-    addDungeonLog(`You fled from ${enemy.name}.`);
+    addDungeonLog(tParams("dgn.log.fleeFrom", { name: enemy.name }));
 
     let dimDungeon = document.querySelector('#dungeon-main');
     dimDungeon.style.filter = "brightness(100%)";

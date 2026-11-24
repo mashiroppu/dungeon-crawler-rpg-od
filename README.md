@@ -4,6 +4,8 @@ A browser-based roguelite dungeon crawler. Climb 100 floors of procedurally
 generated dungeons, loot Diablo-style equipment, and build your perfect run.
 No build step required — just open `index.html`.
 
+> 日本語版: [README.ja.md](README.ja.md)
+
 ## Features
 
 ### Classes
@@ -55,6 +57,7 @@ and heals. Up to 3 abilities can be slotted in the loadout.
 - **TIP menu**: in-game knowledge base (stats, affixes, combat,
   progression) plus your active set effects
 - Grid-room animated battle backdrop
+- **Language toggle**: Menu → Language switches English / 日本語
 
 ## How to Play
 

@@ -569,7 +569,7 @@ const updateAbilityBar = () => {
 const checkAbilityUnlocks = (prevIds) => {
     for (const a of unlockedAbilities()) {
         if (!prevIds.includes(a.id)) {
-            addDungeonLog(`New ability learned: <b>${a.name}</b> — ${a.desc}`);
+            addDungeonLog(tParams("dgn.log.abilityNew", { name: a.name, desc: a.desc }));
         }
     }
 };

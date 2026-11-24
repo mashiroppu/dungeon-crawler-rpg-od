@@ -116,13 +116,13 @@ const dungeonEvent = () => {
                 dungeon.status.event = true;
                 choices = `
                     <div class="decision-panel">
-                        <button id="choice1">Enter</button>
-                        <button id="choice2">Ignore</button>
+                        <button id="choice1">${t("dgn.c.enter")}</button>
+                        <button id="choice2">${t("dgn.c.ignore")}</button>
                     </div>`;
                 if (dungeon.progress.room == dungeon.progress.roomLimit) {
-                    addDungeonLog(`<span class="Heirloom">You found the door to the boss room.</span>`, choices);
+                    addDungeonLog(t("dgn.log.bossDoor"), choices);
                 } else {
-                    addDungeonLog("You found a door.", choices);
+                    addDungeonLog(t("dgn.log.door"), choices);
                 }
                 document.querySelector("#choice1").onclick = function () {
                     sfxConfirm.play();
@@ -133,15 +133,15 @@ const dungeonEvent = () => {
                         if (eventRoll == 1) {
                             incrementRoom();
                             mimicBattle("door");
-                            addDungeonLog("You moved to the next floor.");
+                            addDungeonLog(t("dgn.log.advance"));
                         } else if (eventRoll == 2) {
                             incrementRoom();
                             choices = `
                                 <div class="decision-panel">
-                                    <button id="choice1">Open the chest</button>
-                                    <button id="choice2">Ignore</button>
+                                    <button id="choice1">${t("dgn.c.openChest")}</button>
+                                    <button id="choice2">${t("dgn.c.ignore")}</button>
                                 </div>`;
-                            addDungeonLog(`You moved to the next room and found a treasure chamber. There is a <i class="fa fa-toolbox"></i>Chest inside.`, choices);
+                            addDungeonLog(t("dgn.log.roomChest"), choices);
                             document.querySelector("#choice1").onclick = function () {
                                 chestEvent();
                             }
@@ -152,7 +152,7 @@ const dungeonEvent = () => {
                         } else {
                             dungeon.status.event = false;
                             incrementRoom();
-                            addDungeonLog("You moved to the next room.");
+                            addDungeonLog(t("dgn.log.nextRoom"));
                         }
                     }
                 };
@@ -165,10 +165,10 @@ const dungeonEvent = () => {
                 dungeon.status.event = true;
                 choices = `
                     <div class="decision-panel">
-                        <button id="choice1">Open the chest</button>
-                        <button id="choice2">Ignore</button>
+                        <button id="choice1">${t("dgn.c.openChest")}</button>
+                        <button id="choice2">${t("dgn.c.ignore")}</button>
                     </div>`;
-                addDungeonLog(`You found a treasure chamber. There is a <i class="fa fa-toolbox"></i>Chest inside.`, choices);
+                addDungeonLog(t("dgn.log.chestRoom"), choices);
                 document.querySelector("#choice1").onclick = function () {
                     chestEvent();
                 }
@@ -183,11 +183,11 @@ const dungeonEvent = () => {
                 dungeon.status.event = true;
                 choices = `
                     <div class="decision-panel">
-                        <button id="choice1">Engage</button>
-                        <button id="choice2">Flee</button>
+                        <button id="choice1">${t("dgn.c.engage")}</button>
+                        <button id="choice2">${t("dgn.c.flee")}</button>
                     </div>`;
                 generateRandomEnemy();
-                addDungeonLog(`You encountered ${enemy.name}.`, choices);
+                addDungeonLog(tParams("dgn.log.encounter", { name: enemy.name }), choices);
                 player.inCombat = true;
                 document.querySelector("#choice1").onclick = function () {
                     engageBattle();
@@ -204,14 +204,14 @@ const dungeonEvent = () => {
                     let cost = player.blessing * (500 * (player.blessing * 0.5)) + 750;
                     choices = `
                         <div class="decision-panel">
-                            <button id="choice1">Offer</button>
-                            <button id="choice2">Ignore</button>
+                            <button id="choice1">${t("dgn.c.offer")}</button>
+                            <button id="choice2">${t("dgn.c.ignore")}</button>
                         </div>`;
-                    addDungeonLog(`<span class="Legendary">You found a Statue of Blessing. Do you want to offer <i class="fas fa-coins" style="color: #FFD700;"></i><span class="Common">${nFormatter(cost)}</span> to gain blessings? (Blessing Lv.${player.blessing})</span>`, choices);
+                    addDungeonLog(tParams("dgn.log.blessing", { cost: nFormatter(cost), blessing: player.blessing }), choices);
                     document.querySelector("#choice1").onclick = function () {
                         if (player.gold < cost) {
                             sfxDeny.play();
-                            addDungeonLog("You don't have enough gold.");
+                            addDungeonLog(t("dgn.log.noGold"));
                         } else {
                             player.gold -= cost;
                             sfxConfirm.play();
@@ -234,14 +234,14 @@ const dungeonEvent = () => {
                     let cost = curseLvl * (10000 * (curseLvl * 0.5)) + 5000;
                     choices = `
                             <div class="decision-panel">
-                                <button id="choice1">Offer</button>
-                                <button id="choice2">Ignore</button>
+                                <button id="choice1">${t("dgn.c.offer")}</button>
+                                <button id="choice2">${t("dgn.c.ignore")}</button>
                             </div>`;
-                    addDungeonLog(`<span class="Heirloom">You found a Cursed Totem. Do you want to offer <i class="fas fa-coins" style="color: #FFD700;"></i><span class="Common">${nFormatter(cost)}</span>? This will strengthen the monsters but will also improve the loot quality. (Curse Lv.${curseLvl})</span>`, choices);
+                    addDungeonLog(tParams("dgn.log.curse", { cost: nFormatter(cost), curse: curseLvl }), choices);
                     document.querySelector("#choice1").onclick = function () {
                         if (player.gold < cost) {
                             sfxDeny.play();
-                            addDungeonLog("You don't have enough gold.");
+                            addDungeonLog(t("dgn.log.noGold"));
                         } else {
                             player.gold -= cost;
                             sfxConfirm.play();
@@ -262,10 +262,10 @@ const dungeonEvent = () => {
                     dungeon.status.event = true;
                     choices = `
                             <div class="decision-panel">
-                                <button id="choice1">Enter</button>
-                                <button id="choice2">Ignore</button>
+                                <button id="choice1">${t("dgn.c.enter")}</button>
+                                <button id="choice2">${t("dgn.c.ignore")}</button>
                             </div>`;
-                    addDungeonLog(`<span class="Heirloom">You found a mysterious chamber. It seems like there is something sleeping inside.</span>`, choices);
+                    addDungeonLog(t("dgn.log.mysterious"), choices);
                     document.querySelector("#choice1").onclick = function () {
                         specialBossBattle();
                     }
@@ -284,7 +284,7 @@ const dungeonEvent = () => {
 const engageBattle = () => {
     showCombatInfo();
     startCombat(bgmBattleMain);
-    addCombatLog(`You encountered ${enemy.name}.`);
+    addCombatLog(tParams("dgn.log.encounter", { name: enemy.name }));
     updateDungeonLog();
 }
 
@@ -293,8 +293,8 @@ const mimicBattle = (type) => {
     generateRandomEnemy(type);
     showCombatInfo();
     startCombat(bgmBattleMain);
-    addCombatLog(`You encountered ${enemy.name}.`);
-    addDungeonLog(`You encountered ${enemy.name}.`);
+    addCombatLog(tParams("dgn.log.encounter", { name: enemy.name }));
+    addDungeonLog(tParams("dgn.log.encounter", { name: enemy.name }));
 }
 
 // Guardian boss fight
@@ -303,8 +303,8 @@ const guardianBattle = () => {
     generateRandomEnemy("guardian");
     showCombatInfo();
     startCombat(bgmBattleGuardian);
-    addCombatLog(`Floor Guardian ${enemy.name} is blocking your way.`);
-    addDungeonLog("You moved to the next floor.");
+    addCombatLog(tParams("dgn.log.guardian", { name: enemy.name }));
+    addDungeonLog(t("dgn.log.advance"));
 }
 
 // Guardian boss fight
@@ -312,8 +312,8 @@ const specialBossBattle = () => {
     generateRandomEnemy("sboss");
     showCombatInfo();
     startCombat(bgmBattleBoss);
-    addCombatLog(`Dungeon Monarch ${enemy.name} has awoken.`);
-    addDungeonLog(`Dungeon Monarch ${enemy.name} has awoken.`);
+    addCombatLog(tParams("dgn.log.monarch", { name: enemy.name }));
+    addDungeonLog(tParams("dgn.log.monarch", { name: enemy.name }));
 }
 
 // Flee from the monster
@@ -321,15 +321,15 @@ const fleeBattle = () => {
     let eventRoll = randomizeNum(1, 2);
     if (eventRoll == 1) {
         sfxConfirm.play();
-        addDungeonLog(`You managed to flee.`);
+        addDungeonLog(t("dgn.log.fleeOk"));
         player.inCombat = false;
         dungeon.status.event = false;
     } else {
-        addDungeonLog(`You failed to escape!`);
+        addDungeonLog(t("dgn.log.fleeFail"));
         showCombatInfo();
         startCombat(bgmBattleMain);
-        addCombatLog(`You encountered ${enemy.name}.`);
-        addCombatLog(`You failed to escape!`);
+        addCombatLog(tParams("dgn.log.encounter", { name: enemy.name }));
+        addCombatLog(t("dgn.log.fleeFail"));
     }
 }
 
@@ -350,7 +350,7 @@ const chestEvent = () => {
         goldDrop();
         dungeon.status.event = false;
     } else {
-        addDungeonLog("The chest is empty.");
+        addDungeonLog(t("dgn.log.chestEmpty"));
         dungeon.status.event = false;
     }
 }
@@ -359,7 +359,7 @@ const chestEvent = () => {
 const goldDrop = () => {
     sfxSell.play();
     let goldValue = randomizeNum(50, 500) * dungeon.progress.floor;
-    addDungeonLog(`You found <i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(goldValue)}.`);
+    addDungeonLog(tParams("dgn.log.gold", { g: `<i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(goldValue)}` }));
     player.gold += goldValue;
     playerLoadStats();
 }
@@ -368,15 +368,15 @@ const goldDrop = () => {
 const nothingEvent = () => {
     let eventRoll = randomizeNum(1, 5);
     if (eventRoll == 1) {
-        addDungeonLog("You explored and found nothing.");
+        addDungeonLog(t("dgn.log.nothing1"));
     } else if (eventRoll == 2) {
-        addDungeonLog("You found an empty chest.");
+        addDungeonLog(t("dgn.log.nothing2"));
     } else if (eventRoll == 3) {
-        addDungeonLog("You found a monster corpse.");
+        addDungeonLog(t("dgn.log.nothing3"));
     } else if (eventRoll == 4) {
-        addDungeonLog("You found a corpse.");
+        addDungeonLog(t("dgn.log.nothing4"));
     } else if (eventRoll == 5) {
-        addDungeonLog("There is nothing in this area.");
+        addDungeonLog(t("dgn.log.nothing5"));
     }
 }
 
@@ -416,7 +416,7 @@ const statBlessing = () => {
             player.bonusStats.critDmg += value;
             break;
     }
-    addDungeonLog(`You gained ${value}% bonus ${buff.replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase()} from the blessing. (Blessing Lv.${player.blessing} > Blessing Lv.${player.blessing + 1})`);
+    addDungeonLog(tParams("dgn.log.blessGain", { v: value, s: buff.replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase(), a: player.blessing, b: player.blessing + 1 }));
     blessingUp();
     playerLoadStats();
     saveData();
@@ -426,7 +426,7 @@ const statBlessing = () => {
 const cursedTotem = (curseLvl) => {
     sfxBuff.play();
     dungeon.settings.enemyScaling += 0.1;
-    addDungeonLog(`The monsters in the dungeon became stronger and the loot quality improved. (Curse Lv.${curseLvl} > Curse Lv.${curseLvl + 1})`);
+    addDungeonLog(tParams("dgn.log.curseGain", { a: curseLvl, b: curseLvl + 1 }));
     saveData();
 }
 
@@ -434,7 +434,7 @@ const cursedTotem = (curseLvl) => {
 const ignoreEvent = () => {
     sfxConfirm.play();
     dungeon.status.event = false;
-    addDungeonLog("You ignored it and decided to move on.");
+    addDungeonLog(t("dgn.log.ignore"));
 }
 
 // Increase room or floor accordingly

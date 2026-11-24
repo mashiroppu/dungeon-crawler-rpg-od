@@ -106,6 +106,146 @@ const STRINGS = {
     "loadout.hint":         { en: "{c} — slot up to {n} abilities", ja: "{c} — 最大{n}つまでセット可能" },
     "loadout.cancel":       { en: "Cancel", ja: "キャンセル" },
     "loadout.confirm":      { en: "Confirm", ja: "決定" },
+
+    // ---- Dungeon exploration ----
+    "dgn.c.enter":          { en: "Enter", ja: "進む" },
+    "dgn.c.ignore":         { en: "Ignore", ja: "無視" },
+    "dgn.c.openChest":      { en: "Open the chest", ja: "宝箱を開ける" },
+    "dgn.c.engage":         { en: "Engage", ja: "戦う" },
+    "dgn.c.flee":           { en: "Flee", ja: "逃げる" },
+    "dgn.c.offer":          { en: "Offer", ja: "捧げる" },
+    "dgn.log.bossDoor":     { en: '<span class="Heirloom">You found the door to the boss room.</span>', ja: '<span class="Heirloom">ボスルームへの扉を見つけた。</span>' },
+    "dgn.log.door":         { en: "You found a door.", ja: "扉を見つけた。" },
+    "dgn.log.advance":      { en: "You moved to the next floor.", ja: "次のフロアへ進んだ。" },
+    "dgn.log.roomChest":    { en: 'You moved to the next room and found a treasure chamber. There is a <i class="fa fa-toolbox"></i>Chest inside.', ja: '次のルームへ移動し、宝物庫を見つけた。中に<i class="fa fa-toolbox"></i>宝箱がある。' },
+    "dgn.log.nextRoom":     { en: "You moved to the next room.", ja: "次のルームへ移動した。" },
+    "dgn.log.chestRoom":    { en: 'You found a treasure chamber. There is a <i class="fa fa-toolbox"></i>Chest inside.', ja: '宝物庫を見つけた。中に<i class="fa fa-toolbox"></i>宝箱がある。' },
+    "dgn.log.encounter":    { en: "You encountered {name}.", ja: "{name}に遭遇した。" },
+    "dgn.log.blessing":     { en: '<span class="Legendary">You found a Statue of Blessing. Do you want to offer <i class="fas fa-coins" style="color: #FFD700;"></i><span class="Common">{cost}</span> to gain blessings? (Blessing Lv.{blessing})</span>', ja: '<span class="Legendary">祝福の像を見つけた。<i class="fas fa-coins" style="color: #FFD700;"></i><span class="Common">{cost}</span>を捧げて祝福を得るか？（祝福Lv.{blessing}）</span>' },
+    "dgn.log.noGold":       { en: "You don't have enough gold.", ja: "ゴールドが足りない。" },
+    "dgn.log.curse":        { en: '<span class="Heirloom">You found a Cursed Totem. Do you want to offer <i class="fas fa-coins" style="color: #FFD700;"></i><span class="Common">{cost}</span>? This will strengthen the monsters but will also improve the loot quality. (Curse Lv.{curse})</span>', ja: '<span class="Heirloom">呪いのトーテムを見つけた。<i class="fas fa-coins" style="color: #FFD700;"></i><span class="Common">{cost}</span>を捧げるか？モンスターは強くなるが戦利品の質も上がる。（呪いLv.{curse}）</span>' },
+    "dgn.log.mysterious":   { en: '<span class="Heirloom">You found a mysterious chamber. It seems like there is something sleeping inside.</span>', ja: '<span class="Heirloom">謎の部屋を見つけた。中で何かが眠っているようだ。</span>' },
+    "dgn.log.guardian":     { en: "Floor Guardian {name} is blocking your way.", ja: "フロアガーディアン {name} が行く手を阻んでいる。" },
+    "dgn.log.monarch":      { en: "Dungeon Monarch {name} has awoken.", ja: "ダンジョンモナーク {name} が目覚めた。" },
+    "dgn.log.fleeOk":       { en: "You managed to flee.", ja: "うまく逃げ切れた。" },
+    "dgn.log.fleeFail":     { en: "You failed to escape!", ja: "逃走に失敗した！" },
+    "dgn.log.chestEmpty":   { en: "The chest is empty.", ja: "宝箱は空だった。" },
+    "dgn.log.nothing1":     { en: "You explored and found nothing.", ja: "探索したが何もなかった。" },
+    "dgn.log.nothing2":     { en: "You found an empty chest.", ja: "空の宝箱を見つけた。" },
+    "dgn.log.nothing3":     { en: "You found a monster corpse.", ja: "モンスターの死体を見つけた。" },
+    "dgn.log.nothing4":     { en: "You found a corpse.", ja: "死体を見つけた。" },
+    "dgn.log.nothing5":     { en: "There is nothing in this area.", ja: "この辺りには何もない。" },
+    "dgn.log.blessGain":    { en: "You gained {v}% bonus {s} from the blessing. (Blessing Lv.{a} > Blessing Lv.{b})", ja: "祝福によりボーナス{s}が{v}%上昇した。（祝福Lv.{a} > 祝福Lv.{b}）" },
+    "dgn.log.curseGain":    { en: "The monsters in the dungeon became stronger and the loot quality improved. (Curse Lv.{a} > Curse Lv.{b})", ja: "ダンジョンのモンスターが強化され、戦利品の質が上がった。（呪いLv.{a} > 呪いLv.{b}）" },
+    "dgn.log.ignore":       { en: "You ignored it and decided to move on.", ja: "無視して先へ進んだ。" },
+    "dgn.log.gold":         { en: 'You found <i class="fas fa-coins" style="color: #FFD700;"></i>{g}.', ja: '<i class="fas fa-coins" style="color: #FFD700;"></i>{g}を見つけた。' },
+    "dgn.log.fleeFrom":     { en: "You fled from {name}.", ja: "{name}から逃げた。" },
+    "dgn.log.abilityNew":   { en: "New ability learned: <b>{name}</b> — {desc}", ja: "新しいアビリティを習得：<b>{name}</b> — {desc}" },
+    "combat.fleeReady":     { en: "You can flee from battle now!", ja: "今なら戦闘から逃げられる！" },
+
+    // ---- Equipment / Inventory ----
+    "eq.equip":             { en: "Equip", ja: "装備" },
+    "eq.unequip":           { en: "Unequip", ja: "外す" },
+    "eq.reroll":            { en: "Reroll", ja: "リロール" },
+    "eq.finalize":          { en: "Finalize", ja: "確定" },
+    "eq.close":             { en: "Close", ja: "閉じる" },
+    "eq.sell":              { en: "Sell", ja: "売却" },
+    "eq.sellQ":             { en: "Sell <span class=\"{r}\">{item}</span>?", ja: "<span class=\"{r}\">{item}</span>を売却しますか？" },
+    "eq.finQ":              { en: "Finalize <span class=\"{r}\">{item}</span>?", ja: "<span class=\"{r}\">{item}</span>を確定しますか？" },
+    "eq.finNote":           { en: "All options +40% — reroll locked<br>Cost: <b>{c}G</b>", ja: "全オプション+40% — リロール不可<br>費用: <b>{c}G</b>" },
+    "eq.nothing":           { en: "Nothing equipped.", ja: "装備なし。" },
+    "eq.empty":             { en: "There are no items available.", ja: "アイテムがありません。" },
+    "eq.tier":              { en: "Tier", ja: "ティア" },
+    "eq.gotItem":           { en: "You got <span class=\"{r}\">{item}</span>.<br>{panel}", ja: "<span class=\"{r}\">{item}</span>を手に入れた。<br>{panel}" },
+    "legacy.title":         { en: "Legacy", ja: "レガシー" },
+    "legacy.hint":          { en: "Choose ONE item to carry into the next run. (Storage {n}/{max})", ja: "次のランに持ち越すアイテムを1つ選んでください。（保管庫 {n}/{max}）" },
+    "legacy.send":          { en: "Send to Storage", ja: "保管庫へ送る" },
+    "legacy.lose":          { en: "Lose All", ja: "すべて失う" },
+
+    // ---- Character creation (stat allocation) ----
+    "cc.alloc":             { en: "Allocate Stats", ja: "ステータス配分" },
+    "cc.statPoints":        { en: "Stat Points: {p}", ja: "ステータスポイント: {p}" },
+    "common.reset":         { en: "Reset", ja: "リセット" },
+    "cc.class":             { en: "Class", ja: "クラス" },
+    "cc.passive":           { en: "Passive", ja: "パッシブ" },
+    "cc.difficulty":        { en: "Difficulty", ja: "難易度" },
+    "cc.legacy":            { en: "Legacy Storage ({n}/{max})", ja: "レガシー保管庫（{n}/{max}）" },
+    "cc.legacyHint":        { en: "Select up to {n} items to start equipped.", ja: "開始時に装備するアイテムを最大{n}個選んでください。" },
+    "cc.optNormal":         { en: "Normal", ja: "ノーマル" },
+    "cc.optHard":           { en: "Hard", ja: "ハード" },
+    "cc.optInferno":        { en: "Inferno", ja: "インフェルノ" },
+    "cc.classdesc.warrior": { en: "Frontline fighter. High HP/ATK/DEF.", ja: "前衛の戦士。高いHP/ATK/DEF。" },
+    "cc.classdesc.mage":    { en: "Glass cannon. High ATK and crit damage.", ja: "ガラスキャノン。高いATKとクリティカルダメージ。" },
+    "cc.classdesc.rogue":   { en: "Speed star. High ATK.SPD and crit rate.", ja: "スピードスター。高いATK.SPDとクリティカル率。" },
+    "cc.classdesc.lancer":  { en: "Reach fighter. High ATK.SPD, solid ATK/DEF.", ja: "リーチファイター。高いATK.SPDと安定したATK/DEF。" },
+    "cc.classdesc.paladin": { en: "Holy defender. Reflects damage, shields and heals.", ja: "聖なる防御者。ダメージ反射・シールド・回復。" },
+    "cc.diffdesc.normal":   { en: "Standard difficulty.", ja: "標準の難易度。" },
+    "cc.diffdesc.hard":     { en: "Enemies: +40% HP, +25% ATK, +20% DEF. Rewards x1.3.", ja: "敵: HP+40%、ATK+25%、DEF+20%。報酬x1.3。" },
+    "cc.diffdesc.inferno":  { en: "Enemies: +100% HP, +55% ATK, +45% DEF. Rewards x1.6, better drops.", ja: "敵: HP+100%、ATK+55%、DEF+45%。報酬x1.6、ドロップ率上昇。" },
+};
+
+// Passive skill descriptions (character creation)
+const SKILL_DESC_KEYS = {
+    "Remnant Razor":   "cc.skill.remnantRazor",
+    "Titan's Will":    "cc.skill.titansWill",
+    "Devastator":      "cc.skill.devastator",
+    "Rampager":        "cc.skill.rampager",
+    "Blade Dance":     "cc.skill.bladeDance",
+    "Paladin's Heart": "cc.skill.paladinsHeart",
+    "Aegis Thorns":    "cc.skill.aegisThorns",
+    "Blood Tithe":     "cc.skill.bloodTithe",
+    "Second Wind":     "cc.skill.secondWind",
+    "Adrenaline":      "cc.skill.adrenaline",
+    "Executioner":     "cc.skill.executioner",
+    "Glass Cannon":    "cc.skill.glassCannon",
+    "Iron Will":       "cc.skill.ironWill",
+    "Momentum":        "cc.skill.momentum",
+    "Leech Lord":      "cc.skill.leechLord",
+};
+const SKILL_DESC_EN = {
+    "Remnant Razor":   "Attacks deal extra 8% of enemies' current health on hit.",
+    "Titan's Will":    "Attacks deal extra 6% of your maximum health on hit.",
+    "Devastator":      "Deal 40% more damage but you lose 30% base attack speed.",
+    "Rampager":        "Increase attack by 5 after each hit. Stack resets after battle.",
+    "Blade Dance":     "Gain increased attack speed after each hit. Stack resets after battle.",
+    "Paladin's Heart": "You receive 25% less damage permanently.",
+    "Aegis Thorns":    "Enemies receive 20% of the damage they dealt.",
+    "Blood Tithe":     "Each attack costs 2% of your max HP. Taking damage heals 6% of your max HP.",
+    "Second Wind":     "Once per battle, survive a lethal blow at 1 HP.",
+    "Adrenaline":      "Below 30% HP: +40% ATK.SPD and +20% damage.",
+    "Executioner":     "Enemies below 30% HP take +35% damage.",
+    "Glass Cannon":    "+35% ATK but -25% max HP.",
+    "Iron Will":       "Below 50% HP: +30% DEF.",
+    "Momentum":        "Each attack without taking damage grants +3% damage (max +60%). Resets when hit.",
+    "Leech Lord":      "Kill healing +35% but deal -15% damage.",
+};
+for (const [name, key] of Object.entries(SKILL_DESC_KEYS)) {
+    STRINGS[key] = { en: SKILL_DESC_EN[name], ja: "" };
+}
+// Japanese passive descriptions
+const SKILL_DESC_JA = {
+    "cc.skill.remnantRazor": "攻撃命中時、敵の現在HPの8%を追加ダメージ。",
+    "cc.skill.titansWill": "攻撃命中時、自分の最大HPの6%を追加ダメージ。",
+    "cc.skill.devastator": "ダメージ+40%だが、基本攻撃速度-30%。",
+    "cc.skill.rampager": "攻撃のたびにATK+5。戦闘終了でリセット。",
+    "cc.skill.bladeDance": "攻撃のたびに攻撃速度上昇。戦闘終了でリセット。",
+    "cc.skill.paladinsHeart": "被ダメージを常時25%軽減。",
+    "cc.skill.aegisThorns": "敵が与えたダメージの20%を反射。",
+    "cc.skill.bloodTithe": "攻撃ごとに最大HPの2%を消費。被ダメ時に最大HPの6%回復。",
+    "cc.skill.secondWind": "1戦闘に1度、致命傷をHP1で耐える。",
+    "cc.skill.adrenaline": "HP30%以下: ATK.SPD+40%、ダメージ+20%。",
+    "cc.skill.executioner": "HP30%以下の敵に与えるダメージ+35%。",
+    "cc.skill.glassCannon": "ATK+35%だが最大HP-25%。",
+    "cc.skill.ironWill": "HP50%以下: DEF+30%。",
+    "cc.skill.momentum": "被弾せず攻撃するたびにダメージ+3%（最大+60%）。被弾でリセット。",
+    "cc.skill.leechLord": "キル時の回復量+35%だが与ダメージ-15%。",
+};
+for (const [key, ja] of Object.entries(SKILL_DESC_JA)) {
+    STRINGS[key].ja = ja;
+}
+const skillDescText = (name) => {
+    const key = SKILL_DESC_KEYS[name];
+    return key ? t(key) : (SKILL_DESC_EN[name] || "");
 };
 
 const t = (key) => {
@@ -118,6 +258,19 @@ const tParams = (key, params) => {
     for (const k in params) s = s.replace(`{${k}}`, params[k]);
     return s;
 };
+
+// ---- Item display localization (rarity + category names) ----
+const RARITY_JA = { Common: "コモン", Uncommon: "アンコモン", Rare: "レア", Epic: "エピック", Legendary: "レジェンダリー", Heirloom: "ヒアローム" };
+const CAT_JA = {
+    Sword: "ソード", Axe: "アクス", Hammer: "ハンマー", Dagger: "ダガー", Flail: "メイス", Scythe: "サイズ",
+    Plate: "プレート", Chain: "チェイン", Leather: "レザー", Tower: "タワー", Kite: "カイト", Buckler: "バックラー",
+    "Great Helm": "グレートヘルム", "Horned Helm": "ホーンヘルム",
+    Weapon: "武器", Armor: "防具", Shield: "盾", Helmet: "兜",
+};
+const rarityLabel = (r) => (LANG === "ja" && RARITY_JA[r]) ? RARITY_JA[r] : r;
+const catLabel = (c) => (LANG === "ja" && CAT_JA[c]) ? CAT_JA[c] : c;
+const itemName = (item) => `${rarityLabel(item.rarity)} ${catLabel(item.category)}`;
+const tierLabel = () => (LANG === "ja") ? "ティア" : "Tier";
 
 // Update static DOM labels (elements tagged with data-i18n or known ids)
 const applyStaticI18n = () => {
