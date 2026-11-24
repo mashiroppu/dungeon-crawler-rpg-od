@@ -65,8 +65,8 @@ and heals. Up to 3 abilities can be slotted in the loadout.
 
 ## Planned
 
-See [ABILITY_EXPANSION_PLAN.md](ABILITY_EXPANSION_PLAN.md) for the
-upcoming ability overhaul: 6 loadout slots, ~20 abilities per class,
+See [ROADMAP.md](ROADMAP.md) for upcoming features — currently the
+ability overhaul: 6 loadout slots, ~20 abilities per class,
 data-driven ability definitions, and balance notes.
 
 ## Tech
