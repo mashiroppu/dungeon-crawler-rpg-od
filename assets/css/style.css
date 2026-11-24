@@ -1402,3 +1402,11 @@ html, body {
     color: var(--ink);
     opacity: 0.85;
 }
+
+/* Inventory sell button: keep label on one line */
+#sell-all {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.6rem;
+}
