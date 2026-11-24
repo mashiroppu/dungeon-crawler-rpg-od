@@ -14,7 +14,7 @@ as "Done" once implemented.
 #### Goals
 
 - **Loadout slots: 3 → 6** (`MAX_ABILITY_SLOTS` in `classes.js`) — **6 is the final maximum**
-- **Abilities per class: ~20** (currently 6 × 5 classes = 30 → target ~100 total)
+- **Abilities per class: ~18** (currently 6 × 5 classes = 30 → target ~90 total)
 
 #### Design direction
 
@@ -42,8 +42,35 @@ every time and the choice dies. Keep this balance in mind:
   bonus effects while enemy is stunned, etc.
 - **Buff → damage combo lines**: e.g. nukes effectively strengthened during
   warcry — design with these synergies in mind
-- **Show role tags (nuke / buff / debuff / sustain / defense)** in the UI so
-  loadout diversity is visible
+- **Show role tags in the UI** so loadout diversity is visible — see
+  "Ability type tags" below
+
+##### Ability type tags (役割タグ) & loadout overlap rules
+
+Every ability gets a **type tag** built from three letters:
+
+| Tag | JA | Role |
+|---|---|---|
+| **A** | 攻 | Damage-dealing attack abilities |
+| **D** | 防 | Damage prevention / healing (defense) abilities |
+| **S** | 変 | Buffs, debuffs, status effects (shift/support) abilities |
+
+A tag is a non-empty **ordered** combination of these letters → **9 types**:
+`A`, `D`, `S`, `AD`, `AS`, `DA`, `DS`, `SA`, `SD`
+(Japanese UI shows 攻/防/変 instead of A/D/S; `AS` and `SA` are different types)
+
+**Loadout overlap rule (被り)** for the 6-slot system:
+
+- Two abilities "overlap" when one's tag is a prefix of the other, or they
+  are identical: `A`↔`AD`, `A`↔`AS`, `D`↔`DA`, `D`↔`DS`, `S`↔`SA`, `S`↔`SD`,
+  and any identical pair (`SA`↔`SA`, etc.)
+- **Identical tags can never coexist** (complete overlap is forbidden)
+- Non-identical overlapping tags may each be equipped **once** — e.g. `S`
+  and `SA` can both be slotted
+- Valid 6-slot example: `D, AD, S, AS, SA, DA`
+
+This forces loadout diversity: with only 9 type tags, a 6-slot loadout must
+mix attack/defense/support coverage instead of stacking one role.
 
 #### Implementation notes
 
@@ -97,7 +124,7 @@ distinct abilities** (copies of the same effect reduce strategic depth).
    with the current 6 abilities per class
 2. Fine-tune enemy stats / scaling
 3. Add 3–4 mechanically distinct abilities per class (~9–10 total) and observe
-4. If more are needed, mass-produce via templates toward ~15 → final ~20 per class
+4. If more are needed, mass-produce via templates toward ~15 → final ~18 per class
 
 #### Per-ability checklist
 
