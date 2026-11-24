@@ -1,107 +1,126 @@
-# Development Roadmap (今後の開発予定)
+# Development Roadmap
 
-このファイルは今後実装予定の機能・改善をまとめたロードマップです。
-実装が完了した項目は随時削除または「Done」に移動してください。
+This file collects planned features and improvements. Remove or mark items
+as "Done" once implemented.
 
-> English version: [ROADMAP.en.md](ROADMAP.en.md)
+> 日本語版: [ROADMAP.ja.md](ROADMAP.ja.md)
 
 ## Planned Features
 
-### 1. Ability Expansion (アビリティ拡張)
+### 1. Ability Expansion
 
-**ステータス: 計画中**
+**Status: Planning**
 
-#### 目標
+#### Goals
 
-- **編成スロット: 3 → 8** (`MAX_ABILITY_SLOTS` in `classes.js`) ※最終目標8。6を経由してもよい
-- **アビリティ数: 各クラス約20種**（現状6種 × 5クラス = 30 → 目標 約100種）
+- **Loadout slots: 3 → 8** (`MAX_ABILITY_SLOTS` in `classes.js`) — final goal is 8; going through 6 is fine
+- **Abilities per class: ~20** (currently 6 × 5 classes = 30 → target ~100 total)
 
-### ゲームデザインの方針
+#### Design direction
 
-#### コア体験: 「状況で最適解を選ぶ」アクティブ発動式
+##### Core experience: active selection — "pick the best option for the situation"
 
-- プレイヤーは戦闘中に **装備中の技から1つを能動的に選んで発動** する
-- 3枠時代: 1〜2個がCD/リカバリ中で「残りからマシなのを選ぶ」受け身の選択
-- 8枠化: 常に複数がReady → **「今の局面で最適な1手を選ぶ」能動的な選択** に変化
-- これが戦略性向上の本質。**数を増やすだけでは不十分**
+- During combat the player **actively chooses one equipped ability to unleash**
+- With 3 slots: 1–2 are on cooldown, so the choice is passive — "pick the least bad one"
+- With 8 slots: several are usually Ready → the choice becomes **"pick the best move for this moment"**
+- This shift is the essence of the strategy upgrade. **Just adding numbers is not enough**
 
-#### 「最適解が局面で変わる」技構成を優先する
+##### Prioritize kits where "the optimal pick changes by situation"
 
-8枠全部が火力技だと「常に最大火力を押すだけ」になり選択が死ぬ。以下のバランスを意識:
+If all 8 slots are damage abilities, the player just presses the biggest nuke
+every time and the choice dies. Keep this balance in mind:
 
-| 局面 | 最適解になりうる技の例 |
+| Situation | Abilities that could be optimal |
 |---|---|
-| 敵HP残りわずか | Execute系（条件発動） |
-| 長期戦になりそう | DoT / バフ先行（バフ→nuke のコンボ） |
-| 被ダメが痛い | シールド / 回復 / reflect |
-| 敵が硬い | DEF無視・ペネトレーション系 |
-| 雑魚処理 | 多段ヒット / 範囲 |
+| Enemy nearly dead | Execute-type (conditional) |
+| Fight dragging on | DoT / buffs first (buff → nuke combos) |
+| Taking heavy damage | Shield / heal / reflect |
+| Enemy is tanky | DEF-ignore / penetration |
+| Trash mobs | Multi-hit / AoE |
 
-- **条件発動型を増やす**: HP◯%以下で強化、シールド中のみ強化、スタン中追加効果 等
-- **バフ→火力のコンボ導線**: warcry中はnuke実質強化、のような連携を意識した設計
-- **役割タグ (nuke / buff / debuff / sustain / defense)** をUIに表示し、編成の幅を意識させる
+- **Add more conditional abilities**: bonus below X% HP, bonus while shielded,
+  bonus effects while enemy is stunned, etc.
+- **Buff → damage combo lines**: e.g. nukes effectively strengthened during
+  warcry — design with these synergies in mind
+- **Show role tags (nuke / buff / debuff / sustain / defense)** in the UI so
+  loadout diversity is visible
 
-### 実装上の注意
+#### Implementation notes
 
-#### 1. データ駆動リファクタ（前提作業）
+##### 1. Data-driven refactor (prerequisite)
 
-現在 `useAbility()` は巨大な switch 文。メカニクスは約10パターンに集約可能:
+`useAbility()` is currently one giant switch. The mechanics collapse into
+about 10 patterns:
 
-- nuke（単体大ダメージ）
-- dot（継続ダメージ）
-- debuff（敵ステータス低下）
-- cc（スタン/スロウ/石化）
-- buff（自バフ）
-- shield / heal（守り・回復）
-- multi-hit（多段）
-- reflect / thorns系
-- conditional（条件発動）
-- summon / field系（将来）
+- nuke (single-target heavy hit)
+- dot (damage over time)
+- debuff (enemy stat reduction)
+- cc (stun / slow / petrify)
+- buff (self buff)
+- shield / heal (defense & recovery)
+- multi-hit
+- reflect / thorns
+- conditional (situation-triggered)
+- summon / field (future)
 
-switch → パラメータ駆動（`mech` フィールド等）に置き換えてから量産する。
-**数値違いの使い回しは避け、メカニクスの異なる技を優先**（同じ効果の偽物は戦略性を下げる）。
+Refactor the switch into parameter-driven mechanics (a `mech` field, etc.)
+before mass-producing abilities. **Avoid reskins — prioritize mechanically
+distinct abilities** (copies of the same effect reduce strategic depth).
 
-#### 2. バランスへの影響（重要）
+##### 2. Balance impact (important)
 
-- スロット3→8で実質火力が大幅増 → **敵HP/攻撃力・フロアスケーリングの見直し必須**
-- CD/`uses`/`rec` の調整で「常時何かしらReadyだが全部は撃てない」緊張感を維持する
-- 既存セーブ互換: `player.abilityLoadout` はID配列なので8枠化自体は互換OK。ただし既存プレイヤーは即8枠使えるためバランスが一気に変わる
+- 3 → 8 slots is a large effective DPS increase → **enemy HP/attack and
+  floor scaling must be revisited**
+- Tune CD / `uses` / `rec` so "something is always Ready, but not everything
+  can be fired" tension is preserved
+- Save compatibility: `player.abilityLoadout` is an ID array, so 8 slots is
+  compatible — but existing players instantly get 8 slots, so balance shifts
+  at once
 
-#### 3. UI/UX
+##### 3. UI/UX
 
-- 戦闘画面のアビリティバーが8個になる → スマホ/小画面での収まり要確認
-- ロードアウト画面（`showLoadoutModal`）も8枠対応に
-- アビリティ説明文に役割タグ or 簡潔なカテゴリ表示を追加検討
+- Combat ability bar grows to 8 buttons → check fit on small screens
+- Loadout screen (`showLoadoutModal`) needs 8-slot support
+- Consider showing a role tag or short category label on ability descriptions
 
-#### 4. セーブデータ
+##### 4. Save data
 
-- `player.abilityLoadout`: IDの配列 → 8要素まで許容するだけで互換
-- `player.abilityCharges` / `abilityCds` / `abilityRecs`: IDキーのオブジェクト → 新技追加時もそのまま動く
-- 旧セーブで存在しないIDが残っていても `unlockedAbilities()` フィルタで無害化済み
+- `player.abilityLoadout`: ID array → just allow up to 8 entries
+- `player.abilityCharges` / `abilityCds` / `abilityRecs`: ID-keyed objects →
+  new abilities work as-is
+- Old saves with removed IDs are harmless thanks to the
+  `unlockedAbilities()` filter
 
-### 段階的導入案
+#### Phased rollout
 
-1. `MAX_ABILITY_SLOTS = 8` に変更（まず6で様子見でも可）→ 現状6種/classでバランス感触を確認
-2. 敵側ステータス・スケーリングを微調整
-3. メカニクスの異なる技を各クラス +3〜4種ずつ追加（計9〜10種で様子見）
-4. 物足りなければテンプレート量産で15種へ → 最終的に約20種/class
+1. Change `MAX_ABILITY_SLOTS` to 8 (6 first is also fine) → feel-test balance
+   with the current 6 abilities per class
+2. Fine-tune enemy stats / scaling
+3. Add 3–4 mechanically distinct abilities per class (~9–10 total) and observe
+4. If more are needed, mass-produce via templates toward ~15 → final ~20 per class
 
-### 技追加時の作業リスト（1種あたり）
+#### Per-ability checklist
 
-- `ABILITIES` にエントリ追加（cls / lvl / cd / rec / uses / name / desc / icon / mech系パラメータ）
-- `useAbility()` の switch case 追加（データ駆動化後は基本的にデータのみ）
-- 必要なら `ABILITY_FX` / `ABILITY_SFX` に演出・音声を追加
-- `unlockedAbilities()` は lvl 条件で自動解放されるので追加作業不要
+- Add an entry to `ABILITIES` (cls / lvl / cd / rec / uses / name / desc / icon / mech params)
+- Add a `useAbility()` case (after data-driven refactor this is mostly data only)
+- Optionally add `ABILITY_FX` / `ABILITY_SFX` entries
+- `unlockedAbilities()` auto-unlocks by lvl — no extra work needed
 
-### 2. Language Switching (言語切替 EN/JA)
+### 2. Language Switching (EN/JA)
 
-**ステータス: 一部実装済み**
+**Status: Partially implemented**
 
-- `assets/js/i18n.js` に `t()` / `setLang()` / `STRINGS` 辞書を実装。Menu → Language で切替（localStorage `gameLang` に保存）
-- 翻訳済み: タイトル/キャラ作成（ステータス配分・クラス・パッシブ・難易度・レガシー）、ダンジョンヘッダー、ダンジョン探索イベント全文、ステータス欄、インベントリ（アイテム名・ボタン・ダイアログ・レガシー）、メニュー全タブ、レベルアップ、Tipsモーダル全文、アビリティ編成モーダル、**戦闘ログ・探索ログ全文**
-- **未翻訳（今後の課題）**: アビリティ/敵の名前と説明文（英語のままの方針）、セーブデータ内の文字列
-- 方針: 固有名詞（技名・敵名・レアリティ名）は英語のまま、UI文言と説明文を翻訳するのが無難
+- `assets/js/i18n.js` provides `t()` / `setLang()` / `STRINGS`. Toggle via
+  Menu → Language (persisted in localStorage `gameLang`)
+- Translated: title/character creation (stat allocation, class, passive,
+  difficulty, legacy), dungeon header, all dungeon exploration events,
+  stats panel, inventory (item names, buttons, dialogs, legacy), all menu
+  tabs, level-up, full Tips modal, ability loadout modal, combat & dungeon logs
+- **Not yet translated**: ability/enemy names & descriptions (kept in English
+  by policy), strings stored inside save data
+- Policy: keep proper nouns (ability/enemy/set names) in English; translate
+  UI text and descriptions
 
-### 3. (今後の開発予定をここに追加)
+### 3. (Add future plans here)
 
-- 未定
+- TBD
