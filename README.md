@@ -7,7 +7,7 @@ No build step required — just open `index.html`.
 ## Features
 
 ### Classes
-Choose one of four classes at character creation. Each class has unique
+Choose one of five classes at character creation. Each class has unique
 stat scaling and its own set of unlockable abilities:
 
 | Class | Role | Bonuses |
@@ -16,21 +16,26 @@ stat scaling and its own set of unlockable abilities:
 | **Mage** | Glass cannon | +15% ATK, +25% C.DMG, +5% C.RATE |
 | **Rogue** | Speedster | +30% ATK.SPD, +12% C.RATE |
 | **Lancer** | Reach fighter | +20% ATK.SPD, +8% ATK, +5% DEF |
+| **Paladin** | Holy defender | +30% HP, +25% DEF — reflect, shields, heals |
 
 ### Abilities
-Each class unlocks 3 active abilities at Lv.1 / Lv.12 / Lv.25, shown on the
-ability bar during combat with cooldowns. Abilities include nukes, buffs,
-shields, damage-over-time, and debuffs.
+Each class has 6 abilities unlocked by level, shown on the ability bar
+during combat. Abilities use a charge + cooldown + recovery system and
+cover nukes, multi-hit, damage-over-time, crowd control, buffs, shields,
+and heals. Up to 3 abilities can be slotted in the loadout.
 
 ### Equipment & Loot
 - 6 equipment rarities: Common, Uncommon, Rare, Epic, Legendary, Heirloom
 - 6 equipment slots
 - **Affixes** (Rare+): bonus stats such as ATK%, HP%, DEF%, ATK.SPD%,
   VAMP, C.RATE, C.DMG, **PEN** (armor penetration), **THORN** (damage
-  reflect), **DODGE**, **G.FIND** (gold find), and **E.FIND** (EXP find)
+  reflect), **DODGE**, **G.FIND** (gold find), **E.FIND** (EXP find),
+  **N.ATK** (normal-attack damage), and hidden stats
 - **Reroll**: spend gold to re-roll an item's affixes
-- **Set bonuses**: Emberforged, Rimescale, Galestep, and Nyxweave sets
-  grant 2-piece and 4-piece bonuses
+- **Finalize**: lock in an item's affixes
+- **Set bonuses**: 20 equipment sets with hidden 2-piece/4-piece bonuses.
+  Set effects are not shown in the stats panel — check the **TIP** menu
+  for currently active set effects
 
 ### Enemies
 - **Elites**: empowered monsters with boosted stats and guaranteed drops
@@ -38,9 +43,18 @@ shields, damage-over-time, and debuffs.
   Vampiric, Regenerating, Armored, and Volatile (explodes on death)
 
 ### Progression
-- Procedurally generated floors up to 100
-- Level up by choosing 1 of 3 stat boosts (with rerolls)
+- Procedurally generated floors up to 100 — reaching floor 100 loops it
+  endlessly with fresh guardians each run
+- Level cap 200. Level up by choosing 1 of 3 stat boosts (with rerolls);
+  rare picks include **N.ATK** (+6% normal attack damage, cap 300%) and
+  **THORN** (damage reflect, cap 10%)
 - Death resets your run, but equipment is kept
+- Rename your character from Menu → Statistics
+
+### Extras
+- **TIP menu**: in-game knowledge base (stats, affixes, combat,
+  progression) plus your active set effects
+- Grid-room animated battle backdrop
 
 ## How to Play
 
@@ -48,6 +62,12 @@ shields, damage-over-time, and debuffs.
    static file server).
 2. Enter a character name, allocate stat points, pick a class and passive,
    then descend.
+
+## Planned
+
+See [ABILITY_EXPANSION_PLAN.md](ABILITY_EXPANSION_PLAN.md) for the
+upcoming ability overhaul: 6 loadout slots, ~20 abilities per class,
+data-driven ability definitions, and balance notes.
 
 ## Tech
 

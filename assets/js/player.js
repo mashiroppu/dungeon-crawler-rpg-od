@@ -14,7 +14,7 @@ const playerExpGain = () => {
     player.exp.expCurr += expGain;
     player.exp.expCurrLvl += expGain;
 
-    while (player.exp.expCurr >= player.exp.expMax) {
+    while (player.exp.expCurr >= player.exp.expMax && player.lvl < 200) {
         playerLvlUp();
     }
     if (leveled) {
@@ -31,7 +31,7 @@ const playerLvlUp = () => {
 
     // Calculates the excess exp and the new exp required to level up
     let expMaxIncrease = Math.floor(((player.exp.expMax * 1.1) + 100) - player.exp.expMax);
-    if (player.lvl > 100) {
+    if (player.lvl >= 200) {
         expMaxIncrease = 1000000;
     }
     let excessExp = player.exp.expCurr - player.exp.expMax;
@@ -63,6 +63,7 @@ const playerLoadStats = () => {
         player.stats.hp = player.stats.hpMax;
     }
     player.stats.hpPercent = Number((player.stats.hp / player.stats.hpMax) * 100).toFixed(2).replace(rx, "$1");
+    if ((player.bonusStats.thorns || 0) > 10) player.bonusStats.thorns = 10;
     player.exp.expPercent = Math.min(100, Math.max(0, Number((player.exp.expCurrLvl / player.exp.expMaxLvl) * 100))).toFixed(2).replace(rx, "$1");
 
     // Generate battle info for player if in combat
@@ -71,21 +72,23 @@ const playerLoadStats = () => {
         const playerHpDamageElement = document.querySelector('#player-hp-dmg');
         const playerExpElement = document.querySelector('#player-exp-bar');
         const playerInfoElement = document.querySelector('#player-combat-info');
-        playerCombatHpElement.innerHTML = `&nbsp${nFormatter(player.stats.hp)}/${nFormatter(player.stats.hpMax)}(${player.stats.hpPercent}%)`;
+        const playerCombatHpTextElement = document.querySelector('#player-hp-text');
+        playerCombatHpTextElement.innerHTML = `&nbsp${nFormatter(player.stats.hp)}/${nFormatter(player.stats.hpMax)} (${player.stats.hpPercent}%)`;
         playerCombatHpElement.style.width = `${player.stats.hpPercent}%`;
+        playerCombatHpElement.classList.toggle("low-hp", player.stats.hpPercent < 30);
         playerHpDamageElement.style.width = `${player.stats.hpPercent}%`;
         playerExpElement.style.width = `${player.exp.expPercent}%`;
         playerInfoElement.innerHTML = `${player.name} Lv.${player.lvl} (${player.exp.expPercent}%)`;
     }
 
     // Header
-    document.querySelector("#player-name").innerHTML = `<i class="fas fa-user"></i>${player.name} Lv.${player.lvl}`;
-    document.querySelector("#player-exp").innerHTML = `<p>Exp</p> ${nFormatter(player.exp.expCurr)}/${nFormatter(player.exp.expMax)} (${player.exp.expPercent}%)`;
-    document.querySelector("#player-gold").innerHTML = `<i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(player.gold)}`;
+    document.querySelector("#player-name").innerHTML = `<i class="fas fa-user"></i>${player.name} Lv.${player.lvl} <i class="fas fa-coins"></i>${nFormatter(player.gold)}`;
+    document.querySelector("#player-exp-info").innerHTML = `<i class="fas fa-star"></i>EXP ${nFormatter(player.exp.expCurr)}/${nFormatter(player.exp.expMax)} (${player.exp.expPercent}%)`;
 
     // Player Stats
     playerHpElement.innerHTML = `${nFormatter(player.stats.hp)}/${nFormatter(player.stats.hpMax)} (${player.stats.hpPercent}%)`;
     playerAtkElement.innerHTML = nFormatter(player.stats.atk);
+    playerNatkElement.innerHTML = (Math.min(300, player.bonusStats.nAtk || 0) + Math.min(60, (player.equippedStats && player.equippedStats.normAtkPct) || 0)).toFixed(2).replace(rx, "$1") + "%";
     playerDefElement.innerHTML = nFormatter(player.stats.def);
     playerAtkSpdElement.innerHTML = player.stats.atkSpd.toFixed(2).replace(rx, "$1");
     playerVampElement.innerHTML = (player.stats.vamp).toFixed(2).replace(rx, "$1") + "%";
@@ -98,25 +101,13 @@ const playerLoadStats = () => {
     <h4>Bonus Stats</h4>
     <p><i class="fas fa-heart"></i>HP+${player.bonusStats.hp.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-sword"></i>ATK+${player.bonusStats.atk.toFixed(2).replace(rx, "$1")}%</p>
+    <p><i class="fas fa-bolt"></i>N.ATK+${(player.bonusStats.nAtk || 0).toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-round-shield"></i>DEF+${player.bonusStats.def.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-plain-dagger"></i>ATK.SPD+${player.bonusStats.atkSpd.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-dripping-blade"></i>VAMP+${player.bonusStats.vamp.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-lightning-bolt"></i>C.RATE+${player.bonusStats.critRate.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-focused-lightning"></i>C.DMG+${player.bonusStats.critDmg.toFixed(2).replace(rx, "$1")}%</p>
-    <p><i class="ra ra-crown-of-thorns"></i>THORN+${(player.bonusStats.thorns || 0).toFixed(2).replace(rx, "$1")}%</p>` + (() => {
-        if (!player.activeSets) return "";
-        const setHtml = Object.keys(player.activeSets).filter(k => player.activeSets[k] >= 2).map(k => {
-            const n = player.activeSets[k];
-            const d = EQUIPMENT_SETS[k];
-            const bonus = n >= 4 ? d.bonus4 : d.bonus2;
-            const txt = Object.keys(bonus).map(bk => `${STAT_LINE_LABEL[bk] || bk}+${bonus[bk]}${PCT_STATS.has(bk) ? "%" : ""}`).join(" ");
-            const req = n >= 4 ? d.req4 : d.req2;
-            const reqTxt = req ? Object.keys(req).map(rk => `${rk}×${req[rk]}`).join("+") : "";
-            return `<p><i class="ra ra-gem"></i>${d.name} (${reqTxt}): ${txt}</p>`;
-        }).join("");
-        if (!setHtml) return "";
-        return `<details class="set-details"><summary>Set Effects</summary>${setHtml}</details>`;
-    })();
+    <p><i class="ra ra-crown-of-thorns"></i>THORN+${(player.bonusStats.thorns || 0).toFixed(2).replace(rx, "$1")}%</p>`;
 }
 
 // Opens inventory
@@ -221,7 +212,8 @@ const lvlupPopup = () => {
         "vamp": 0.5,
         "critRate": 1,
         "critDmg": 6,
-        "thorns": 5
+        "thorns": 0.1,
+        "nAtk": 6
     };
     generateLvlStats(2, percentages);
 }
@@ -235,6 +227,10 @@ const generateLvlStats = (rerolls, percentages) => {
         if (!selectedStats.includes(stats[randomIndex])) {
             selectedStats.push(stats[randomIndex]);
         }
+    }
+    // N.ATK is an uncommon level-up option (~20% chance to appear, hidden once capped)
+    if (Math.random() < 0.2 && (player.bonusStats.nAtk || 0) < 300) {
+        selectedStats[Math.floor(Math.random() * selectedStats.length)] = "nAtk";
     }
 
     const loadLvlHeader = () => {
@@ -278,7 +274,10 @@ const generateLvlStats = (rerolls, percentages) => {
                 sfxItem.play();
                 player.bonusStats[selectedStats[i]] = (player.bonusStats[selectedStats[i]] || 0) + percentages[selectedStats[i]];
                 if (selectedStats[i] === "thorns") {
-                    player.bonusStats.thorns = Math.min(150, player.bonusStats.thorns);
+                    player.bonusStats.thorns = Math.min(10, player.bonusStats.thorns);
+                }
+                if (selectedStats[i] === "nAtk") {
+                    player.bonusStats.nAtk = Math.min(300, player.bonusStats.nAtk);
                 }
 
                 if (player.exp.lvlGained > 1) {

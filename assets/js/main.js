@@ -30,8 +30,10 @@ window.addEventListener("load", function () {
         if (format.test(playerName)) {
             document.querySelector("#alert").innerHTML = "Your name cannot contain special characters!";
         } else {
-            if (playerName.length < 3 || playerName.length > 15) {
-                document.querySelector("#alert").innerHTML = "Name should be between 3-15 characters!";
+            if (playerName.length < 3) {
+                document.querySelector("#alert").innerHTML = "Name should be at least 3 characters!";
+            } else if (!isValidNameWidth(playerName)) {
+                document.querySelector("#alert").innerHTML = "Name is too long! (max width: 12 'a')";
             } else {
                 player = {
                     name: playerName,
@@ -78,7 +80,8 @@ window.addEventListener("load", function () {
                         atkSpd: 0,
                         vamp: 0,
                         critRate: 0,
-                        critDmg: 0
+                        critDmg: 0,
+                        nAtk: 0
                     },
                     exp: {
                         expCurr: 0,
@@ -188,6 +191,7 @@ window.addEventListener("load", function () {
                 <p>Kills: ${nFormatter(player.kills)}</p>
                 <p>Deaths: ${nFormatter(player.deaths)}</p>
                 <p>Playtime: ${playTime}</p>
+                <button id="rename-btn">Rename</button>
             </div>`;
             let profileTab = document.querySelector('#profile-tab');
             profileTab.style.width = "15rem";
@@ -197,6 +201,43 @@ window.addEventListener("load", function () {
                 defaultModalElement.style.display = "none";
                 defaultModalElement.innerHTML = "";
                 menuModalElement.style.display = "flex";
+            };
+            document.querySelector('#rename-btn').onclick = function () {
+                sfxOpen.play();
+                defaultModalElement.innerHTML = `
+                <div class="content" id="rename-tab">
+                    <div class="content-head">
+                        <h3>Rename</h3>
+                        <p id="rename-close"><i class="fa fa-xmark"></i></p>
+                    </div>
+                    <input type="text" id="rename-input" value="${player.name}" autocomplete="off">
+                    <p id="rename-alert"></p>
+                    <button id="rename-confirm">Confirm</button>
+                </div>`;
+                document.querySelector('#rename-close').onclick = function () {
+                    sfxDecline.play();
+                    playerMenu.onclick();
+                };
+                document.querySelector('#rename-confirm').onclick = function () {
+                    let newName = document.querySelector("#rename-input").value.trim();
+                    let alertEl = document.querySelector("#rename-alert");
+                    var format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+                    if (format.test(newName)) {
+                        alertEl.innerHTML = "Name cannot contain special characters!";
+                    } else if (newName.length < 3) {
+                        alertEl.innerHTML = "Name should be at least 3 characters!";
+                    } else if (!isValidNameWidth(newName)) {
+                        alertEl.innerHTML = "Name is too long! (max width: 12 'a')";
+                    } else {
+                        sfxConfirm.play();
+                        player.name = newName;
+                        saveData();
+                        playerLoadStats();
+                        menuModalElement.style.display = "flex";
+                        defaultModalElement.style.display = "none";
+                        defaultModalElement.innerHTML = "";
+                    }
+                };
             };
         };
 
@@ -451,9 +492,9 @@ const calculateStats = () => {
     player.stats.critRate = playerCRateBase + player.bonusStats.critRate + player.equippedStats.critRate;
     player.stats.critDmg = playerCDmgBase + player.bonusStats.critDmg + player.equippedStats.critDmg;
 
-    // Caps attack speed to 2.5
-    if (player.stats.atkSpd > 2.5) {
-        player.stats.atkSpd = 2.5;
+    // Caps attack speed to 3
+    if (player.stats.atkSpd > 3) {
+        player.stats.atkSpd = 3;
     }
 }
 
@@ -476,7 +517,8 @@ const progressReset = () => {
         atkSpd: 0,
         vamp: 0,
         critRate: 0,
-        critDmg: 0
+        critDmg: 0,
+        nAtk: 0
     };
     player.skills = [];
     player.abilityCharges = {};

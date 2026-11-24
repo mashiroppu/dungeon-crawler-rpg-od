@@ -143,13 +143,14 @@ const spawnDamageNumber = (damage, crit) => {
     const dmgContainer = document.querySelector("#dmg-container");
     if (!dmgContainer) return;
     const dmgNumber = document.createElement("p");
-    dmgNumber.className = "dmg-numbers";
-    if (crit) {
-        dmgNumber.style.color = "gold";
-        dmgNumber.innerHTML = nFormatter(damage) + "!";
-    } else {
-        dmgNumber.innerHTML = nFormatter(damage);
-    }
+    dmgNumber.className = "dmg-numbers" + (crit ? " crit" : "");
+    dmgNumber.innerHTML = nFormatter(damage);
+    // Scatter horizontally so multi-hit fragments don't stack perfectly
+    dmgNumber.style.left = "auto";
+    dmgNumber.style.right = "auto";
+    dmgNumber.style.width = "3em";
+    dmgNumber.style.marginLeft = "-1.5em";
+    dmgNumber.style.left = (30 + Math.random() * 40) + "%";
     dmgContainer.appendChild(dmgNumber);
     setTimeout(() => { if (dmgNumber.parentNode) dmgNumber.parentNode.removeChild(dmgNumber); }, 370);
 };

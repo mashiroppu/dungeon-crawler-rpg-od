@@ -123,6 +123,12 @@ const playerAttack = () => {
     // Randomizes the damage by 90% - 110%
     let dmgRange = 0.9 + Math.random() * 0.2;
     damage = damage * dmgRange;
+    // Normal-attack-only damage: level-up N.ATK + equipment N.ATK + hidden secretAtk (total cap 300%)
+    const normAtkPct = Math.min(300,
+        ((player.bonusStats && player.bonusStats.nAtk) || 0)
+        + ((player.equippedStats && player.equippedStats.normAtkPct) || 0)
+        + ((player.equippedStats && player.equippedStats.secretAtk) || 0));
+    if (normAtkPct > 0) damage = damage * (1 + normAtkPct / 100);
     // Check if the attack is a critical hit
     if (Math.floor(Math.random() * 100) < (player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd"))) {
         crit = true;
@@ -231,8 +237,10 @@ const playerAttack = () => {
     // Damage effect
     let enemySprite = document.querySelector("#enemy-sprite");
     enemySprite.classList.add("animation-shake");
+    enemySprite.classList.add("hit-flash");
     setTimeout(() => {
         enemySprite.classList.remove("animation-shake");
+        enemySprite.classList.remove("hit-flash");
     }, 200);
 
     // Damage numbers
@@ -330,7 +338,8 @@ const enemyAttack = () => {
     const oathThorns = player.stats.hp < player.stats.hpMax * 0.5 ? ((player.equippedStats && player.equippedStats.bloodOath) || 0) : 0;
     const thornsPct = ((player.bonusStats && player.bonusStats.thorns) || 0) + ((player.equippedStats && player.equippedStats.thorns) || 0) + oathThorns;
     if (thornsPct > 0 && damage > 0) {
-        const refDmg = Math.round(damage * thornsPct / 100);
+        // THORN: damage taken × thorns% × (ATK/10)
+        const refDmg = Math.round(damage * (thornsPct / 100) * (player.stats.atk / 10));
         enemy.stats.hp -= refDmg;
         // Thorns Nova: reflected damage bursts for +50%
         if ((player.combatBuffs || []).some(b => b.type === "thornsNova" && b.expire > Date.now())) {
@@ -364,9 +373,11 @@ const enemyAttack = () => {
     // Damage effect
     let playerPanel = document.querySelector('#playerPanel');
     playerPanel.classList.add("animation-shake");
+    playerPanel.classList.add("player-hit");
     setTimeout(() => {
         playerPanel.classList.remove("animation-shake");
-    }, 200);
+        playerPanel.classList.remove("player-hit");
+    }, 300);
 
     // Attack Timer
     if (player.inCombat) {
@@ -530,28 +541,74 @@ const showCombatInfo = () => {
     document.querySelector('#combatPanel').innerHTML = `
     <div class="content">
         <div class="battle-info-panel center" id="enemyPanel">
+            <div class="grid-room" role="img" aria-label="grid dungeon" aria-hidden="true"><div class="stage">
+                <div class="fill f-left"></div>
+                <div class="fill f-right"></div>
+                <div class="fill f-top"></div>
+                <div class="fill f-bottom"></div>
+                <div class="back"></div>
+                <div class="lines">
+                <div class="back-grid"></div>
+                <div class="ring" style="--k:1"></div>
+                <div class="ring" style="--k:2"></div>
+                <div class="ring" style="--k:3"></div>
+                <div class="ring" style="--k:4"></div>
+                <div class="ring" style="--k:5"></div>
+                <div class="ring" style="--k:6"></div>
+                <div class="ring" style="--k:7"></div>
+                <div class="ring" style="--k:8"></div>
+                <div class="frame"></div>
+                <i class="ray" style="--a:-143.1301deg;--r:0.62500"></i>
+                <i class="ray" style="--a:-135.0000deg;--r:0.53033"></i>
+                <i class="ray" style="--a:-123.6901deg;--r:0.45069"></i>
+                <i class="ray" style="--a:-108.4349deg;--r:0.39528"></i>
+                <i class="ray" style="--a:-90.0000deg;--r:0.37500"></i>
+                <i class="ray" style="--a:-71.5651deg;--r:0.39528"></i>
+                <i class="ray" style="--a:-56.3099deg;--r:0.45069"></i>
+                <i class="ray" style="--a:-45.0000deg;--r:0.53033"></i>
+                <i class="ray" style="--a:-36.8699deg;--r:0.62500"></i>
+                <i class="ray" style="--a:143.1301deg;--r:0.62500"></i>
+                <i class="ray" style="--a:135.0000deg;--r:0.53033"></i>
+                <i class="ray" style="--a:123.6901deg;--r:0.45069"></i>
+                <i class="ray" style="--a:108.4349deg;--r:0.39528"></i>
+                <i class="ray" style="--a:90.0000deg;--r:0.37500"></i>
+                <i class="ray" style="--a:71.5651deg;--r:0.39528"></i>
+                <i class="ray" style="--a:56.3099deg;--r:0.45069"></i>
+                <i class="ray" style="--a:45.0000deg;--r:0.53033"></i>
+                <i class="ray" style="--a:36.8699deg;--r:0.62500"></i>
+                <i class="ray" style="--a:-153.4349deg;--r:0.55902"></i>
+                <i class="ray" style="--a:-165.9638deg;--r:0.51539"></i>
+                <i class="ray" style="--a:180.0000deg;--r:0.50000"></i>
+                <i class="ray" style="--a:165.9638deg;--r:0.51539"></i>
+                <i class="ray" style="--a:153.4349deg;--r:0.55902"></i>
+                <i class="ray" style="--a:-26.5651deg;--r:0.55902"></i>
+                <i class="ray" style="--a:-14.0362deg;--r:0.51539"></i>
+                <i class="ray" style="--a:0.0000deg;--r:0.50000"></i>
+                <i class="ray" style="--a:14.0362deg;--r:0.51539"></i>
+                <i class="ray" style="--a:26.5651deg;--r:0.55902"></i>
+                </div>
+            </div></div>
             <p>${enemy.name} Lv.${enemy.lvl}${enemyModLabel()}</p>
             <div class="battle-bar empty-bar hp bb-hp">
                 <div class="battle-bar dmg bb-hp" id="enemy-hp-dmg"></div>
-                <div class="battle-bar current bb-hp" id="enemy-hp-battle">
-                    &nbsp${nFormatter(enemy.stats.hp)}/${nFormatter(enemy.stats.hpMax)}<br>(${enemy.stats.hpPercent}%)
-                </div>
+                <div class="battle-bar current bb-hp" id="enemy-hp-battle"></div>
+                <div class="bar-text" id="enemy-hp-text">&nbsp;${nFormatter(enemy.stats.hp)}/${nFormatter(enemy.stats.hpMax)} (${enemy.stats.hpPercent}%)</div>
             </div>
             <div id="dmg-container" class="dmg-container"></div>
             <div id="enemy-sprite-wrap">
-                <img src="./assets/sprites/${enemy.image.name}${enemy.image.type}" alt="${enemy.name}" id="enemy-sprite">
+                <img src="./assets/sprites/${enemy.image.name}${enemy.image.type}" alt="${enemy.name}" id="enemy-sprite"
+                    style="${enemy.image.name === 'slime_crusader' ? 'height:7.7rem' : ['slime_angel', 'slime_knight'].includes(enemy.image.name) ? 'height:8.25rem' : enemy.image.name.startsWith('spider') ? 'height:9.35rem' : ''}">
             </div>
         </div>
         <div class="battle-info-panel primary-panel" id="playerPanel">
             <p id="player-combat-info"></p>
             <div class="battle-bar empty-bar bb-hp">
                 <div class="battle-bar dmg bb-hp" id="player-hp-dmg"></div>
-                <div class="battle-bar current bb-hp" id="player-hp-battle">
-                    &nbsp${nFormatter(player.stats.hp)}/${nFormatter(player.stats.hpMax)}(${player.stats.hpPercent}%)
-                </div>
+                <div class="battle-bar current bb-hp" id="player-hp-battle"></div>
+                <div class="bar-text" id="player-hp-text">&nbsp;${nFormatter(player.stats.hp)}/${nFormatter(player.stats.hpMax)} (${player.stats.hpPercent}%)</div>
             </div>
             <div class="battle-bar empty-bar bb-xb">
-                <div class="battle-bar current bb-xb" id="player-exp-bar">exp</div>
+                <div class="battle-bar current bb-xb" id="player-exp-bar"></div>
             </div>
         </div>
         <div id="ability-bar"></div>

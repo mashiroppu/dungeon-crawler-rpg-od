@@ -2,27 +2,27 @@
 // req2 = condition for tier-2 bonus, req4 = condition for tier-4 bonus.
 // Keys match item.type ("Weapon"/"Armor"/"Shield"/"Helmet") or item.category ("Sword"/"Dagger"/...)
 const EQUIPMENT_SETS = {
-    ember:  { name: "Emberforged", req2: { Weapon: 2 },              req4: { Weapon: 4 },                    bonus2: { atkPct: 6 },                    bonus4: { atkPct: 12, vamp: 3 } },
-    frost:  { name: "Rimescale",   req2: { Armor: 1, Shield: 1 },     req4: { Armor: 1, Shield: 1, Helmet: 1 }, bonus2: { defPct: 8, hpPct: 8 },       bonus4: { defPct: 16, hpPct: 16, atkSpd: 4 } },
-    storm:  { name: "Galestep",    req2: { Weapon: 1, Helmet: 1 },    req4: { Weapon: 2, Helmet: 1 },          bonus2: { atkSpd: 6, critRate: 2 },       bonus4: { atkSpd: 12, critRate: 5, critDmg: 8 } },
-    void:   { name: "Nyxweave",    req2: { Armor: 1, Helmet: 1 },     req4: { Armor: 1, Helmet: 2 },           bonus2: { critRate: 4, critDmg: 8 },      bonus4: { critRate: 8, critDmg: 20, atkPct: 8 } },
-    blood:  { name: "Sanguine",    req2: { Shield: 1, Weapon: 1 },    req4: { Shield: 2, Weapon: 1 },          bonus2: { thorns: 8, hpPct: 6 },          bonus4: { thorns: 16, hpPct: 12, vamp: 4 } },
-    deadeye:{ name: "Deadeye",     req2: { Weapon: 3 },               req4: { Weapon: 5 },                    bonus2: { penPct: 6, critDmg: 10 },       bonus4: { penPct: 12, critDmg: 20, critRate: 4 } },
-    haste:  { name: "Quickstep",   req2: { Dagger: 1, Flail: 1 },     req4: { Dagger: 1, Flail: 2 },           bonus2: { atkSpd: 5, cdr: 4 },            bonus4: { atkSpd: 10, cdr: 13 } },
-    greed:  { name: "Gilded",      req2: { Shield: 1, Helmet: 1 },    req4: { Shield: 1, Helmet: 2 },          bonus2: { goldFind: 10, expFind: 8 },     bonus4: { goldFind: 20, expFind: 15, dodge: 3 } },
-    dread:  { name: "Nightveil",   req2: { Shield: 2 },               req4: { Shield: 3 },                    bonus2: { dodge: 4, thorns: 6 },          bonus4: { dodge: 8, thorns: 12, defPct: 8 } },
+    ember:  { name: "Emberforged", req2: { Weapon: 3 },              req4: { Weapon: 4, Armor: 1 },          bonus2: { atkPct: 6 },                    bonus4: { atkPct: 12, vamp: 3 } },
+    frost:  { name: "Rimescale",   req2: { Armor: 2, Shield: 1 },     req4: { Armor: 2, Shield: 2, Helmet: 1 }, bonus2: { defPct: 8, hpPct: 8 },       bonus4: { defPct: 16, hpPct: 16, atkSpd: 4 } },
+    storm:  { name: "Galestep",    req2: { Weapon: 2, Helmet: 1 },    req4: { Weapon: 3, Helmet: 1 },          bonus2: { atkSpd: 6, critRate: 2 },       bonus4: { atkSpd: 12, critRate: 5, critDmg: 8 } },
+    void:   { name: "Nyxweave",    req2: { Armor: 2, Helmet: 1 },     req4: { Armor: 2, Helmet: 2 },           bonus2: { critRate: 4, critDmg: 8 },      bonus4: { critRate: 8, critDmg: 20, atkPct: 8 } },
+    blood:  { name: "Sanguine",    req2: { Shield: 1, Weapon: 2 },    req4: { Shield: 2, Weapon: 2 },          bonus2: { thorns: 0.08, hpPct: 6 },       bonus4: { thorns: 0.16, hpPct: 12, vamp: 4 } },
+    deadeye:{ name: "Deadeye",     req2: { Weapon: 4 },               req4: { Weapon: 5 },                    bonus2: { penPct: 6, critDmg: 10 },       bonus4: { penPct: 12, critDmg: 20, critRate: 4 } },
+    haste:  { name: "Quickstep",   req2: { Dagger: 1, Flail: 2 },     req4: { Dagger: 2, Flail: 2 },           bonus2: { atkSpd: 5, cdr: 4 },            bonus4: { atkSpd: 10, cdr: 13 } },
+    greed:  { name: "Gilded",      req2: { Shield: 1, Helmet: 2 },    req4: { Shield: 2, Helmet: 2 },          bonus2: { goldFind: 10, expFind: 8 },     bonus4: { goldFind: 20, expFind: 15, dodge: 3 } },
+    dread:  { name: "Nightveil",   req2: { Shield: 3 },               req4: { Shield: 3, Armor: 1 },           bonus2: { dodge: 4, thorns: 0.06 },       bonus4: { dodge: 8, thorns: 0.12, defPct: 8 } },
     // ===== Expansion sets =====
     warlord:{ name: "Warmaster",   req2: { Weapon: 5 },               req4: { Weapon: 6 },                    bonus2: { atkPct: 10 },                   bonus4: { atkPct: 18, critRate: 5 } },
-    bastion:{ name: "Bastion",     req2: { Armor: 3 },                req4: { Armor: 4 },                     bonus2: { defPct: 10, hpPct: 6 },         bonus4: { defPct: 18, hpPct: 12 } },
-    aegis:  { name: "Aegisguard",  req2: { Armor: 1, Shield: 1 },     req4: { Armor: 1, Shield: 2 },           bonus2: { defPct: 10, thorns: 6 },        bonus4: { defPct: 16, thorns: 12, hpPct: 8 } },
-    tempest:{ name: "Tempest",     req2: { Axe: 1, Scythe: 1 },       req4: { Axe: 1, Scythe: 1, Hammer: 1 },   bonus2: { atkPct: 8, critDmg: 10 },       bonus4: { atkPct: 14, critDmg: 18, atkSpd: 4 } },
-    phantom:{ name: "Phantom",     req2: { Dagger: 2 },               req4: { Dagger: 3 },                    bonus2: { critRate: 6, atkSpd: 4 },       bonus4: { critRate: 12, atkSpd: 8, cdr: 4 } },
-    bulwark:{ name: "Bulwark",     req2: { Tower: 1, Kite: 1 },       req4: { Tower: 1, Kite: 1, Buckler: 1 }, bonus2: { defPct: 8, dodge: 3 },         bonus4: { defPct: 14, dodge: 6, thorns: 8 } },
-    arcanist:{ name: "Arcanist",   req2: { Helmet: 2 },               req4: { Helmet: 3 },                    bonus2: { critDmg: 12, cdr: 4 },          bonus4: { critDmg: 20, cdr: 8, critRate: 4 } },
-    warden: { name: "Warden",      req2: { Plate: 1, Chain: 1 },      req4: { Plate: 1, Chain: 1, Leather: 1 },bonus2: { hpPct: 8, defPct: 6 },         bonus4: { hpPct: 14, defPct: 10, vamp: 3 } },
-    headsman:{ name: "Headsman",   req2: { Sword: 1, Axe: 1 },        req4: { Sword: 1, Axe: 1, Hammer: 1 },   bonus2: { atkPct: 8, penPct: 5 },         bonus4: { atkPct: 14, penPct: 10, critDmg: 10 } },
-    mirage: { name: "Mirage",      req2: { Buckler: 1, "Horned Helm": 1 },req4: { Buckler: 1, "Horned Helm": 1, Flail: 1 }, bonus2: { dodge: 5, thorns: 5 },    bonus4: { dodge: 10, thorns: 10, atkSpd: 6 } },
-    colossus:{ name: "Colossus",   req2: { Tower: 1, "Great Helm": 1 },  req4: { Tower: 1, "Great Helm": 1, Plate: 1 }, bonus2: { hpPct: 10, defPct: 8 },    bonus4: { hpPct: 18, defPct: 14, thorns: 8 } },
+    bastion:{ name: "Bastion",     req2: { Armor: 4 },                req4: { Armor: 5 },                     bonus2: { defPct: 10, hpPct: 6 },         bonus4: { defPct: 18, hpPct: 12 } },
+    aegis:  { name: "Aegisguard",  req2: { Armor: 2, Shield: 1 },     req4: { Armor: 2, Shield: 2 },           bonus2: { defPct: 10, thorns: 0.06 },     bonus4: { defPct: 16, thorns: 0.12, hpPct: 8 } },
+    tempest:{ name: "Tempest",     req2: { Axe: 1, Scythe: 1, Hammer: 1 }, req4: { Axe: 1, Scythe: 1, Hammer: 2 }, bonus2: { atkPct: 8, critDmg: 10 },       bonus4: { atkPct: 14, critDmg: 18, atkSpd: 4 } },
+    phantom:{ name: "Phantom",     req2: { Dagger: 3 },               req4: { Dagger: 4 },                    bonus2: { critRate: 6, atkSpd: 4 },       bonus4: { critRate: 12, atkSpd: 8, cdr: 4 } },
+    bulwark:{ name: "Bulwark",     req2: { Tower: 1, Kite: 1, Buckler: 1 }, req4: { Tower: 1, Kite: 1, Buckler: 2 }, bonus2: { defPct: 8, dodge: 3 },         bonus4: { defPct: 14, dodge: 6, thorns: 0.08 } },
+    arcanist:{ name: "Arcanist",   req2: { Helmet: 3 },               req4: { Helmet: 3, Armor: 1 },          bonus2: { critDmg: 12, cdr: 4 },          bonus4: { critDmg: 20, cdr: 8, critRate: 4 } },
+    warden: { name: "Warden",      req2: { Plate: 1, Chain: 1, Leather: 1 }, req4: { Plate: 1, Chain: 1, Leather: 2 }, bonus2: { hpPct: 8, defPct: 6 },         bonus4: { hpPct: 14, defPct: 10, vamp: 3 } },
+    headsman:{ name: "Headsman",   req2: { Sword: 2, Axe: 1 },        req4: { Sword: 2, Axe: 1, Hammer: 1 },  bonus2: { atkPct: 8, penPct: 5 },         bonus4: { atkPct: 14, penPct: 10, critDmg: 10 } },
+    mirage: { name: "Mirage",      req2: { Buckler: 1, "Horned Helm": 1, Flail: 1 }, req4: { Buckler: 1, "Horned Helm": 1, Flail: 2 }, bonus2: { dodge: 5, thorns: 0.05 },  bonus4: { dodge: 10, thorns: 0.1, atkSpd: 6 } },
+    colossus:{ name: "Colossus",   req2: { Tower: 1, "Great Helm": 1, Plate: 1 }, req4: { Tower: 1, "Great Helm": 1, Plate: 2 }, bonus2: { hpPct: 10, defPct: 8 },    bonus4: { hpPct: 18, defPct: 14, thorns: 0.08 } },
 };
 // Count equipped items matching a type or category key
 const countEquipped = (key) => player.equipped.filter(it => it.type === key || it.category === key).length;
@@ -36,7 +36,7 @@ const AFFIXES = [
     { key: "critRate",  label: "C.RATE", min: 1,  max: 4,  w: 2 },
     { key: "critDmg",   label: "C.DMG",  min: 5,  max: 15, w: 2 },
     { key: "penPct",    label: "PEN",    min: 3,  max: 10, w: 1 },
-    { key: "thorns",    label: "THORN",  min: 4,  max: 12, w: 1 },
+    { key: "thorns",    label: "THORN",  min: 0.05,max: 0.1, w: 1 },
     { key: "dodge",     label: "DODGE",  min: 2,  max: 6,  w: 1 },
     { key: "goldFind",  label: "G.FIND", min: 5,  max: 15, w: 1 },
     { key: "expFind",   label: "E.FIND", min: 5,  max: 15, w: 1 },
@@ -48,15 +48,23 @@ const AFFIXES = [
     { key: "lowHpDmg",    label: "BERSERK",   min: 10, max: 30, w: 1 },
     { key: "attackInvuln",label: "PHASE",     min: 1.5,max: 3,  w: 1 },
     { key: "hpTradeDmg",  label: "TRIAL",     min: 10, max: 25, w: 1, pair: { key: "hpRegen", label: "REGEN", min: 0.5, max: 3 } },
-    { key: "bloodOath",   label: "OATH",      min: 8,  max: 20, w: 1 },
+    { key: "bloodOath",   label: "OATH",      min: 0.08, max: 0.2, w: 1 },
+    // Normal-attack-only damage (does NOT boost abilities). Equipment total capped at 24%.
+    { key: "normAtkPct",  label: "N.ATK",     min: 2,  max: 4,  w: 1 },
+    // Hidden: +2% normal attack, never displayed anywhere
+    { key: "secretAtk",   label: "",          min: 2,  max: 2,  w: 1, hidden: true },
 ];
+// Stats that must never appear in item stat lines
+const HIDDEN_STAT_KEYS = new Set(["secretAtk"]);
 // Proc-style affixes: mutually exclusive per item, and unique across all equipped gear
 const SPECIAL_AFFIX_KEYS = new Set(["burst", "fullHpDmg", "lowHpDmg", "attackInvuln", "hpTradeDmg", "hpRegen", "bloodOath"]);
 const AFFIX_COUNT = { Rare: 1, Epic: 2, Legendary: 3, Heirloom: 4 };
-const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND", cdr: "CDR", abUse: "AB.USE", burst: "BURST", fullHpDmg: "PRIDE", lowHpDmg: "BERSERK", attackInvuln: "PHASE", hpTradeDmg: "TRIAL", hpRegen: "REGEN", bloodOath: "OATH" };
-const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind", "cdr", "fullHpDmg", "lowHpDmg", "hpTradeDmg", "hpRegen", "bloodOath"]);
+const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND", cdr: "CDR", abUse: "AB.USE", burst: "BURST", fullHpDmg: "PRIDE", lowHpDmg: "BERSERK", attackInvuln: "PHASE", hpTradeDmg: "TRIAL", hpRegen: "REGEN", bloodOath: "OATH", normAtkPct: "N.ATK" };
+const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind", "cdr", "fullHpDmg", "lowHpDmg", "hpTradeDmg", "hpRegen", "bloodOath", "normAtkPct", "secretAtk"]);
 const formatStatLine = (stat) => {
-    const parts = Object.keys(stat).map(key => {
+    const keys = Object.keys(stat).filter(k => !HIDDEN_STAT_KEYS.has(k));
+    if (!keys.length) return "";
+    const parts = keys.map(key => {
         const label = STAT_LINE_LABEL[key] || key.replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase();
         const val = stat[key];
         const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
@@ -513,6 +521,9 @@ const showItemInfo = (item, icon, type, i) => {
                 item.stats.push(...tail);
                 item.finalized = true;
                 item.value = Math.round((item.value || 0) * 1.3);
+                if (type == "Equip") {
+                    player.inventory.equipment[i] = JSON.stringify(item);
+                }
 
                 defaultModalElement.style.display = "none";
                 defaultModalElement.innerHTML = "";
@@ -626,7 +637,9 @@ const applyEquipmentStats = () => {
         attackInvuln: 0,
         hpTradeDmg: 0,
         hpRegen: 0,
-        bloodOath: 0
+        bloodOath: 0,
+        normAtkPct: 0,
+        secretAtk: 0
     };
 
     // Deduplicate proc affixes across equipped items (first equipped wins)

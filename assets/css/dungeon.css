@@ -1,0 +1,226 @@
+/* =========================================================
+   dungeon.css  —  4:3 一人称グリッド式ダンジョンビュー (CSS 3D)
+   ---------------------------------------------------------
+   座標系: 1マス = --T。カメラはマス(z=0)の少し手前 (--back) に立つ。
+   調整は --Tn（マスの大きさ）と --Pn（遠近感）の数値で行う。
+   .cell に --x (左右: -1,0,1…) と --z (奥行き: 0,1,2…) を指定する。
+   面は .floor / .ceil / .wall-l / .wall-r / .wall-f(奥の壁) を
+   必要なものだけ置く。壁の無い側が「通路の開口部」になる。
+   ========================================================= */
+
+.dungeon-view {
+  /* ---- 調整用パラメータ ---- */
+  --Tn: 50;            /* 1マスの大きさ（ビュー幅に対する%） */
+  --Pn: 60;            /* 遠近感の強さ（%）。小さいほど広角で歪む */
+  --T: calc(var(--Tn) * 1cqw);
+  --P: calc(var(--Pn) * 1cqw);
+  /* カメラをマス手前に引く量（マス単位）。★ 固定値にしないこと ★
+     カメラに近すぎる面は画面外へ極端に大きく投影され、Chromeが
+     その面の一部（奥側）を描画しなくなり、壁が黒く欠ける。
+     一番手前の面の端がちょうど画面の端に来る距離 = Pn / 100 に保つと
+     欠けず、画面端に隙間も出ない。--Pn を変えるときは自動で追従する。 */
+  --back: calc(var(--Pn) / 100);
+  --bleed: 1px;        /* 面の継ぎ目を隠す少しの拡張           */
+  --fog: #06050b;      /* 霧（奥の暗さ）の色                  */
+  --fog-step: .12;     /* 1マス奥へ行くごとの暗さ              */
+
+  position: relative;
+  width: min(100%, 960px);
+  aspect-ratio: 4 / 3;               /* ← 4:3 固定 */
+  container-type: size;              /* cqw 単位の基準にする */
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+
+/* ---------- テクスチャ（SVGデータURI。外部画像不要） ---------- */
+/* グリッド間隔の統一: 全テクスチャは pattern 128px / canvas 256px。
+   background-size を var(--T) に揃えることで、床・天井・壁すべて
+   タイルピッチ = T/2（1マスに2×2マス）に統一される。 */
+.dungeon-view {
+  --tex-wall: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><defs><pattern id='p' width='128' height='128' patternUnits='userSpaceOnUse'><rect width='128' height='128' fill='%2314111a'/><rect x='2' y='2' width='124' height='124' fill='%235a5364'/></pattern><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -.45'/></filter></defs><rect width='256' height='256' fill='url(%23p)'/><rect width='256' height='256' filter='url(%23n)' opacity='.55'/></svg>");
+  --tex-floor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><defs><pattern id='p' width='128' height='128' patternUnits='userSpaceOnUse'><rect width='128' height='128' fill='%23100e16'/><rect x='2' y='2' width='124' height='124' fill='%23433c4a'/></pattern><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' seed='11'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 -.5'/></filter></defs><rect width='256' height='256' fill='url(%23p)'/><rect width='256' height='256' filter='url(%23n)' opacity='.6'/></svg>");
+  --tex-ceil: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><defs><pattern id='p' width='128' height='128' patternUnits='userSpaceOnUse'><rect width='128' height='128' fill='%230b0910'/><rect x='2' y='2' width='124' height='124' fill='%232e2935'/></pattern><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.6' numOctaves='3' seed='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 -.5'/></filter></defs><rect width='256' height='256' fill='url(%23p)'/><rect width='256' height='256' filter='url(%23n)' opacity='.6'/></svg>");
+}
+
+/* ---------- カメラ & シーン ---------- */
+.dungeon-view .camera {
+  position: absolute;
+  inset: 0;
+  perspective: var(--P);
+  perspective-origin: 50% 50%;
+  background: radial-gradient(ellipse at center, #120e18 0%, #000 70%);
+}
+
+.dungeon-view .scene {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translate3d(0, 0, var(--P));
+  animation: dv-breathe 5s ease-in-out infinite alternate; /* ゆるい呼吸ゆれ */
+}
+
+@keyframes dv-breathe {
+  from { transform: translate3d(0, 0, var(--P)) rotateZ(0deg); }
+  to   { transform: translate3d(0, .5cqw, var(--P)) rotateZ(.18deg); }
+}
+
+/* ---------- マス ---------- */
+.dungeon-view .cell {
+  --dz: calc((var(--z, 0) + .5 + var(--back)) * var(--T) * -1);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translate3d(calc(var(--x, 0) * var(--T)), 0, var(--dz));
+}
+
+/* ---------- 面（共通） ---------- */
+.dungeon-view .face {
+  position: absolute;
+  width:  calc(var(--T) + var(--bleed) * 2);
+  height: calc(var(--T) + var(--bleed) * 2);
+  left: calc(var(--T) / -2 - var(--bleed));
+  top:  calc(var(--T) / -2 - var(--bleed));
+  backface-visibility: visible;
+}
+
+/* background-size は全て var(--T) — タイルピッチ T/2 で統一 */
+.dungeon-view .floor  { transform: translateY(calc(var(--T) /  2)) rotateX(90deg);
+                        background: var(--tex-floor) var(--bleed) var(--bleed) / var(--T) var(--T); }
+.dungeon-view .ceil   { transform: translateY(calc(var(--T) / -2)) rotateX(90deg);
+                        background: var(--tex-ceil) var(--bleed) var(--bleed) / var(--T) var(--T); }
+.dungeon-view .wall   { background: var(--tex-wall) var(--bleed) var(--bleed) / var(--T) var(--T); }
+.dungeon-view .wall-l { transform: translateX(calc(var(--T) / -2)) rotateY(90deg); }
+.dungeon-view .wall-r { transform: translateX(calc(var(--T) /  2)) rotateY(90deg); }
+.dungeon-view .wall-f { transform: translateZ(calc(var(--T) / -2)); }
+
+/* ---------- 奥行きによる暗さ（霧） ---------- */
+/* マス単位の段階ではなく、面の中で手前→奥へ連続的に暗くする
+   （マス境界に縞が出てタイルの長さが違って見えるのを防ぐ） */
+.dungeon-view .face {
+  --fog-rgb: 6 5 11;
+  --a0: min(.94, calc(var(--z, 0) * var(--fog-step) + .05));        /* マスの手前側 */
+  --a1: min(.94, calc((var(--z, 0) + 1) * var(--fog-step) + .05));  /* マスの奥側   */
+}
+.dungeon-view .face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: rgb(var(--fog-rgb) / var(--a1));
+}
+/* 床・天井: 面の上端が奥、下端が手前 */
+.dungeon-view .floor::after,
+.dungeon-view .ceil::after {
+  background: linear-gradient(to bottom, rgb(var(--fog-rgb) / var(--a1)), rgb(var(--fog-rgb) / var(--a0)));
+}
+/* 左右の壁: 面の左端が手前、右端が奥 */
+.dungeon-view .wall-l::after,
+.dungeon-view .wall-r::after {
+  background: linear-gradient(to right, rgb(var(--fog-rgb) / var(--a0)), rgb(var(--fog-rgb) / var(--a1)));
+}
+
+/* ---------- 松明（壁に .lit を付け、中に .torch を置く） ---------- */
+.dungeon-view .wall.lit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 30%, rgba(255, 150, 50, .5), rgba(255, 110, 30, .12) 45%, transparent 62%);
+  animation: dv-flicker 1.4s steps(1, end) infinite;
+  pointer-events: none;
+}
+
+.dungeon-view .torch {
+  position: absolute;
+  left: 48%;
+  top: 26%;
+  width: 3cqw;
+  height: 9cqw;
+  z-index: 3;
+  background: linear-gradient(90deg, #2a1d12, #4a3420 50%, #241910);
+  border-radius: .4cqw;
+}
+.dungeon-view .torch::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -5cqw;
+  width: 3.4cqw;
+  height: 5.6cqw;
+  translate: -50% 0;
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: radial-gradient(ellipse at 50% 72%, #fff6c0 0 18%, #ffb83d 42%, #ff5a1f 72%, transparent 74%);
+  transform-origin: 50% 100%;
+  animation: dv-flame .5s ease-in-out infinite alternate;
+}
+
+@keyframes dv-flicker {
+  0%   { opacity: 1; }
+  20%  { opacity: .82; }
+  45%  { opacity: .95; }
+  70%  { opacity: .75; }
+  85%  { opacity: 1; }
+}
+@keyframes dv-flame {
+  from { transform: scale(1, 1)    rotate(-3deg); }
+  to   { transform: scale(.88, 1.1) rotate(3deg); }
+}
+
+/* ---------- 扉（.wall-f.wall に .door を入れる） ---------- */
+.dungeon-view .door {
+  position: absolute;
+  left: 24%;
+  bottom: 0;
+  width: 52%;
+  height: 76%;
+  border-radius: 50% 50% 0 0 / 15% 15% 0 0;
+  border: .9cqw solid #1b1a22;
+  border-bottom: 0;
+  box-shadow: inset 0 0 3cqw rgba(0, 0, 0, .8);
+  background:
+    radial-gradient(circle at 78% 52%, #d2a94b 0 .8cqw, #3a2a0c .9cqw 1.3cqw, transparent 1.4cqw),
+    linear-gradient(#15151a, #15151a) 0 28% / 100% 4% no-repeat,
+    linear-gradient(#15151a, #15151a) 0 68% / 100% 4% no-repeat,
+    repeating-linear-gradient(90deg, #5d3b20 0 3.2cqw, #38220f 3.2cqw 3.5cqw);
+  z-index: 0;
+}
+
+/* ---------- 画面効果（ビネット + 松明の明滅） ---------- */
+.dungeon-view::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 48%, rgba(0, 0, 0, .8) 100%),
+    radial-gradient(ellipse at 50% 60%, rgba(255, 140, 50, .1), transparent 60%);
+  animation: dv-glow 3s ease-in-out infinite alternate;
+}
+@keyframes dv-glow {
+  from { opacity: .9; }
+  to   { opacity: 1; }
+}
+
+/* ---------- デバッグ: ワイヤーフレーム ---------- */
+.dungeon-view.is-wire .face            { outline: 1px solid #4cf; background-blend-mode: normal; }
+.dungeon-view.is-wire .face::after     { opacity: .35; }
+.dungeon-view.is-wire .floor,
+.dungeon-view.is-wire .ceil            { background-image: none; background-color: rgba(60, 120, 160, .25); }
+.dungeon-view.is-wire .wall            { background-image: none; background-color: rgba(160, 100, 60, .25); }
+
+/* ---------- 動きを減らす設定の尊重 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .dungeon-view .scene,
+  .dungeon-view::after,
+  .dungeon-view .wall.lit::before,
+  .dungeon-view .torch::before { animation: none; }
+}

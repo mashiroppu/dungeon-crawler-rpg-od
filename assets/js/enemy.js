@@ -660,8 +660,9 @@ const enemyLoadStats = () => {
     enemy.stats.hpPercent = ((enemy.stats.hp / enemy.stats.hpMax) * 100).toFixed(2).replace(rx, "$1");
 
     const enemyHpElement = document.querySelector('#enemy-hp-battle');
+    const enemyHpTextElement = document.querySelector('#enemy-hp-text');
     const enemyHpDamageElement = document.querySelector('#enemy-hp-dmg');
-    enemyHpElement.innerHTML = `&nbsp${nFormatter(enemy.stats.hp)}/${nFormatter(enemy.stats.hpMax)}<br>(${enemy.stats.hpPercent}%)`;
+    enemyHpTextElement.innerHTML = `&nbsp${nFormatter(enemy.stats.hp)}/${nFormatter(enemy.stats.hpMax)} (${enemy.stats.hpPercent}%)`;
     enemyHpElement.style.width = `${enemy.stats.hpPercent}%`;
     enemyHpDamageElement.style.width = `${enemy.stats.hpPercent}%`;
 }

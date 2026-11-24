@@ -89,7 +89,9 @@ const dungeonCounter = () => {
 const loadDungeonProgress = () => {
     if (dungeon.progress.room > dungeon.progress.roomLimit) {
         dungeon.progress.room = 1;
-        dungeon.progress.floor++;
+        if (dungeon.progress.floor < dungeon.progress.floorLimit) {
+            dungeon.progress.floor++;
+        }
     }
     floorCount.innerHTML = `Floor ${dungeon.progress.floor}`;
     roomCount.innerHTML = `Room ${dungeon.progress.room}`;

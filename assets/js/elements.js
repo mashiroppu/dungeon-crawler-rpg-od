@@ -3,6 +3,7 @@ const playerLvlElement = document.querySelector('#player-lvl');
 const playerHpElement = document.querySelector('#player-hp');
 const playerCombatHpElement = document.querySelector('#player-hp-battle');
 const playerAtkElement = document.querySelector('#player-atk');
+const playerNatkElement = document.querySelector('#player-natk');
 const playerDefElement = document.querySelector('#player-def');
 const playerAtkSpdElement = document.querySelector('#player-atkspd');
 const playerVampElement = document.querySelector('#player-vamp');

@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="./assets/css/all.min.css">
     <link rel="stylesheet" href="./assets/css/rpg-awesome.min.css">
     <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/gridroom.css">
     <link rel="icon" type="image/png" href="./assets/icon/favicon.ico">
     <script src="./assets/js/howler.min.js"></script>
     <title>Dungeon Crawler on Demand!</title>
@@ -50,16 +51,19 @@
         <section id="dungeon-main" class="game-container scrollable">
             <header>
                 <p id="player-name"></p>
-                <p id="player-exp"></p>
-                <p id="player-gold"></p>
-                <button onclick="openInventory()"><i class="fas fa-bars" style="font-size: 1.3rem;"></i></button>
-                <button onclick="showLoadoutModal()" title="アビリティ編成"><i class="ra ra-gears" style="font-size: 1.3rem;"></i></button>
+                <div class="header-btns">
+                    <button onclick="openInventory()"><i class="fas fa-bars" style="font-size: 1.3rem;"></i></button>
+                    <button onclick="showLoadoutModal()" title="アビリティ編成"><i class="ra ra-gears" style="font-size: 1.3rem;"></i></button>
+                    <button onclick="showTips()" title="Tips"><i class="fas fa-lightbulb" style="font-size: 1.3rem;"></i></button>
+                </div>
             </header>
             <div class="stat-panel">
                 <div class="box">
                     <h4>Stats</h4>
+                    <p id="player-exp-info"></p>
                     <p><i class="fas fa-heart"></i>HP: <span id="player-hp"></span></p>
                     <p><i class="ra ra-sword"></i>ATK: <span id="player-atk"></span></p>
+                    <p><i class="fas fa-bolt"></i>N.ATK: <span id="player-natk"></span></p>
                     <p><i class="ra ra-round-shield"></i>DEF: <span id="player-def"></span></p>
                     <p><i class="ra ra-plain-dagger"></i>ATK.SPD: <span id="player-atkspd"></span></p>
                     <p><i class="ra ra-dripping-blade"></i>VAMP: <span id="player-vamp"></span></p>
@@ -125,6 +129,7 @@
         </div>
         <div class="modal-container" id="defaultModal"></div>
         <div class="modal-container" id="menuModal"></div>
+        <div class="modal-container" id="tipModal"></div>
         <div class="modal-container" id="confirmationModal"></div>
     </main>
 
@@ -138,6 +143,7 @@
     <script src="./assets/js/dungeon.js"></script>
     <script src="./assets/js/enemy.js"></script>
     <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/tips.js"></script>
 </body>
 
 </html>

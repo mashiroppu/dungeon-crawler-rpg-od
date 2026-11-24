@@ -1,0 +1,156 @@
+/* =========================================================
+   gridroom.css — Grid Room (one-point perspective wireframe)
+   Scoped under .grid-room for embedding in #enemyPanel.
+   Stage keeps its authored 4:3 geometry; --w now resolves
+   against the container (cqw/cqh) instead of the viewport.
+   ========================================================= */
+
+.grid-room {
+  --bg: #000102;
+  --wall: #01030f;
+  --floor: #000208;
+  --back-edge: #000308;
+  --back-glow: #01061a;
+  --line: #ffffff;
+  --line-opacity: 0.4;
+  color-scheme: dark;
+
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--bg);
+  container-type: size;
+  pointer-events: none;
+}
+
+.grid-room .stage {
+  /* Layout: a 4:3 stage drawn as one-point perspective, flat in 2D so every line is pixel-crisp.
+     Depth lines are nested frames, lengthwise lines are rays from the vanishing point (screen centre).
+     Grid is 8 x 6 cells on the back wall and 8 cells deep. Camera distance is 0.8 x stage width. */
+  --w: max(100cqw, 133.3333cqh);
+  --lw: max(1.5px, calc(var(--w) * 0.0012));
+  --h: calc(var(--lw) / 2);
+  --s8: calc(6.4 / 14.4);
+  --in: calc((1 - var(--s8)) / 2 * 100%);
+
+  /* inner column lines of the back wall (x = 1/8 ... 7/8) */
+  --xl: linear-gradient(to right,
+    transparent calc(12.5% - var(--h)),
+    var(--line) calc(12.5% - var(--h)) calc(12.5% + var(--h)),
+    transparent calc(12.5% + var(--h)) calc(25% - var(--h)),
+    var(--line) calc(25% - var(--h)) calc(25% + var(--h)),
+    transparent calc(25% + var(--h)) calc(37.5% - var(--h)),
+    var(--line) calc(37.5% - var(--h)) calc(37.5% + var(--h)),
+    transparent calc(37.5% + var(--h)) calc(50% - var(--h)),
+    var(--line) calc(50% - var(--h)) calc(50% + var(--h)),
+    transparent calc(50% + var(--h)) calc(62.5% - var(--h)),
+    var(--line) calc(62.5% - var(--h)) calc(62.5% + var(--h)),
+    transparent calc(62.5% + var(--h)) calc(75% - var(--h)),
+    var(--line) calc(75% - var(--h)) calc(75% + var(--h)),
+    transparent calc(75% + var(--h)) calc(87.5% - var(--h)),
+    var(--line) calc(87.5% - var(--h)) calc(87.5% + var(--h)),
+    transparent calc(87.5% + var(--h)));
+
+  /* inner row lines of the back wall (y = 1/6 ... 5/6) */
+  --yl: linear-gradient(to bottom,
+    transparent calc(16.6667% - var(--h)),
+    var(--line) calc(16.6667% - var(--h)) calc(16.6667% + var(--h)),
+    transparent calc(16.6667% + var(--h)) calc(33.3333% - var(--h)),
+    var(--line) calc(33.3333% - var(--h)) calc(33.3333% + var(--h)),
+    transparent calc(33.3333% + var(--h)) calc(50% - var(--h)),
+    var(--line) calc(50% - var(--h)) calc(50% + var(--h)),
+    transparent calc(50% + var(--h)) calc(66.6667% - var(--h)),
+    var(--line) calc(66.6667% - var(--h)) calc(66.6667% + var(--h)),
+    transparent calc(66.6667% + var(--h)) calc(83.3333% - var(--h)),
+    var(--line) calc(83.3333% - var(--h)) calc(83.3333% + var(--h)),
+    transparent calc(83.3333% + var(--h)));
+
+  position: relative;
+  width: var(--w);
+  height: calc(var(--w) * 0.75);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Surfaces: four trapezoids around the back wall */
+.grid-room .fill { position: absolute; inset: 0; }
+.grid-room .f-left {
+  clip-path: polygon(0 0, var(--in) var(--in), var(--in) calc(100% - var(--in)), 0 100%);
+  background: linear-gradient(to right, var(--wall), var(--back-edge));
+}
+.grid-room .f-right {
+  clip-path: polygon(100% 0, calc(100% - var(--in)) var(--in), calc(100% - var(--in)) calc(100% - var(--in)), 100% 100%);
+  background: linear-gradient(to left, var(--wall), var(--back-edge));
+}
+.grid-room .f-top {
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--in)) var(--in), var(--in) var(--in));
+  background: linear-gradient(to bottom, var(--floor), var(--wall));
+}
+.grid-room .f-bottom {
+  clip-path: polygon(0 100%, 100% 100%, calc(100% - var(--in)) calc(100% - var(--in)), var(--in) calc(100% - var(--in)));
+  background: linear-gradient(to top, var(--floor), var(--wall));
+}
+
+/* Back wall surface with its inner 8 x 6 grid */
+.grid-room .back {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--s8) * var(--w));
+  height: calc(var(--s8) * var(--w) * 0.75);
+  transform: translate(-50%, -50%);
+  background-image: radial-gradient(ellipse at 50% 50%, var(--back-glow) 0%, var(--back-edge) 78%);
+}
+
+/* All lines live in one group, so the group is dimmed once and crossings do not get brighter */
+.grid-room .lines {
+  position: absolute;
+  inset: 0;
+  opacity: var(--line-opacity);
+}
+
+.grid-room .back-grid {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--s8) * var(--w));
+  height: calc(var(--s8) * var(--w) * 0.75);
+  transform: translate(-50%, -50%);
+  background-image: var(--xl), var(--yl);
+}
+
+/* Depth lines: one frame per cell of depth (k = 1..8), centred on the vanishing point */
+.grid-room .ring {
+  --s: calc(6.4 / (6.4 + var(--k)));
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  box-sizing: border-box;
+  width: calc(var(--s) * var(--w) + var(--lw));
+  height: calc(var(--s) * var(--w) * 0.75 + var(--lw));
+  transform: translate(-50%, -50%);
+  border: var(--lw) solid var(--line);
+}
+
+/* Front opening of the room (k = 0), kept fully inside the stage */
+.grid-room .frame {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border: var(--lw) solid var(--line);
+}
+
+/* Lengthwise lines: start at the back wall, run out to the front edge along the ray from the centre */
+.grid-room .ray {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: var(--lw);
+  margin-top: calc(var(--lw) / -2);
+  width: calc(var(--r) * var(--w) * (1 - var(--s8)));
+  background: var(--line);
+  transform-origin: 0 50%;
+  transform: rotate(var(--a)) translateX(calc(var(--r) * var(--w) * var(--s8)));
+}
