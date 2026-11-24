@@ -51,8 +51,8 @@ const initialDungeonLoad = () => {
     }
     loadDungeonProgress();
     dungeonTime.innerHTML = new Date(dungeon.statistics.runtime * 1000).toISOString().slice(11, 19);
-    dungeonAction.innerHTML = "Resting...";
-    dungeonActivity.innerHTML = "Explore";
+    dungeonAction.innerHTML = t("dgn.resting");
+    dungeonActivity.innerHTML = t("dgn.explore");
     dungeonTime.innerHTML = "00:00:00";
     dungeonTimer = setInterval(dungeonEvent, 1000);
     playTimer = setInterval(dungeonCounter, 1000);
@@ -63,15 +63,15 @@ const dungeonStartPause = () => {
     if (!dungeon.status.paused) {
         sfxPause.play();
 
-        dungeonAction.innerHTML = "Resting...";
-        dungeonActivity.innerHTML = "Explore";
+        dungeonAction.innerHTML = t("dgn.resting");
+        dungeonActivity.innerHTML = t("dgn.explore");
         dungeon.status.exploring = false;
         dungeon.status.paused = true;
     } else {
         sfxUnpause.play();
 
-        dungeonAction.innerHTML = "Exploring...";
-        dungeonActivity.innerHTML = "Pause";
+        dungeonAction.innerHTML = t("dgn.exploring");
+        dungeonActivity.innerHTML = t("dgn.pause");
         dungeon.status.exploring = true;
         dungeon.status.paused = false;
     }
@@ -93,8 +93,8 @@ const loadDungeonProgress = () => {
             dungeon.progress.floor++;
         }
     }
-    floorCount.innerHTML = `Floor ${dungeon.progress.floor}`;
-    roomCount.innerHTML = `Room ${dungeon.progress.room}`;
+    floorCount.innerHTML = `${t("dgn.floor")} ${dungeon.progress.floor}`;
+    roomCount.innerHTML = `${t("dgn.room")} ${dungeon.progress.room}`;
 }
 
 // ========== Events in the Dungeon ==========

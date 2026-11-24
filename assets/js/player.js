@@ -98,7 +98,7 @@ const playerLoadStats = () => {
 
     // Player Bonus Stats
     document.querySelector("#bonus-stats").innerHTML = `
-    <h4>Bonus Stats</h4>
+    <h4>${t("bonus.title")}</h4>
     <p><i class="fas fa-heart"></i>HP+${player.bonusStats.hp.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="ra ra-sword"></i>ATK+${player.bonusStats.atk.toFixed(2).replace(rx, "$1")}%</p>
     <p><i class="fas fa-bolt"></i>N.ATK+${(player.bonusStats.nAtk || 0).toFixed(2).replace(rx, "$1")}%</p>
@@ -130,19 +130,19 @@ const openInventory = () => {
         if (rarity == "All") {
             defaultModalElement.innerHTML = `
             <div class="content">
-                <p>Sell all of your equipment?</p>
+                <p>${t("inv.sellAllQ")}</p>
                 <div class="button-container">
-                    <button id="sell-confirm">Sell All</button>
-                    <button id="sell-cancel">Cancel</button>
+                    <button id="sell-confirm">${t("inv.sellAll")}</button>
+                    <button id="sell-cancel">${t("common.cancel")}</button>
                 </div>
             </div>`;
         } else {
             defaultModalElement.innerHTML = `
             <div class="content">
-                <p>Sell all <span class="${rarity}">${rarity}</span> equipment?</p>
+                <p>${tParams("inv.sellRarityQ", { r: `<span class="${rarity}">${rarity}</span>` })}</p>
                 <div class="button-container">
-                    <button id="sell-confirm">Sell All</button>
-                    <button id="sell-cancel">Cancel</button>
+                    <button id="sell-confirm">${t("inv.sellAll")}</button>
+                    <button id="sell-cancel">${t("common.cancel")}</button>
                 </div>
             </div>`;
         }
@@ -235,10 +235,10 @@ const generateLvlStats = (rerolls, percentages) => {
 
     const loadLvlHeader = () => {
         lvlupSelect.innerHTML = `
-            <h1>Level Up!</h1>
+            <h1>${t("lvl.title")}</h1>
             <div class="content-head">
-                <h4>Remaining: ${player.exp.lvlGained}</h4>
-                <button id="lvlReroll">Reroll ${rerolls}/2</button>
+                <h4>${t("lvl.remaining")} ${player.exp.lvlGained}</h4>
+                <button id="lvlReroll">${t("lvl.reroll")} ${rerolls}/2</button>
             </div>
         `;
     }
@@ -266,7 +266,8 @@ const generateLvlStats = (rerolls, percentages) => {
             button.appendChild(h3);
 
             let p = document.createElement("p");
-            p.innerHTML = `Increase bonus ${selectedStats[i].replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase()} by ${percentages[selectedStats[i]]}%.`;
+            const statName = selectedStats[i].replace(/([A-Z])/g, ".$1").replace(/crit/g, "c").toUpperCase();
+            p.innerHTML = tParams("lvl.statup", { s: statName, p: percentages[selectedStats[i]] });
             button.appendChild(p);
 
             // Increase the selected stat for player

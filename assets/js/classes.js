@@ -486,8 +486,8 @@ const showLoadoutModal = () => {
     overlay.className = "loadout-overlay";
     overlay.innerHTML = `
         <div class="loadout-panel">
-            <h3>アビリティ編成 <span class="loadout-count" id="loadoutCount">${current.length}/${MAX_ABILITY_SLOTS}</span></h3>
-            <p class="loadout-hint">${CLASSES[playerClassKey()].name} — 最大${MAX_ABILITY_SLOTS}つまでセット可能</p>
+            <h3>${t("loadout.title")} <span class="loadout-count" id="loadoutCount">${current.length}/${MAX_ABILITY_SLOTS}</span></h3>
+            <p class="loadout-hint">${tParams("loadout.hint", { c: CLASSES[playerClassKey()].name, n: MAX_ABILITY_SLOTS })}</p>
             <div class="loadout-list">
                 ${unlocked.map(a => `
                     <label class="loadout-item ${current.includes(a.id) ? "on" : ""}">
@@ -500,8 +500,8 @@ const showLoadoutModal = () => {
                     </label>`).join("")}
             </div>
             <div class="loadout-actions">
-                <button id="loadoutCancel">キャンセル</button>
-                <button id="loadoutSave">決定</button>
+                <button id="loadoutCancel">${t("loadout.cancel")}</button>
+                <button id="loadoutSave">${t("loadout.confirm")}</button>
             </div>
         </div>`;
     document.body.appendChild(overlay);

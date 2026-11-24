@@ -34,16 +34,16 @@
                 <i class="fa-solid fa-dungeon fa-5x"></i>
                 <h1>Dungeon Crawler on Demand!</h1>
             </div>
-            <p>Tap to explore the dungeon</p>
+            <p data-i18n="title.tap">Tap to explore the dungeon</p>
         </section>
 
         <!-- Character Creation -->
         <section id="character-creation" class="game-container">
             <form id="name-submit">
-                <h1>What is your name?</h1>
+                <h1 data-i18n="cc.title">What is your name?</h1>
                 <input type="text" id="name-input" autocomplete="off">
                 <p id="alert"></p>
-                <button type="submit">Confirm</button>
+                <button type="submit" data-i18n="common.confirm">Confirm</button>
             </form>
         </section>
 
@@ -59,7 +59,7 @@
             </header>
             <div class="stat-panel">
                 <div class="box">
-                    <h4>Stats</h4>
+                    <h4 id="stats-title" data-i18n="stats.title">Stats</h4>
                     <p id="player-exp-info"></p>
                     <p><i class="fas fa-heart"></i>HP: <span id="player-hp"></span></p>
                     <p><i class="ra ra-sword"></i>ATK: <span id="player-atk"></span></p>
@@ -94,11 +94,11 @@
         <div class="modal-container" id="inventory">
             <div class="content">
                 <div class="content-head">
-                    <h3>Inventory</h3>
+                    <h3 data-i18n="inv.title">Inventory</h3>
                     <p onclick="closeInventory()"><i class="fa fa-xmark"></i></p>
                 </div>
                 <div class="content-head">
-                    <button id="sell-all">Sell</button>
+                    <button id="sell-all" data-i18n="inv.sell">Sell</button>
                     <select id="sell-rarity">
                         <option class="Common" value="Common">Common</option>
                         <option class="Uncommon" value="Uncommon">Uncommon</option>
@@ -113,13 +113,13 @@
                 <div class="stat-panel">
                     <div class="box">
                         <div class="box-head">
-                            <h4>Equipment</h4>
+                            <h4 data-i18n="inv.equipment">Equipment</h4>
                             <p id="unequip-all"><i class="fa fa-circle-xmark"></i></p>
                         </div>
                         <div id="playerEquipment"></div>
                     </div>
                 </div>
-                <button id="menu-btn">Menu</button>
+                <button id="menu-btn" data-i18n="inv.menu">Menu</button>
             </div>
         </div>
         <div class="modal-container" id="equipmentInfo"></div>
@@ -133,6 +133,7 @@
         <div class="modal-container" id="confirmationModal"></div>
     </main>
 
+    <script src="./assets/js/i18n.js"></script>
     <script src="./assets/js/utility.js"></script>
     <script src="./assets/js/elements.js"></script>
     <script src="./assets/js/music.js"></script>

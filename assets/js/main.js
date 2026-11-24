@@ -5,6 +5,7 @@ window.addEventListener("load", function () {
         let target = document.querySelector("#title-screen");
         target.style.display = "flex";
     }
+    applyStaticI18n();
 
     // Title Screen Validation
     document.querySelector("#title-screen").addEventListener("click", function () {
@@ -28,12 +29,12 @@ window.addEventListener("load", function () {
 
         var format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
         if (format.test(playerName)) {
-            document.querySelector("#alert").innerHTML = "Your name cannot contain special characters!";
+            document.querySelector("#alert").innerHTML = t("name.err.special");
         } else {
             if (playerName.length < 3) {
-                document.querySelector("#alert").innerHTML = "Name should be at least 3 characters!";
+                document.querySelector("#alert").innerHTML = t("name.err.short");
             } else if (!isValidNameWidth(playerName)) {
-                document.querySelector("#alert").innerHTML = "Name is too long! (max width: 12 'a')";
+                document.querySelector("#alert").innerHTML = t("name.err.long");
             } else {
                 player = {
                     name: playerName,
@@ -146,7 +147,8 @@ window.addEventListener("load", function () {
         };
     });
 
-    document.querySelector("#menu-btn").addEventListener("click", function () {
+    let openMenuModal = null;
+    document.querySelector("#menu-btn").addEventListener("click", openMenuModal = function () {
         closeInventory();
 
         dungeon.status.exploring = false;
@@ -158,14 +160,15 @@ window.addEventListener("load", function () {
         menuModalElement.innerHTML = `
         <div class="content">
             <div class="content-head">
-                <h3>Menu</h3>
+                <h3>${t("menu.title")}</h3>
                 <p id="close-menu"><i class="fa fa-xmark"></i></p>
             </div>
             <button id="player-menu"><i class="fas fa-user"></i>${player.name}</button>
-            <button id="stats">Current Run</button>
-            <button id="volume-btn">Volume Settings</button>
-            <button id="export-import">Export/Import Data</button>
-            <button id="quit-run">Abandon</button>
+            <button id="stats">${t("menu.run")}</button>
+            <button id="volume-btn">${t("menu.volume")}</button>
+            <button id="export-import">${t("menu.ei")}</button>
+            <button id="lang-btn">${t("menu.lang")}: ${LANG === "ja" ? "日本語" : "English"}</button>
+            <button id="quit-run">${t("menu.quit")}</button>
         </div>`;
 
         let close = document.querySelector('#close-menu');
@@ -174,6 +177,18 @@ window.addEventListener("load", function () {
         let quitRun = document.querySelector('#quit-run');
         let exportImport = document.querySelector('#export-import');
         let volumeSettings = document.querySelector('#volume-btn');
+        let langBtn = document.querySelector('#lang-btn');
+
+        // Language toggle: switch EN/JA and re-render everything
+        langBtn.onclick = function () {
+            sfxOpen.play();
+            setLang(LANG === "ja" ? "en" : "ja");
+            applyStaticI18n();
+            playerLoadStats();
+            menuModalElement.style.display = "none";
+            menuModalElement.innerHTML = "";
+            openMenuModal();
+        };
 
         // Player profile click function
         playerMenu.onclick = function () {
@@ -184,14 +199,14 @@ window.addEventListener("load", function () {
             defaultModalElement.innerHTML = `
             <div class="content" id="profile-tab">
                 <div class="content-head">
-                    <h3>Statistics</h3>
+                    <h3>${t("profile.title")}</h3>
                     <p id="profile-close"><i class="fa fa-xmark"></i></p>
                 </div>
                 <p>${player.name} Lv.${player.lvl}</p>
-                <p>Kills: ${nFormatter(player.kills)}</p>
-                <p>Deaths: ${nFormatter(player.deaths)}</p>
-                <p>Playtime: ${playTime}</p>
-                <button id="rename-btn">Rename</button>
+                <p>${t("profile.kills")} ${nFormatter(player.kills)}</p>
+                <p>${t("profile.deaths")} ${nFormatter(player.deaths)}</p>
+                <p>${t("profile.playtime")} ${playTime}</p>
+                <button id="rename-btn">${t("profile.rename")}</button>
             </div>`;
             let profileTab = document.querySelector('#profile-tab');
             profileTab.style.width = "15rem";
@@ -207,12 +222,12 @@ window.addEventListener("load", function () {
                 defaultModalElement.innerHTML = `
                 <div class="content" id="rename-tab">
                     <div class="content-head">
-                        <h3>Rename</h3>
+                        <h3>${t("rename.title")}</h3>
                         <p id="rename-close"><i class="fa fa-xmark"></i></p>
                     </div>
                     <input type="text" id="rename-input" value="${player.name}" autocomplete="off">
                     <p id="rename-alert"></p>
-                    <button id="rename-confirm">Confirm</button>
+                    <button id="rename-confirm">${t("common.confirm")}</button>
                 </div>`;
                 document.querySelector('#rename-close').onclick = function () {
                     sfxDecline.play();
@@ -223,11 +238,11 @@ window.addEventListener("load", function () {
                     let alertEl = document.querySelector("#rename-alert");
                     var format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
                     if (format.test(newName)) {
-                        alertEl.innerHTML = "Name cannot contain special characters!";
+                        alertEl.innerHTML = t("name.err.special");
                     } else if (newName.length < 3) {
-                        alertEl.innerHTML = "Name should be at least 3 characters!";
+                        alertEl.innerHTML = t("name.err.short");
                     } else if (!isValidNameWidth(newName)) {
-                        alertEl.innerHTML = "Name is too long! (max width: 12 'a')";
+                        alertEl.innerHTML = t("name.err.long");
                     } else {
                         sfxConfirm.play();
                         player.name = newName;
@@ -250,15 +265,15 @@ window.addEventListener("load", function () {
             defaultModalElement.innerHTML = `
             <div class="content" id="run-tab">
                 <div class="content-head">
-                    <h3>Current Run</h3>
+                    <h3>${t("run.title")}</h3>
                     <p id="run-close"><i class="fa fa-xmark"></i></p>
                 </div>
                 <p>${player.name} Lv.${player.lvl} [${(CLASSES[player.cls] || CLASSES.warrior).name}]</p>
-                <p>Difficulty: ${(DIFFICULTY_MODES[player.difficulty] || DIFFICULTY_MODES.normal).label}</p>
-                <p>Blessing Lvl.${player.blessing}</p>
-                <p>Curse Lvl.${Math.round((dungeon.settings.enemyScaling - 1) * 10)}</p>
-                <p>Kills: ${nFormatter(dungeon.statistics.kills)}</p>
-                <p>Runtime: ${runTime}</p>
+                <p>${t("run.difficulty")} ${(DIFFICULTY_MODES[player.difficulty] || DIFFICULTY_MODES.normal).label}</p>
+                <p>${t("run.blessing")}${player.blessing}</p>
+                <p>${t("run.curse")} ${Math.round((dungeon.settings.enemyScaling - 1) * 10)}</p>
+                <p>${t("run.kills")} ${nFormatter(dungeon.statistics.kills)}</p>
+                <p>${t("run.runtime")} ${runTime}</p>
             </div>`;
             let runTab = document.querySelector('#run-tab');
             runTab.style.width = "15rem";
@@ -278,10 +293,10 @@ window.addEventListener("load", function () {
             defaultModalElement.style.display = "flex";
             defaultModalElement.innerHTML = `
             <div class="content">
-                <p>Do you want to abandon this run?</p>
+                <p>${t("quit.msg")}</p>
                 <div class="button-container">
-                    <button id="quit-run">Abandon</button>
-                    <button id="cancel-quit">Cancel</button>
+                    <button id="quit-run">${t("quit.abandon")}</button>
+                    <button id="cancel-quit">${t("common.cancel")}</button>
                 </div>
             </div>`;
             let quit = document.querySelector('#quit-run');
@@ -322,16 +337,16 @@ window.addEventListener("load", function () {
             defaultModalElement.innerHTML = `
             <div class="content" id="volume-tab">
                 <div class="content-head">
-                    <h3>Volume</h3>
+                    <h3>${t("vol.title")}</h3>
                     <p id="volume-close"><i class="fa fa-xmark"></i></p>
                 </div>
-                <label id="master-label" for="master-volume">Master (${master}%)</label>
+                <label id="master-label" for="master-volume">${t("vol.master")} (${master}%)</label>
                 <input type="range" id="master-volume" min="0" max="100" value="${master}">
-                <label id="bgm-label" for="bgm-volume">BGM (${bgm}%)</label>
+                <label id="bgm-label" for="bgm-volume">${t("vol.bgm")} (${bgm}%)</label>
                 <input type="range" id="bgm-volume" min="0" max="100" value="${bgm}">
-                <label id="sfx-label" for="sfx-volume">SFX (${sfx}%)</label>
+                <label id="sfx-label" for="sfx-volume">${t("vol.sfx")} (${sfx}%)</label>
                 <input type="range" id="sfx-volume" min="0" max="100" value="${sfx}">
-                <button id="apply-volume">Apply</button>
+                <button id="apply-volume">${t("vol.apply")}</button>
             </div>`;
             let masterVol = document.querySelector('#master-volume');
             let bgmVol = document.querySelector('#bgm-volume');
@@ -383,15 +398,15 @@ window.addEventListener("load", function () {
             defaultModalElement.innerHTML = `
             <div class="content" id="ei-tab">
                 <div class="content-head">
-                    <h3>Export/Import Data</h3>
+                    <h3>${t("ei.title")}</h3>
                     <p id="ei-close"><i class="fa fa-xmark"></i></p>
                 </div>
-                <h4>Export Data</h4>
+                <h4>${t("ei.export")}</h4>
                 <input type="text" id="export-input" autocomplete="off" value="${exportedData}" readonly>
-                <button id="copy-export">Copy</button>
-                <h4>Import Data</h4>
+                <button id="copy-export">${t("common.copy")}</button>
+                <h4>${t("ei.import")}</h4>
                 <input type="text" id="import-input" autocomplete="off">
-                <button id="data-import">Import</button>
+                <button id="data-import">${t("ei.doImport")}</button>
             </div>`;
             let eiTab = document.querySelector('#ei-tab');
             eiTab.style.width = "15rem";
@@ -405,7 +420,7 @@ window.addEventListener("load", function () {
                 copyText.select();
                 copyText.setSelectionRange(0, 99999);
                 navigator.clipboard.writeText(copyText.value);
-                copyExport.innerHTML = "Copied!";
+                copyExport.innerHTML = t("common.copied");
             }
             dataImport.onclick = function () {
                 importData(importInput.value);
@@ -569,10 +584,10 @@ const importData = (importedData) => {
             confirmationModalElement.style.display = "flex";
             confirmationModalElement.innerHTML = `
             <div class="content">
-                <p>Are you sure you want to import this data? This will erase the current data and reset your dungeon progress.</p>
+                <p>${t("import.warn")}</p>
                 <div class="button-container">
-                    <button id="import-btn">Import</button>
-                    <button id="cancel-btn">Cancel</button>
+                    <button id="import-btn">${t("ei.doImport")}</button>
+                    <button id="cancel-btn">${t("common.cancel")}</button>
                 </div>
             </div>`;
             let confirm = document.querySelector("#import-btn");
