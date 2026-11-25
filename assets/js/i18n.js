@@ -89,7 +89,7 @@ const STRINGS = {
     // ---- Level up ----
     "lvl.title":            { en: "Level Up!", ja: "レベルアップ！" },
     "lvl.remaining":        { en: "Remaining:", ja: "残り:" },
-    "lvl.reroll":           { en: "Reroll", ja: "リロール" },
+    "lvl.reroll":           { en: "Reroll — {c}G", ja: "リロール — {c}G" },
     "lvl.statup":           { en: "Increase bonus {s} by {p}%.", ja: "ボーナス{s}を{p}%強化。" },
 
     // ---- Tips modal ----
@@ -141,6 +141,7 @@ const STRINGS = {
     "dgn.log.blessGain":    { en: "You gained {v}% bonus {s} from the blessing. (Blessing Lv.{a} > Blessing Lv.{b})", ja: "祝福によりボーナス{s}が{v}%上昇した。（祝福Lv.{a} > 祝福Lv.{b}）" },
     "dgn.log.curseGain":    { en: "The monsters in the dungeon became stronger and the loot quality improved. (Curse Lv.{a} > Curse Lv.{b})", ja: "ダンジョンのモンスターが強化され、戦利品の質が上がった。（呪いLv.{a} > 呪いLv.{b}）" },
     "dgn.log.curseReset":   { en: "You feel the curse lift... (Curse stage reset)", ja: "呪いが解けていく気がする…（呪い段階リセット）" },
+    "dgn.curse.confirm":    { en: "Accept the curse? Monsters will grow stronger. (Cost: {cost})", ja: "呪いを受け入れますか？モンスターが強化されます。（費用: {cost}）" },
     "dgn.log.ignore":       { en: "You ignored it and decided to move on.", ja: "無視して先へ進んだ。" },
     "dgn.log.gold":         { en: 'You found <i class="fas fa-coins" style="color: #FFD700;"></i>{g}.', ja: '<i class="fas fa-coins" style="color: #FFD700;"></i>{g}を見つけた。' },
     "dgn.log.fleeFrom":     { en: "You fled from {name}.", ja: "{name}から逃げた。" },
@@ -149,8 +150,8 @@ const STRINGS = {
     "cb.claim":             { en: "Claim", ja: "受け取る" },
     "cb.backToMenu":        { en: "Back to Menu", ja: "メニューに戻る" },
     "cb.flee":              { en: "Flee", ja: "逃げる" },
-    "cb.named":             { en: "NAMED", ja: "ネームド" },
-    "cb.revive":            { en: "Revive — spend ALL gold ({g})", ja: "復活 — ゴールド全額を消費（{g}）" },
+    "cb.revive":            { en: "Revive — {c} crystals", ja: "復活 — クリスタル{c}個" },
+    "cb.crystalDrop":       { en: "{name} dropped {n} crystal(s)!", ja: "{name}がクリスタルを{n}個落とした！" },
     "cb.diffUnlocked":      { en: "New difficulty unlocked: {name}!", ja: "新しい難易度が解放された：{name}！" },
     "cb.dungeonClear":      { en: "You have cleared the dungeon!", ja: "ダンジョンを制覇した！" },
 
@@ -183,9 +184,34 @@ const STRINGS = {
     "wh.full":              { en: "Warehouse is full.", ja: "倉庫がいっぱいです。" },
 
     // ---- Stash point (every 5 floors) ----
-    "dgn.log.stashPoint":   { en: "You found a wayside cache. You may send ONE item to your warehouse.", ja: "道端の物置を見つけた。アイテムを1つ倉庫へ送ることができる。" },
+    "dgn.log.stashPoint":   { en: "You found a wayside cache. Send ONE item to your warehouse, or take items back.", ja: "道端の物置を見つけた。アイテムを1つ倉庫へ送るか、倉庫からアイテムを取り出せる。" },
     "dgn.c.stash":          { en: "Open cache", ja: "物置を開ける" },
     "dgn.c.stashSend":      { en: "Send to Warehouse", ja: "倉庫へ送る" },
+    "wh.section":           { en: "Warehouse ({n}/{max})", ja: "倉庫（{n}/{max}）" },
+    "wh.retrieve":          { en: "Take", ja: "取り出す" },
+    "wh.retrieved":         { en: "You retrieved <span class=\"{r}\">{item}</span> from the warehouse.", ja: "倉庫から<span class=\"{r}\">{item}</span>を取り出した。" },
+    "wh.empty":             { en: "The warehouse is empty.", ja: "倉庫は空です。" },
+
+    // ---- Blacksmith ----
+    "dgn.log.blacksmith":   { en: "A burly blacksmith works a forge by the roadside. The ring of his hammer sounds like a promise.", ja: "道端で屈強な鍛冶屋が炉を打っている。金槌の音が約束を奏でる。" },
+    "dgn.c.visit":          { en: "Visit the blacksmith", ja: "鍛冶屋を訪ねる" },
+    "smith.title":          { en: "Blacksmith", ja: "鍛冶屋" },
+    "smith.crystals":       { en: "Crystals: {n}", ja: "クリスタル: {n}" },
+    "smith.hint":           { en: "Pick an item: gold enhances up to 2 of its stats (G), crystals raise its Level (Lv).", ja: "アイテムを選択：ゴールドで能力を最大2つ強化（G）、クリスタルでレベルアップ（Lv）。" },
+    "smith.enhanceTitle":   { en: "Enhance this item's stats with gold", ja: "ゴールドでこのアイテムの能力値を強化" },
+    "smith.pickStats":      { en: "Choose up to 2 stats on this item to enhance with gold.", ja: "ゴールドで強化する能力をこのアイテムから2つまで選んでください。" },
+    "smith.pickFirst":      { en: "Select stats first", ja: "先に能力を選択" },
+    "smith.noStats":        { en: "This item has no enhanceable stats.", ja: "このアイテムに強化可能な能力がありません。" },
+    "smith.enhanceStatus":  { en: "Gold enhance level: {t}/{max}", ja: "ゴールド強化レベル: {t}/{max}" },
+    "smith.enhMax":         { en: "MAX", ja: "MAX" },
+    "smith.owned":          { en: "Owned", ja: "強化済み" },
+    "smith.ward":           { en: "Crystal Ward — gear is never lost on death (auto-stored, returned next run)", ja: "クリスタルワード — 死亡しても装備が失われない（自動で倉庫へ保管され次のランで返還）" },
+    "smith.rankUp":         { en: "Level Up — 10 crystals (+1 Lv, stats recalculated)", ja: "レベルアップ — クリスタル10個（Lv+1、能力値を再計算）" },
+    "smith.wardBuy":        { en: "Buy — {n} crystals", ja: "購入 — クリスタル{n}個" },
+    "smith.rankMax":        { en: "MAX LV", ja: "レベルMAX" },
+    "smith.items":          { en: "Equipment", ja: "装備" },
+    "smith.noItems":        { en: "No equipment.", ja: "装備がありません。" },
+    "smith.close":          { en: "Leave", ja: "立ち去る" },
 
     // ---- Combat log ----
     "cb.secondWind":        { en: "{name} refuses to fall! (Second Wind)", ja: "{name}は倒れない！（Second Wind）" },
@@ -243,6 +269,7 @@ const STRINGS = {
     "cc.alloc":             { en: "Allocate Stats", ja: "ステータス配分" },
     "cc.statPoints":        { en: "Stat Points: {p}", ja: "ステータスポイント: {p}" },
     "common.reset":         { en: "Reset", ja: "リセット" },
+    "common.back":          { en: "Back", ja: "戻る" },
     "cc.class":             { en: "Class", ja: "クラス" },
     "cc.passive":           { en: "Passive", ja: "パッシブ" },
     "cc.difficulty":        { en: "Difficulty", ja: "難易度" },

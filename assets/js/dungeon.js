@@ -93,10 +93,18 @@ const loadDungeonProgress = () => {
             dungeon.progress.floor++;
         }
     }
-    // Curse stage resets every 100 floors (each difficulty band)
+    // Curse resets to the band's starting stage every 100 floors (difficulty change)
     const band = diffTierOfFloor(dungeon.progress.floor);
-    if (dungeon.curseBand !== undefined && dungeon.curseBand !== band) {
-        dungeon.settings.enemyScaling = 1.1;
+    const bandBase = bandCurseScaling(band);
+    if (dungeon.curseBand === undefined) {
+        // First load: adopt the band baseline. Untouched saves sit at the old
+        // 1.1 default; anything clearly above the baseline is a totem curse — keep it.
+        const untouched = Math.abs(dungeon.settings.enemyScaling - 1.1) < 0.001;
+        if (untouched || dungeon.settings.enemyScaling < bandBase) {
+            dungeon.settings.enemyScaling = bandBase;
+        }
+    } else if (dungeon.curseBand !== band) {
+        dungeon.settings.enemyScaling = bandBase;
         addDungeonLog(t("dgn.log.curseReset"));
     }
     dungeon.curseBand = band;
@@ -109,6 +117,8 @@ const dungeonEvent = () => {
     if (dungeon.status.exploring && !dungeon.status.event) {
         // Warehouse stash point: once per 5-floor milestone (5, 10, ... 100)
         if (stashPointReady()) { stashPointEvent(); return; }
+        // Blacksmith: 5% per action on band-relative floors 25-100, once per band
+        if (blacksmithReady()) { blacksmithEvent(); return; }
         dungeon.action++;
         let choices;
         let eventRoll;
@@ -196,7 +206,7 @@ const dungeonEvent = () => {
                         <button id="choice2">${t("dgn.c.flee")}</button>
                     </div>`;
                 generateRandomEnemy();
-                addDungeonLog(tParams("dgn.log.encounter", { name: enemy.name }), choices);
+                addDungeonLog(tParams("dgn.log.encounter", { name: enemy.name + enemyModLabel(" omen") }), choices);
                 player.inCombat = true;
                 document.querySelector("#choice1").onclick = function () {
                     engageBattle();
@@ -251,12 +261,32 @@ const dungeonEvent = () => {
                         if (player.gold < cost) {
                             sfxDeny.play();
                             addDungeonLog(t("dgn.log.noGold"));
-                        } else {
+                            dungeon.status.event = false;
+                            return;
+                        }
+                        // Warning dialog so a stray click can't accept the curse by accident
+                        confirmationModalElement.style.display = "flex";
+                        confirmationModalElement.innerHTML = `
+                        <div class="content">
+                            <p>${tParams("dgn.curse.confirm", { cost: nFormatter(cost) })}</p>
+                            <div class="button-container">
+                                <button id="curse-confirm">${t("common.confirm")}</button>
+                                <button id="curse-cancel">${t("common.cancel")}</button>
+                            </div>
+                        </div>`;
+                        document.querySelector("#curse-confirm").onclick = function () {
+                            confirmationModalElement.style.display = "none";
+                            confirmationModalElement.innerHTML = "";
                             player.gold -= cost;
                             sfxConfirm.play();
                             cursedTotem(curseLvl);
-                        }
-                        dungeon.status.event = false;
+                            dungeon.status.event = false;
+                        };
+                        document.querySelector("#curse-cancel").onclick = function () {
+                            sfxDecline.play();
+                            confirmationModalElement.style.display = "none";
+                            confirmationModalElement.innerHTML = "";
+                        };
                     }
                     document.querySelector("#choice2").onclick = function () {
                         ignoreEvent();
@@ -294,7 +324,8 @@ const stashPointReady = () => {
     const f = dungeon.progress.floor;
     if (f % 5 !== 0 || stashFloorsUsed()[f]) return false;
     const hasItems = (player.inventory.equipment || []).length + (player.equipped || []).length > 0;
-    if (!hasItems || storageFull()) { stashFloorsUsed()[f] = true; return false; }
+    const hasStored = (player.storage || []).length > 0;
+    if ((!hasItems || storageFull()) && !hasStored) { stashFloorsUsed()[f] = true; return false; }
     return true;
 };
 const stashPointEvent = () => {
@@ -308,6 +339,30 @@ const stashPointEvent = () => {
     addDungeonLog(t("dgn.log.stashPoint"), choices);
     document.querySelector("#choice1").onclick = function () {
         showStashModal(() => { dungeon.status.event = false; });
+    };
+    document.querySelector("#choice2").onclick = function () {
+        ignoreEvent();
+    };
+};
+
+// ========== Blacksmith (5% per action on band-relative floors 25-100, once per band) ==========
+const blacksmithReady = () => {
+    const bandFloor = ((dungeon.progress.floor - 1) % 100) + 1;
+    if (bandFloor < 25 || bandFloor > 100) return false;
+    if (dungeon.blacksmithBand === diffTierOfFloor(dungeon.progress.floor)) return false;
+    return Math.random() < 0.05;
+};
+const blacksmithEvent = () => {
+    dungeon.blacksmithBand = diffTierOfFloor(dungeon.progress.floor);
+    dungeon.status.event = true;
+    const choices = `
+        <div class="decision-panel">
+            <button id="choice1">${t("dgn.c.visit")}</button>
+            <button id="choice2">${t("dgn.c.ignore")}</button>
+        </div>`;
+    addDungeonLog(t("dgn.log.blacksmith"), choices);
+    document.querySelector("#choice1").onclick = function () {
+        showBlacksmithModal(() => { dungeon.status.event = false; });
     };
     document.querySelector("#choice2").onclick = function () {
         ignoreEvent();
@@ -329,7 +384,7 @@ const mimicBattle = (type) => {
     showCombatInfo();
     startCombat(bgmBattleMain);
     addCombatLog(tParams("dgn.log.encounter", { name: enemy.name }));
-    addDungeonLog(tParams("dgn.log.encounter", { name: enemy.name }));
+    addDungeonLog(tParams("dgn.log.encounter", { name: enemy.name + enemyModLabel(" omen") }));
 }
 
 // Guardian boss fight

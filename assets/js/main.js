@@ -98,6 +98,8 @@ window.addEventListener("load", function () {
                     storage: [],
                     equipped: [],
                     gold: 0,
+                    crystals: 0,
+                    crystalWard: false,
                     playtime: 0,
                     kills: 0,
                     deaths: 0,
@@ -555,6 +557,10 @@ const progressReset = () => {
     player.reviveUsedBands = {};
     player.inventory.equipment = [];
     player.equipped = [];
+    // Crystal Ward: stored gear returns to the inventory at the start of the next run
+    if (player.crystalWard) {
+        player.inventory.equipment = (player.storage || []).splice(0);
+    }
     applyEquipmentStats();
     // New run starts at the selected difficulty's band head (NORMAL=1 ... OMEGA=901)
     dungeon.progress.floor = diffStartFloor(playerDiffTier());
@@ -570,9 +576,11 @@ const progressReset = () => {
         enemyBaseLvl: 1,
         enemyLvlGap: 5,
         enemyBaseStats: 1,
-        enemyScaling: 1.1,
+        enemyScaling: bandCurseScaling(playerDiffTier()),
     };
     delete dungeon.enemyMultipliers;
+    dungeon.curseBand = diffTierOfFloor(dungeon.progress.floor);
+    dungeon.blacksmithBand = undefined;
     delete player.allocated;
     dungeon.backlog.length = 0;
     dungeon.action = 0;

@@ -205,15 +205,17 @@ const abilityDamage = (mult, defScale = 1) => {
 
 // Ability visual effects (GIF overlays on the enemy panel)
 const ABILITY_FX = {
-    holy_strike: { src: "./assets/effects/holy-strike-fast.gif", ms: 1050, dx: 4, dy: -18 },
-    thorns_nova: { src: "./assets/effects/thorns-nova.gif", ms: 1500, dx: 0, dy: 0 },
-    aegis_oath:  { sheet: "./assets/effects/aegis-oath.png", cols: 5, rows: 2, frames: 10, delay: 80, dx: 0, dy: 0 },
+    holy_strike:       { sheet: "./assets/effects/holy-strike-gold.png", cols: 9, rows: 1, frames: 9, delay: 63, dx: 4, dy: -18 },
+    thorns_nova:       { sheet: "./assets/effects/thorns-nova.png", cols: 5, rows: 3, frames: 15, delay: 56, dx: 0, dy: 0 },
+    aegis_oath:        { sheet: "./assets/effects/aegis-oath.png", cols: 5, rows: 2, frames: 10, delay: 80, dx: 0, dy: 0 },
+    judgment_counter:  { sheet: "./assets/effects/impact-orange.png", cols: 5, rows: 2, frames: 10, delay: 54, dx: 0, dy: 0 },
 };
 // Per-ability sound overrides (fallback: generic sfxAbility)
 const ABILITY_SFX = {
-    holy_strike: () => (typeof sfxHolyStrike !== "undefined" && sfxHolyStrike) || sfxAbility,
-    thorns_nova: () => (typeof sfxThornsNova !== "undefined" && sfxThornsNova) || sfxAbility,
-    aegis_oath:  () => (typeof sfxAegisOath !== "undefined" && sfxAegisOath) || sfxAbility,
+    holy_strike:       () => (typeof sfxHolyStrike !== "undefined" && sfxHolyStrike) || sfxAbility,
+    thorns_nova:       () => (typeof sfxThornsNova !== "undefined" && sfxThornsNova) || sfxAbility,
+    aegis_oath:        () => (typeof sfxAegisOath !== "undefined" && sfxAegisOath) || sfxAbility,
+    judgment_counter:  () => (typeof sfxJudgmentCounter !== "undefined" && sfxJudgmentCounter) || sfxAbility,
 };
 const playAbilityFx = (id) => {
     const fxDef = ABILITY_FX[id];
@@ -230,6 +232,7 @@ const playAbilityFx = (id) => {
         const size = Math.min(fx.clientWidth, fx.clientHeight) || 176;
         sheet.style.width = sheet.style.height = size + "px";
         sheet.style.backgroundImage = `url("${fxDef.sheet}")`;
+        if (fxDef.filter) sheet.style.filter = fxDef.filter;
         sheet.style.backgroundSize = `${fxDef.cols * 100}% ${fxDef.rows * 100}%`;
         fx.appendChild(sheet);
         const delay = fxDef.delay || 80;
@@ -396,6 +399,7 @@ const useAbility = (id) => {
             healPlayer(8);
             break;
         case "judgment_counter":
+            playAbilityFx(id);
             pushPlayerBuff("reflectPct", 1, 8, 200);
             pushPlayerBuff("damageTakenMult", 1.3, 8);
             addCombatLog(tParams("cb.ab.judgment", { name: player.name }));
@@ -626,8 +630,8 @@ const checkAbilityUnlocks = (prevIds) => {
 };
 
 // Enemy modifier display labels (ENEMY_MODS defined in enemy.js)
-const enemyModLabel = () => {
+const enemyModLabel = (cls = "") => {
     if (!enemy || !enemy.mods || !enemy.mods.length) return "";
     const labels = enemy.mods.map(m => (typeof ENEMY_MODS !== "undefined" && ENEMY_MODS[m]) ? ENEMY_MODS[m].label : m);
-    return ` <span class="enemy-mods">[${labels.join(" · ")}]</span>`;
+    return ` <span class="enemy-mods${cls}">[${labels.join(" · ")}]</span>`;
 };

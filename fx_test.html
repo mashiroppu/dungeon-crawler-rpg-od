@@ -26,6 +26,12 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        /* keep the sprite visible while scrolling the button list */
+        position: sticky;
+        top: 0.5rem;
+        z-index: 5;
+        align-self: center;
+    }
         gap: 1rem;
     }
     .enemy-name { font-size: 0.85rem; color: #888; }
@@ -131,15 +137,17 @@
 <script>
 // ==== asset definitions (mirror of classes.js) ====
 const ABILITY_FX = {
-    holy_strike: { src: "./assets/effects/holy-strike-fast.gif", ms: 1050, dx: 4, dy: -18 },
-    thorns_nova: { src: "./assets/effects/thorns-nova.gif",   ms: 1500, dx: 0,  dy: 0  },
-    aegis_oath:  { sheet: "./assets/effects/aegis-oath.png", cols: 5, rows: 2, frames: 10, delay: 80, dx: 0, dy: 0 },
+    holy_strike:       { sheet: "./assets/effects/holy-strike-gold.png", cols: 9, rows: 1, frames: 9, delay: 63, dx: 4, dy: -18 },
+    thorns_nova:       { sheet: "./assets/effects/thorns-nova.png", cols: 5, rows: 3, frames: 15, delay: 56, dx: 0, dy: 0 },
+    aegis_oath:        { sheet: "./assets/effects/aegis-oath.png", cols: 5, rows: 2, frames: 10, delay: 80, dx: 0, dy: 0 },
+    judgment_counter:  { sheet: "./assets/effects/impact-orange.png", cols: 5, rows: 2, frames: 10, delay: 54, dx: 0, dy: 0 },
 };
 const ABILITY_SFX = {
-    holy_strike: "./assets/sfx/holy_strike.mp3",
-    thorns_nova: "./assets/sfx/thorns_nova.mp3",
-    aegis_oath:  "./assets/sfx/aegis_oath.mp3",
-    generic:     "./assets/sfx/attack.wav",
+    holy_strike:       "./assets/sfx/holy_strike.mp3",
+    thorns_nova:       "./assets/sfx/thorns_nova.mp3",
+    aegis_oath:        "./assets/sfx/aegis_oath.mp3",
+    judgment_counter:  "./assets/sfx/judgment_counter.mp3",
+    generic:           "./assets/sfx/attack.wav",
 };
 
 // All abilities per class (mirror of classes.js)
@@ -223,6 +231,7 @@ function playFx(id) {
         const size = Math.min(fx.clientWidth, fx.clientHeight) || 176;
         sheet.style.width = sheet.style.height = size + "px";
         sheet.style.backgroundImage = `url("${fxDef.sheet}")`;
+        if (fxDef.filter) sheet.style.filter = fxDef.filter;
         sheet.style.backgroundSize = `${fxDef.cols * 100}% ${fxDef.rows * 100}%`;
         fx.appendChild(sheet);
         let f = 0;

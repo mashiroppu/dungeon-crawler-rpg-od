@@ -3,10 +3,31 @@ let player = JSON.parse(localStorage.getItem("playerData"));
 if (player && player.skills) {
     player.skills = player.skills.map(s => s === "Aegis Renewal" ? "Blood Tithe" : s);
 }
+// Ensure newer currency/meta fields exist on old saves
+if (player) {
+    player.crystals = player.crystals || 0;
+    player.crystalWard = !!player.crystalWard;
+}
 let inventoryOpen = false;
 let leveled = false;
 const lvlupSelect = document.querySelector("#lvlupSelect");
 const lvlupPanel = document.querySelector("#lvlupPanel");
+
+// Click-rhythm tracker: while the user is mashing clicks, popup buttons ignore
+// input. A click only counts if >= CLICK_GAP_MIN ms passed since the previous one.
+let _prevClickAt = 0;
+let _clickGap = Infinity;
+document.addEventListener("click", () => {
+    const n = performance.now();
+    _clickGap = n - _prevClickAt;
+    _prevClickAt = n;
+}, true);
+const CLICK_GAP_MIN = 300;
+const clickGapOk = () => _clickGap >= CLICK_GAP_MIN;
+// Level-up choices stay locked for 500ms after each screen renders,
+// so clicks carried over from combat/level-up spam can't misfire.
+let lvlupLockUntil = 0;
+const lvlupClickOk = () => performance.now() >= lvlupLockUntil && clickGapOk();
 
 const playerExpGain = () => {
     const prevAbilities = unlockedAbilities().map(a => a.id);
@@ -14,7 +35,7 @@ const playerExpGain = () => {
     player.exp.expCurr += expGain;
     player.exp.expCurrLvl += expGain;
 
-    while (player.exp.expCurr >= player.exp.expMax && player.lvl < 200) {
+    while (player.exp.expCurr >= player.exp.expMax && player.lvl < 500) {
         playerLvlUp();
     }
     if (leveled) {
@@ -31,7 +52,7 @@ const playerLvlUp = () => {
 
     // Calculates the excess exp and the new exp required to level up
     let expMaxIncrease = Math.floor(((player.exp.expMax * 1.1) + 100) - player.exp.expMax);
-    if (player.lvl >= 200) {
+    if (player.lvl >= 500) {
         expMaxIncrease = 1000000;
     }
     let excessExp = player.exp.expCurr - player.exp.expMax;
@@ -82,7 +103,7 @@ const playerLoadStats = () => {
     }
 
     // Header
-    document.querySelector("#player-name").innerHTML = `<i class="fas fa-user"></i>${player.name} Lv.${player.lvl} <i class="fas fa-coins"></i>${nFormatter(player.gold)}`;
+    document.querySelector("#player-name").innerHTML = `<i class="fas fa-user"></i>${player.name} Lv.${player.lvl} <i class="fas fa-coins"></i>${nFormatter(player.gold)} <i class="fas fa-gem"></i>${nFormatter(player.crystals || 0)}`;
     document.querySelector("#player-exp-info").innerHTML = `<i class="fas fa-star"></i>EXP ${nFormatter(player.exp.expCurr)}/${nFormatter(player.exp.expMax)} (${player.exp.expPercent}%)`;
 
     // Player Stats
@@ -233,11 +254,18 @@ const lvlupPopup = () => {
         "thorns": 0.1,
         "nAtk": 6
     };
-    generateLvlStats(2, percentages);
+    lvlRerollCount = 0;
+    generateLvlStats(percentages);
 }
 
+// Level-up reroll cost escalates +100G per reroll within a level-up session
+const LVLUP_REROLL_BASE = 100;
+let lvlRerollCount = 0;
+const lvlRerollCost = () => LVLUP_REROLL_BASE * (lvlRerollCount + 1);
+
 // Generates random stats for level up popup
-const generateLvlStats = (rerolls, percentages) => {
+const generateLvlStats = (percentages) => {
+    lvlupLockUntil = performance.now() + 500;
     let selectedStats = [];
     let stats = ["hp", "atk", "def", "atkSpd", "vamp", "critRate", "critDmg", "thorns"];
     while (selectedStats.length < 3) {
@@ -256,7 +284,7 @@ const generateLvlStats = (rerolls, percentages) => {
             <h1>${t("lvl.title")}</h1>
             <div class="content-head">
                 <h4>${t("lvl.remaining")} ${player.exp.lvlGained}</h4>
-                <button id="lvlReroll">${t("lvl.reroll")} ${rerolls}/2</button>
+                <button id="lvlReroll">${tParams("lvl.reroll", { c: nFormatter(lvlRerollCost()) })}</button>
             </div>
         `;
     }
@@ -264,18 +292,19 @@ const generateLvlStats = (rerolls, percentages) => {
 
     const lvlReroll = document.querySelector("#lvlReroll");
     lvlReroll.addEventListener("click", function () {
-        if (rerolls > 0) {
-            sfxSell.play();
-            rerolls--;
-            loadLvlHeader();
-            generateLvlStats(rerolls, percentages);
-        } else {
-            sfxDeny.play();
-        }
+        if (!lvlupClickOk()) return;
+        const cost = lvlRerollCost();
+        if (player.gold < cost) { sfxDeny.play(); return; }
+        player.gold -= cost;
+        lvlRerollCount++;
+        sfxSell.play();
+        playerLoadStats();
+        saveData();
+        generateLvlStats(percentages);
     });
 
     try {
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < selectedStats.length; i++) {
             let button = document.createElement("button");
             button.id = "lvlSlot" + i;
 
@@ -290,6 +319,7 @@ const generateLvlStats = (rerolls, percentages) => {
 
             // Increase the selected stat for player
             button.addEventListener("click", function () {
+                if (!lvlupClickOk()) return;
                 sfxItem.play();
                 player.bonusStats[selectedStats[i]] = (player.bonusStats[selectedStats[i]] || 0) + percentages[selectedStats[i]];
                 if (selectedStats[i] === "thorns") {
@@ -301,7 +331,7 @@ const generateLvlStats = (rerolls, percentages) => {
 
                 if (player.exp.lvlGained > 1) {
                     player.exp.lvlGained--;
-                    generateLvlStats(2, percentages);
+                    generateLvlStats(percentages);
                 } else {
                     player.exp.lvlGained = 0;
                     lvlupPanel.style.display = "none";

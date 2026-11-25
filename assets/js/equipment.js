@@ -369,7 +369,7 @@ const showItemInfo = (item, icon, type, i) => {
     dimContainer.style.filter = "brightness(50%)";
     itemInfo.innerHTML = `
             <div class="content">
-                <h3 class="${item.rarity}">${icon}${itemName(item)}${item.finalized ? ' <span class="finalized-badge">★ MAX</span>' : ''}</h3>
+                <h3 class="${item.rarity}">${icon}${itemName(item)}${itemLvBonus(item) > 0 ? ` <span class="rank-badge">Lv+${itemLvBonus(item)}</span>` : ''}${(item.goldTier || 0) > 0 ? ` <span class="gold-badge">G${item.goldTier}</span>` : ''}${item.finalized ? ' <span class="finalized-badge">★ MAX</span>' : ''}</h3>
                 <h5 class="lvltier ${item.rarity}"><b>Lv.${item.lvl} ${tierLabel()} ${item.tier}</b></h5>
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
                 <div class="button-container">
@@ -613,6 +613,48 @@ const showEquipment = () => {
     }
 }
 
+// Equipment level-up (crystals): each purchase raises the item's own Lv. by 1
+// and its stats are recalculated with the same level-scaling formula used at
+// generation: value ∝ (1 + (enemyScaling-1) * lvl).
+// Bonus levels = how far item.lvl sits above its original level (lvBase).
+// Legacy interim saves used upgLvl/rank counters instead.
+const itemLvBonus = (item) => item.lvBase != null ? item.lvl - item.lvBase : (item.upgLvl ?? item.rank ?? 0);
+
+// Rescale an item's base stats from oldLvl to its current item.lvl.
+// Affixes are flat proc effects and are not level-scaled, so they are skipped.
+const rescaleItemStats = (item, oldLvl) => {
+    const s = Math.min(2, dungeon.settings.enemyScaling || 1);
+    const ratio = (1 + (s - 1) * item.lvl) / (1 + (s - 1) * oldLvl);
+    if (ratio === 1) return;
+    const affixCount = (item.affixes || []).length;
+    const baseCount = item.stats.length - affixCount;
+    for (let i = 0; i < baseCount; i++) {
+        for (const k in item.stats[i]) {
+            const v = item.stats[i][k] * ratio;
+            item.stats[i][k] = PCT_STATS.has(k) ? Number(v.toFixed(2)) : Math.round(v);
+        }
+    }
+    if (item.value) item.value = Math.round(item.value * ratio);
+};
+// Gold enhancement: per-item tiers bought with gold (see blacksmith below).
+// Each tier adds its fraction to the item's stat values, cumulatively.
+const GOLD_ENHANCE_TIERS = [
+    { cost: 10000,  pct: 1 / 10 },
+    { cost: 25000,  pct: 1 / 8 },
+    { cost: 50000,  pct: 1 / 6 },
+    { cost: 100000, pct: 1 / 4 },
+    { cost: 500000, pct: 1 / 2 },
+];
+const GOLD_ENHANCE_MAX = GOLD_ENHANCE_TIERS.length;
+const goldEnhancePct = (item) => GOLD_ENHANCE_TIERS.slice(0, item.goldTier || 0).reduce((s, x) => s + x.pct, 0);
+// Stats eligible for gold enhancement (must already exist on the item)
+const ENHANCEABLE_STATS = ["hp", "atk", "def", "atkSpd", "critRate", "critDmg"];
+const itemEnhanceableStats = (item) => {
+    const present = new Set();
+    for (const stat of item.stats || []) for (const k in stat) present.add(k);
+    return ENHANCEABLE_STATS.filter(k => present.has(k));
+};
+
 // Apply the equipment stats to the player
 const applyEquipmentStats = () => {
     // Reset the equipment stats
@@ -660,8 +702,10 @@ const applyEquipmentStats = () => {
                 if (keys.some(k => SPECIAL_AFFIX_KEYS.has(k) && seenSpecial.has(k))) return;
                 keys.forEach(k => { if (SPECIAL_AFFIX_KEYS.has(k)) seenSpecial.add(k); });
             }
+            const goldMult = 1 + goldEnhancePct(item);
+            const goldStats = new Set(item.goldStats || []);
             for (const key in stat) {
-                player.equippedStats[key] += stat[key];
+                player.equippedStats[key] += stat[key] * (goldStats.has(key) ? goldMult : 1);
             }
         });
     }
@@ -780,6 +824,17 @@ const stashItem = (cand) => {
     player.storage.push(JSON.stringify(cand.item));
 };
 
+// Crystal Ward: on death every carried item goes to storage (overflow is lost).
+// progressReset moves storage back into the inventory for ward holders.
+const wardStashAll = () => {
+    player.storage = player.storage || [];
+    while (player.storage.length < storageMax()) {
+        const cands = carryCandidates();
+        if (!cands.length) break;
+        stashItem(cands[0]);
+    }
+};
+
 // Equip-preset support: presets store item uids (reference type, no duplication).
 // Pulls the referenced items out of equipped/inventory/storage and equips them in order.
 const applyEquipPreset = (uids) => {
@@ -861,30 +916,10 @@ const showLegacyModal = (onDone) => {
     };
 };
 
-// Mid-run stash point (every 5 floors): pick ONE item to send to the warehouse
+// Mid-run stash point (every 5 floors): send ONE item to the warehouse, or
+// retrieve items back into the inventory. Bidirectional.
 const showStashModal = (onDone) => {
     player.storage = player.storage || [];
-    const candidates = carryCandidates();
-    if (!candidates.length || storageFull()) { onDone(); return; }
-
-    let selected = null;
-    defaultModalElement.style.display = "flex";
-    defaultModalElement.innerHTML = `
-    <div class="content" id="legacy-modal">
-        <div class="content-head"><h3>${t("legacy.title")}</h3></div>
-        <p class="legacy-hint">${tParams("legacy.hint", { n: player.storage.length, max: storageMax() })}</p>
-        <div class="legacy-list">
-            ${candidates.map((c, i) => {
-                const icon = equipmentIcon(c.item.category);
-                return `<div class="items legacy-item" data-i="${i}"><p class="${c.item.rarity}">${icon}${itemName(c.item)}</p></div>`;
-            }).join("")}
-        </div>
-        <div class="button-container">
-            <button id="stash-send">${t("dgn.c.stashSend")}</button>
-            <button id="stash-cancel">${t("stash.cancel")}</button>
-        </div>
-    </div>`;
-
     const finish = () => {
         defaultModalElement.style.display = "none";
         defaultModalElement.innerHTML = "";
@@ -893,23 +928,300 @@ const showStashModal = (onDone) => {
         onDone();
     };
 
-    defaultModalElement.querySelectorAll(".legacy-item").forEach(el => {
-        el.onclick = () => {
-            sfxConfirm.play();
-            defaultModalElement.querySelectorAll(".legacy-item").forEach(x => x.classList.remove("selected"));
-            el.classList.add("selected");
-            selected = candidates[Number(el.dataset.i)];
+    let sentOnce = false; // one item per stash point, even though retrieval is unlimited
+    const render = () => {
+        const candidates = carryCandidates();
+        const canSend = !sentOnce && candidates.length > 0 && !storageFull();
+        const stored = player.storage
+            .map((s, idx) => { try { return { idx, s, item: JSON.parse(s) }; } catch (e) { return null; } })
+            .filter(Boolean);
+
+        defaultModalElement.style.display = "flex";
+        defaultModalElement.innerHTML = `
+        <div class="content" id="legacy-modal">
+            <div class="content-head"><h3>${t("legacy.title")}</h3></div>
+            <p class="legacy-hint">${tParams("legacy.hint", { n: player.storage.length, max: storageMax() })}</p>
+            ${canSend ? `
+            <div class="legacy-list">
+                ${candidates.map((c, i) => {
+                    const icon = equipmentIcon(c.item.category);
+                    return `<div class="items legacy-item" data-i="${i}"><p class="${c.item.rarity}">${icon}${itemName(c.item)}</p></div>`;
+                }).join("")}
+            </div>
+            <div class="button-container">
+                <button id="stash-send">${t("dgn.c.stashSend")}</button>
+            </div>` : `<p class="legacy-hint">${storageFull() ? t("wh.full") : t("smith.noItems")}</p>`}
+
+            <h4 class="smith-section">${tParams("wh.section", { n: player.storage.length, max: storageMax() })}</h4>
+            <div class="legacy-list">
+                ${stored.length ? stored.map(c => {
+                    const icon = equipmentIcon(c.item.category);
+                    return `<div class="items stash-stored-item">
+                        <p class="${c.item.rarity}">${icon}${itemName(c.item)}</p>
+                        <button class="smith-buy" data-idx="${c.idx}">${t("wh.retrieve")}</button>
+                    </div>`;
+                }).join("") : `<p class="legacy-hint">${t("wh.empty")}</p>`}
+            </div>
+            <div class="button-container">
+                <button id="stash-close">${t("smith.close")}</button>
+            </div>
+        </div>`;
+
+        let selected = null;
+        defaultModalElement.querySelectorAll(".legacy-item").forEach(el => {
+            el.onclick = () => {
+                sfxConfirm.play();
+                defaultModalElement.querySelectorAll(".legacy-item").forEach(x => x.classList.remove("selected"));
+                el.classList.add("selected");
+                selected = candidates[Number(el.dataset.i)];
+            };
+        });
+        const sendBtn = defaultModalElement.querySelector("#stash-send");
+        if (sendBtn) sendBtn.onclick = () => {
+            if (!selected) { sfxDeny.play(); return; }
+            sfxEquip.play();
+            stashItem(selected);
+            sentOnce = true;
+            addDungeonLog(tParams("stash.stored", { r: selected.item.rarity, item: itemName(selected.item) }));
+            render();
         };
-    });
-    defaultModalElement.querySelector("#stash-send").onclick = () => {
-        if (!selected) { sfxDeny.play(); return; }
-        sfxEquip.play();
-        stashItem(selected);
-        addDungeonLog(tParams("stash.stored", { r: selected.item.rarity, item: itemName(selected.item) }));
-        finish();
+        defaultModalElement.querySelectorAll(".stash-stored-item .smith-buy").forEach(btn => {
+            btn.onclick = () => {
+                const idx = Number(btn.dataset.idx);
+                const raw = player.storage[idx];
+                if (raw === undefined) { render(); return; }
+                sfxEquip.play();
+                player.inventory.equipment.push(raw);
+                player.storage.splice(idx, 1);
+                const item = JSON.parse(raw);
+                addDungeonLog(tParams("wh.retrieved", { r: item.rarity, item: itemName(item) }));
+                render();
+            };
+        });
+        defaultModalElement.querySelector("#stash-close").onclick = () => {
+            sfxDecline.play();
+            finish();
+        };
     };
-    defaultModalElement.querySelector("#stash-cancel").onclick = () => {
-        sfxDecline.play();
-        finish();
+    render();
+};
+
+// ========== Blacksmith (per-item gold enhance / crystal rank / crystal ward) ==========
+const CRYSTAL_WARD_COST = 100;
+const RANK_UP_COST = 10;
+
+const itemAt = (src, idx) => src === "eq" ? player.equipped[idx] : JSON.parse(player.inventory.equipment[idx]);
+const writeItemAt = (src, idx, item) => { if (src === "inv") player.inventory.equipment[idx] = JSON.stringify(item); };
+
+// Choose which of the item's own stats gold enhancement applies to (max 2)
+const setItemGoldStats = (src, idx, keys) => {
+    const item = itemAt(src, idx);
+    if (!item) return false;
+    const allowed = itemEnhanceableStats(item);
+    item.goldStats = (keys || []).filter(k => allowed.includes(k)).slice(0, 2);
+    writeItemAt(src, idx, item);
+    playerLoadStats();
+    saveData();
+    return true;
+};
+
+// Gold enhance: raises the item's CHOSEN stats by the next tier's fraction
+const goldEnhanceItem = (src, idx) => {
+    const item = itemAt(src, idx);
+    const tier = item ? (item.goldTier || 0) : GOLD_ENHANCE_MAX;
+    if (!item || tier >= GOLD_ENHANCE_MAX || !(item.goldStats || []).length) { sfxDeny.play(); return false; }
+    const { cost } = GOLD_ENHANCE_TIERS[tier];
+    if (player.gold < cost) { sfxDeny.play(); return false; }
+    player.gold -= cost;
+    item.goldTier = tier + 1;
+    writeItemAt(src, idx, item);
+    playerLoadStats();
+    saveData();
+    sfxEquip.play();
+    return true;
+};
+
+// Crystal level-up: raises ONE item's own level by +1 (+25% stats per bonus level)
+const levelUpItem = (src, idx) => {
+    const item = itemAt(src, idx);
+    if (!item || (player.crystals || 0) < RANK_UP_COST) { sfxDeny.play(); return false; }
+    player.crystals -= RANK_UP_COST;
+    const oldLvl = item.lvl;
+    if (item.lvBase == null) item.lvBase = item.lvl - itemLvBonus(item);
+    item.lvl += 1;
+    rescaleItemStats(item, oldLvl);
+    delete item.upgLvl;
+    delete item.rank;
+    writeItemAt(src, idx, item);
+    playerLoadStats();
+    saveData();
+    sfxEquip.play();
+    return true;
+};
+
+const buyCrystalWard = () => {
+    if (player.crystalWard || (player.crystals || 0) < CRYSTAL_WARD_COST) { sfxDeny.play(); return false; }
+    player.crystals -= CRYSTAL_WARD_COST;
+    player.crystalWard = true;
+    saveData();
+    sfxConfirm.play();
+    return true;
+};
+
+const showBlacksmithModal = (onDone) => {
+    defaultModalElement.style.display = "flex";
+    const pctLabel = (p) => Math.round(p * 1000) / 10;
+
+    const rankableItems = () => {
+        const list = [];
+        (player.equipped || []).forEach((item, idx) => list.push({ src: "eq", idx, item }));
+        (player.inventory.equipment || []).forEach((s, idx) => {
+            try { list.push({ src: "inv", idx, item: JSON.parse(s) }); } catch (e) {}
+        });
+        return list;
     };
+
+    const render = () => {
+        const items = rankableItems();
+        defaultModalElement.innerHTML = `
+        <div class="content smith-forge" id="blacksmith-modal">
+            <div class="content-head smith-head">
+                <h3><i class="fas fa-hammer"></i> ${t("smith.title")}</h3>
+                <p class="smith-wallet">
+                    <span><i class="fas fa-coins" style="color:#FFD700"></i> ${nFormatter(player.gold)}</span>
+                    <span><i class="fas fa-gem" style="color:#7ec8e3"></i> ${nFormatter(player.crystals || 0)}</span>
+                </p>
+            </div>
+
+            <div class="smith-ward">
+                ${player.crystalWard
+                    ? `<p class="smith-ward-owned"><i class="fas fa-shield-alt"></i> ${t("smith.owned")}</p>`
+                    : `<button class="smith-buy smith-ward-btn" id="smith-ward-buy" ${(player.crystals || 0) < CRYSTAL_WARD_COST ? "disabled" : ""}>
+                           <i class="fas fa-shield-alt"></i> ${t("smith.ward")}
+                           <em>${tParams("smith.wardBuy", { n: CRYSTAL_WARD_COST })}</em>
+                       </button>`}
+            </div>
+
+            <h4 class="smith-section"><i class="fas fa-hammer"></i> ${t("smith.items")}</h4>
+            <p class="legacy-hint">${t("smith.hint")}</p>
+            <div class="smith-item-list">
+                ${items.length ? items.map(c => {
+                    const icon = equipmentIcon(c.item.category);
+                    const lvUp = itemLvBonus(c.item);
+                    const gTier = c.item.goldTier || 0;
+                    const gMaxed = gTier >= GOLD_ENHANCE_MAX;
+                    const nextG = GOLD_ENHANCE_TIERS[gTier];
+                    return `<div class="smith-item ${c.item.rarity}">
+                        <div class="smith-item-icon">${icon}</div>
+                        <div class="smith-item-info">
+                            <p class="${c.item.rarity}">${itemName(c.item)}</p>
+                            <div class="smith-badges">
+                                ${lvUp > 0 ? `<span class="rank-badge">Lv+${lvUp}</span>` : ""}
+                                ${gTier > 0 ? `<span class="gold-badge">G${gTier}</span>` : ""}
+                                ${gMaxed ? `<span class="gold-badge max">MAX</span>` : ""}
+                            </div>
+                        </div>
+                        <div class="smith-item-btns">
+                            <button class="smith-buy smith-gold" data-gold="${c.src}:${c.idx}" ${gMaxed ? "disabled" : ""}
+                                title="${t("smith.enhanceTitle")}">
+                                ${gMaxed ? t("smith.enhMax") : `+${pctLabel(nextG.pct)}% · ${nFormatter(nextG.cost)}G`}
+                            </button>
+                            <button class="smith-buy smith-rank" data-lvup="${c.src}:${c.idx}" ${(player.crystals || 0) < RANK_UP_COST ? "disabled" : ""}
+                                title="${t("smith.rankUp")}">
+                                Lv↑ ${RANK_UP_COST}◆
+                            </button>
+                        </div>
+                    </div>`;
+                }).join("") : `<p class="legacy-hint">${t("smith.noItems")}</p>`}
+            </div>
+
+            <div class="button-container">
+                <button id="smith-close">${t("smith.close")}</button>
+            </div>
+        </div>`;
+
+        const wardBtn = defaultModalElement.querySelector("#smith-ward-buy");
+        if (wardBtn) wardBtn.onclick = () => { buyCrystalWard(); render(); };
+        defaultModalElement.querySelectorAll("[data-gold]").forEach(btn => {
+            btn.onclick = () => {
+                const [src, idx] = btn.dataset.gold.split(":");
+                showItemEnhanceModal(src, Number(idx), render);
+            };
+        });
+        defaultModalElement.querySelectorAll("[data-lvup]").forEach(btn => {
+            btn.onclick = () => {
+                const [src, idx] = btn.dataset.lvup.split(":");
+                levelUpItem(src, Number(idx));
+                render();
+            };
+        });
+        defaultModalElement.querySelector("#smith-close").onclick = () => {
+            sfxDecline.play();
+            defaultModalElement.style.display = "none";
+            defaultModalElement.innerHTML = "";
+            onDone && onDone();
+        };
+    };
+    render();
+};
+
+// Per-item gold enhance panel: pick up to 2 of the item's own stats, then buy tiers
+const showItemEnhanceModal = (src, idx, onBack) => {
+    const pctLabel = (p) => Math.round(p * 1000) / 10;
+    const render = () => {
+        const item = itemAt(src, idx);
+        if (!item) { onBack && onBack(); return; }
+        const eligible = itemEnhanceableStats(item);
+        const selected = item.goldStats || [];
+        const tier = item.goldTier || 0;
+        const nextG = GOLD_ENHANCE_TIERS[tier];
+        const icon = equipmentIcon(item.category);
+        defaultModalElement.innerHTML = `
+        <div class="content" id="enhance-modal">
+            <div class="content-head"><h3 class="${item.rarity}">${icon}${itemName(item)}${tier > 0 ? ` <span class="gold-badge">G${tier}</span>` : ""}</h3></div>
+            <p class="legacy-hint">${t("smith.pickStats")}</p>
+            <div class="enhance-stats">
+                ${eligible.length ? eligible.map(k => `
+                    <button class="enhance-stat ${selected.includes(k) ? "on" : ""}" data-stat="${k}">${STAT_LINE_LABEL[k] || k}</button>
+                `).join("") : `<p class="legacy-hint">${t("smith.noStats")}</p>`}
+            </div>
+            <p class="legacy-hint">${tParams("smith.enhanceStatus", { t: tier, max: GOLD_ENHANCE_MAX })}${selected.length ? "" : ` — ${t("smith.pickFirst")}`}</p>
+            <div class="button-container">
+                ${tier < GOLD_ENHANCE_MAX
+                    ? `<button id="enhance-buy" ${!selected.length || !nextG || player.gold < nextG.cost ? "disabled" : ""}>+${nextG ? pctLabel(nextG.pct) : 0}% — ${nextG ? nFormatter(nextG.cost) : 0}G</button>`
+                    : `<button disabled>${t("smith.enhMax")}</button>`}
+                <button id="enhance-back">${t("common.back")}</button>
+            </div>
+        </div>`;
+
+        defaultModalElement.querySelectorAll(".enhance-stat").forEach(btn => {
+            btn.onclick = () => {
+                const k = btn.dataset.stat;
+                const cur = [...(item.goldStats || [])];
+                if (cur.includes(k)) {
+                    item.goldStats = cur.filter(x => x !== k);
+                } else if (cur.length < 2) {
+                    item.goldStats = [...cur, k];
+                } else {
+                    sfxDeny.play();
+                    return;
+                }
+                writeItemAt(src, idx, item);
+                playerLoadStats();
+                saveData();
+                sfxConfirm.play();
+                render();
+            };
+        });
+        const buy = defaultModalElement.querySelector("#enhance-buy");
+        if (buy) buy.onclick = () => {
+            goldEnhanceItem(src, idx);
+            render();
+        };
+        defaultModalElement.querySelector("#enhance-back").onclick = () => {
+            sfxDecline.play();
+            onBack && onBack();
+        };
+    };
+    render();
 };

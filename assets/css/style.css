@@ -1062,6 +1062,159 @@ header button i {
 }
 .legacy-hint { font-size: 0.75rem; color: #b0a58c; margin: 0.3rem 0; }
 
+/* ===== Blacksmith / warehouse retrieval ===== */
+.rank-badge {
+    display: inline-block;
+    padding: 0 0.3rem;
+    margin-left: 0.25rem;
+    border: 1px solid #7ec8e3;
+    border-radius: 3px;
+    color: #7ec8e3;
+    font-size: 0.72rem;
+    font-weight: bold;
+    vertical-align: middle;
+}
+.gold-badge {
+    display: inline-block;
+    padding: 0 0.3rem;
+    margin-left: 0.25rem;
+    border: 1px solid #c9a227;
+    border-radius: 3px;
+    color: #ffd700;
+    font-size: 0.72rem;
+    font-weight: bold;
+    vertical-align: middle;
+}
+.gold-badge.max { border-color: #888; color: #aaa; }
+.smith-section {
+    margin: 0.7rem 0 0.25rem;
+    font-size: 0.85rem;
+    color: #c9a227;
+    border-bottom: 1px solid rgba(201, 162, 39, 0.35);
+    padding-bottom: 0.15rem;
+}
+.smith-buy {
+    flex-shrink: 0;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    background: #3a2f1a;
+    border: 1px solid #c9a227;
+    color: #ffd700;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.smith-buy:hover:not(:disabled) { background: #4d3f22; }
+.smith-buy:disabled { opacity: 0.4; cursor: default; }
+.stash-stored-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+}
+.stash-stored-item p { margin: 0; flex: 1; min-width: 0; }
+#blacksmith-modal .legacy-list { max-height: 12rem; }
+
+/* ===== Blacksmith forge UI ===== */
+#blacksmith-modal {
+    width: 32rem;
+    max-width: calc(100vw - 2rem);
+    background: linear-gradient(180deg, #241a10 0%, #171310 100%);
+    border-color: #8a6a2f;
+}
+.smith-forge .content-head { border-bottom: 1px solid rgba(201, 162, 39, 0.4); padding-bottom: 0.4rem; margin-bottom: 0.4rem; }
+.smith-head h3 { color: #ffb347; text-shadow: 0 0 8px rgba(255, 140, 0, 0.4); }
+.smith-head h3 i { margin-right: 0.3rem; }
+.smith-wallet {
+    display: flex;
+    gap: 1.2rem;
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+}
+.smith-ward { margin-bottom: 0.3rem; }
+.smith-ward-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    background: linear-gradient(180deg, #2b3a2b, #1d2a1d);
+    border: 1px solid #4a8a4a;
+    color: #b8e6b8;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+}
+.smith-ward-btn em { font-style: normal; color: #ffd700; font-size: 0.75rem; }
+.smith-ward-btn:hover:not(:disabled) { background: linear-gradient(180deg, #355035, #243324); }
+.smith-ward-btn:disabled { opacity: 0.45; cursor: default; }
+.smith-ward-owned { color: #7ec8e3; font-size: 0.8rem; margin: 0; }
+.smith-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 16rem;
+    overflow-y: auto;
+    margin: 0.3rem 0;
+}
+.smith-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.35rem 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(201, 162, 39, 0.25);
+    border-left: 3px solid #666;
+    border-radius: 5px;
+}
+.smith-item.Common    { border-left-color: #9e9e9e; }
+.smith-item.Uncommon  { border-left-color: #4caf50; }
+.smith-item.Rare      { border-left-color: #2196f3; }
+.smith-item.Epic      { border-left-color: #9c27b0; }
+.smith-item.Legendary { border-left-color: #ff9800; }
+.smith-item.Heirloom  { border-left-color: #e91e63; }
+.smith-item-icon { font-size: 1.3rem; flex-shrink: 0; }
+.smith-item-info { flex: 1; min-width: 0; }
+.smith-item-info p { margin: 0; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.smith-badges { margin-top: 2px; }
+.smith-item-btns { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.smith-gold { border-color: #c9a227; color: #ffd700; }
+.smith-rank { border-color: #7ec8e3; color: #9fd8f0; background: #1d2b3a; }
+.smith-rank:hover:not(:disabled) { background: #24384d; }
+
+/* ===== Per-item gold enhance panel ===== */
+#enhance-modal {
+    width: 24rem;
+    max-width: calc(100vw - 2rem);
+    background: linear-gradient(180deg, #241a10 0%, #171310 100%);
+    border-color: #8a6a2f;
+}
+.enhance-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0.5rem 0;
+}
+.enhance-stat {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    background: #241c12;
+    border: 1px solid #8a6a2f;
+    color: #cbb98d;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.enhance-stat:hover { background: #33291a; }
+.enhance-stat.on {
+    background: linear-gradient(180deg, #6b531a, #4d3d12);
+    border-color: #ffd700;
+    color: #ffd700;
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.35);
+}
+
 /* ===== Ability effects ===== */
 #enemyPanel { position: relative; }
 #enemy-sprite-wrap {
@@ -1465,17 +1618,6 @@ html, body {
     padding: 0.25rem 0.7rem;
 }
 
-/* Named monster tag */
-.named-tag {
-    color: #ffd700;
-    font-size: 0.75rem;
-    border: 1px solid #ffd700;
-    border-radius: 0.25rem;
-    padding: 0.05rem 0.3rem;
-    margin-left: 0.3rem;
-    vertical-align: middle;
-}
-
 /* Japanese mode: stat allocation modal + narrower selects so labels stay horizontal */
 body[data-lang="ja"] #allocate-stats {
     width: 20rem;
@@ -1508,4 +1650,10 @@ body[data-lang="ja"] #allocate-stats .row select {
 .tip-toc-btn:hover {
     border-color: var(--gold);
     color: var(--gold);
+}
+
+/* Ominous modifier tags shown at encounter (before battle) */
+.enemy-mods.omen {
+    color: #ff4d6d;
+    text-shadow: 0 0 6px rgba(255, 77, 109, 0.6);
 }

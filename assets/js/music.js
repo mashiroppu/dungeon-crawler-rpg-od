@@ -37,6 +37,7 @@ let sfxAbility;
 let sfxHolyStrike;
 let sfxThornsNova;
 let sfxAegisOath;
+let sfxJudgmentCounter;
 
 const setVolume = () => {
     // ===== BGM =====
@@ -181,6 +182,12 @@ const setVolume = () => {
     sfxAegisOath = new Howl({
         html5: true,
         src: ['./assets/sfx/aegis_oath.mp3'],
+        volume: volume.sfx * volume.master
+    });
+
+    sfxJudgmentCounter = new Howl({
+        html5: true,
+        src: ['./assets/sfx/judgment_counter.mp3'],
         volume: volume.sfx * volume.master
     });
 }

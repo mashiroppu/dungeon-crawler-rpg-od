@@ -44,10 +44,9 @@ and heals. Up to 3 abilities can be slotted in the loadout.
 
 ### Enemies
 - **Elites**: empowered monsters with boosted stats and guaranteed drops
-- **Named monsters**: gold `NAMED` tag marks elite-grade enemies with
-  boosted stats and better loot
 - **Modifiers**: enemies can spawn with traits like Burning, Frenzy,
-  Vampiric, Regenerating, Armored, and Volatile (explodes on death)
+  Vampiric, Regenerating, Armored, and Volatile (explodes on death).
+  Their tags appear in red at the encounter, before battle starts
 
 ### Progression
 - **1000 floors / 10 difficulty tiers** — NORMAL, HARD, TERROR, ABYSS,
@@ -55,7 +54,7 @@ and heals. Up to 3 abilities can be slotted in the loadout.
   every 100 floors; defeat the band-end Guardian to unlock the next tier.
   Each difficulty starts at its band's first floor (e.g. HARD = floor 101).
   Reaching floor 1000 loops it endlessly
-- Level cap 200. Level up by choosing 1 of 3 stat boosts (with rerolls);
+- Level cap 500. Level up by choosing 1 of 3 stat boosts (with rerolls);
   rare picks include **N.ATK** (+6% normal attack damage, ~20% drop rate,
   cap 300%) and **THORN** (damage reflect, cap 10%)
 - **Revive**: once per 100-floor band, spend your entire gold purse

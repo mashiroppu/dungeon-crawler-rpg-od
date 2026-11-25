@@ -39,13 +39,20 @@ const hpValidation = () => {
             dimDungeon.style.display = "none";
             combatPanel.style.display = "none";
 
-            // Legacy: choose one item to carry into storage before the run resets
-            showLegacyModal(() => {
+            const finishDeath = () => {
                 clearInterval(dungeonTimer);
                 clearInterval(playTimer);
                 progressReset();
                 runLoad("title-screen", "flex");
-            });
+            };
+            // Crystal Ward: all gear is stashed automatically, no legacy pick
+            if (player.crystalWard) {
+                wardStashAll();
+                finishDeath();
+            } else {
+                // Legacy: choose one item to carry into storage before the run resets
+                showLegacyModal(finishDeath);
+            }
         };
         endCombat();
     } else if (!enemyDead && enemy.stats.hp < 1) {
@@ -73,6 +80,12 @@ const hpValidation = () => {
         playerLoadStats();
         if (enemy.rewards.drop) {
             createEquipmentPrint("combat");
+        }
+        if (enemy.named && Math.random() < 1 / 3) {
+            const gems = 1 + diffTierOfFloor(dungeon.progress.floor);
+            player.crystals = (player.crystals || 0) + gems;
+            addCombatLog(tParams("cb.crystalDrop", { name: enemy.name, n: gems }));
+            saveData();
         }
 
         // Recover 20% of players health
@@ -446,7 +459,7 @@ const updateCombatLog = () => {
         if (reviveAvailable()) {
             let revivePanel = document.createElement("div");
             revivePanel.className = "decision-panel";
-            revivePanel.innerHTML = `<button id="reviveButton">${tParams("cb.revive", { g: nFormatter(player.gold) })}</button>`;
+            revivePanel.innerHTML = `<button id="reviveButton">${tParams("cb.revive", { c: REVIVE_CRYSTAL_COST })}</button>`;
             combatLogBox.appendChild(revivePanel);
         }
     }
@@ -548,18 +561,18 @@ const combatCounter = () => {
     }
 }
 
-// ========== Revive (once per 100-floor band, costs ALL gold, min 500K) ==========
-const REVIVE_MIN_GOLD = 500000;
+// ========== Revive (once per 100-floor band, costs 5 crystals) ==========
+const REVIVE_CRYSTAL_COST = 5;
 const reviveBand = () => diffTierOfFloor(dungeon.progress.floor);
 const reviveAvailable = () => {
     player.reviveUsedBands = player.reviveUsedBands || {};
-    return !player.reviveUsedBands[reviveBand()] && player.gold >= REVIVE_MIN_GOLD;
+    return !player.reviveUsedBands[reviveBand()] && (player.crystals || 0) >= REVIVE_CRYSTAL_COST;
 };
 const reviveCombat = () => {
     if (!reviveAvailable()) { sfxDeny.play(); return; }
     sfxConfirm.play();
     player.reviveUsedBands[reviveBand()] = true;
-    player.gold = 0;
+    player.crystals -= REVIVE_CRYSTAL_COST;
     player.stats.hp = Math.max(1, Math.round(player.stats.hpMax * 0.5));
     player.stats.hpPercent = Math.round((player.stats.hp / player.stats.hpMax) * 100);
     playerDead = false;
@@ -638,7 +651,7 @@ const showCombatInfo = () => {
                 <i class="ray" style="--a:26.5651deg;--r:0.55902"></i>
                 </div>
             </div></div>
-            <p>${enemy.name} Lv.${enemy.lvl}${enemyModLabel()}${enemy.named ? ` <span class="named-tag">${t("cb.named")}</span>` : ""}</p>
+            <p>${enemy.name} Lv.${enemy.lvl}${enemyModLabel()}</p>
             <div class="battle-bar empty-bar hp bb-hp">
                 <div class="battle-bar dmg bb-hp" id="enemy-hp-dmg"></div>
                 <div class="battle-bar current bb-hp" id="enemy-hp-battle"></div>

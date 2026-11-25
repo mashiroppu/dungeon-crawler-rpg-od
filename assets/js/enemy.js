@@ -29,6 +29,10 @@ const maxDiffTier = () => {
 };
 const playerDiffTier = () => diffKeyToTier(player.difficulty);
 const currentDifficulty = () => DIFFICULTY_TIERS[diffTierOfFloor(dungeon.progress.floor)] || DIFFICULTY_TIERS[0];
+// Starting curse stage per difficulty tier: tiers 0-2 -> 0, 3-5 -> 1, 6-8 -> 2, 9 -> 3
+const bandCurseStage = (tier) => tier >= 9 ? 3 : tier >= 6 ? 2 : tier >= 3 ? 1 : 0;
+// enemyScaling baseline for a band: stage 0 = 1.0 (no curse), each stage +0.1
+const bandCurseScaling = (tier) => 1 + 0.1 * bandCurseStage(tier);
 
 // Enemy
 let enemy = {
