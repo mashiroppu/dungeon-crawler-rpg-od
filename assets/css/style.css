@@ -1742,16 +1742,3 @@ body[data-lang="ja"] #allocate-stats .row select {
     opacity: 0.65;
     margin: 0.25rem 0 0.6rem;
 }
-
-/* ===== Mobile: shrink the whole combat modal ~20% ===== */
-@media (max-width: 640px), (max-height: 560px) {
-    #combatPanel .content {
-        transform: scale(0.8);
-    }
-    @supports (zoom: 1) {
-        #combatPanel .content {
-            transform: none;
-            zoom: 0.8;
-        }
-    }
-}
