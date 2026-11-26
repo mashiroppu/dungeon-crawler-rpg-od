@@ -1,6 +1,7 @@
 # Dungeon Crawler RPG OD
 
 https://mashiroppu.github.io/dungeon-crawler-rpg-od/
+
 A browser-based roguelite dungeon crawler. Climb 1000 floors of procedurally
 generated dungeons across 10 difficulty tiers, loot Diablo-style equipment,
 and build your perfect run.
