@@ -1386,6 +1386,33 @@ button:active {
         0 0 14px rgba(255, 210, 74, 0.8);
 }
 
+/* ---- Boss phase transition flash ---- */
+#enemy-sprite.phase-flash {
+    animation: phase-flash-anim 0.9s ease-out;
+}
+@keyframes phase-flash-anim {
+    0%   { filter: brightness(3) saturate(0.2) hue-rotate(300deg); transform: scale(1.15); }
+    30%  { filter: brightness(1.8) saturate(1.6) hue-rotate(0deg); }
+    100% { filter: none; transform: scale(1); }
+}
+
+/* ---- Boss HP phase threshold ticks ---- */
+.phase-tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    background: rgba(255, 255, 255, 0.65);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+    z-index: 3;
+    pointer-events: none;
+}
+.boss-hp .phase-tick {
+    background: #ffd24a;
+    box-shadow: 0 0 6px rgba(255, 210, 74, 0.9);
+}
+
 /* ---- Hit feedback ---- */
 #enemy-sprite.hit-flash {
     animation: hitflash 0.18s ease-out;
@@ -1656,4 +1683,62 @@ body[data-lang="ja"] #allocate-stats .row select {
 .enemy-mods.omen {
     color: #ff4d6d;
     text-shadow: 0 0 6px rgba(255, 77, 109, 0.6);
+}
+
+/* ===== Class Mode decoy (fake notes screen) ===== */
+#stealth-decoy {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #e8e4d8;
+    z-index: 99999;
+    overflow: auto;
+}
+#stealth-decoy.open { display: block; }
+.decoy-page {
+    max-width: 46rem;
+    margin: 4rem auto;
+    padding: 3rem 4rem;
+    background: #fdfcf7;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    min-height: 70vh;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #222;
+}
+.decoy-page h2 {
+    font-size: 1.6rem;
+    border-bottom: 2px solid #999;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.2rem;
+}
+.decoy-sub {
+    color: #777;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+#decoy-text {
+    width: 100%;
+    min-height: 55vh;
+    border: none;
+    outline: none;
+    resize: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #222;
+}
+
+.stealth-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.stealth-hint {
+    font-size: 0.7rem;
+    opacity: 0.65;
+    margin: 0.25rem 0 0.6rem;
 }

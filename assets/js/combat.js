@@ -21,7 +21,9 @@ const hpValidation = () => {
         if (player.skills.includes("Second Wind") && !player.secondWindUsed) {
             player.secondWindUsed = true;
             player.stats.hp = 1;
+            player.invulnTrueUntil = Date.now() + 8000;
             addCombatLog(tParams("cb.secondWind", { name: player.name }));
+            addCombatLog(tParams("cb.trueInvuln", { name: player.name, s: 8 }));
             playerLoadStats();
             return;
         }
@@ -56,6 +58,14 @@ const hpValidation = () => {
         };
         endCombat();
     } else if (!enemyDead && enemy.stats.hp < 1) {
+        // Boss Second Wind: once per battle, survive lethal damage at 10% HP
+        if (enemy.bossSecondWind && !enemy.bossSecondWindUsed) {
+            enemy.bossSecondWindUsed = true;
+            enemy.stats.hp = Math.max(1, Math.round(enemy.stats.hpMax * 0.1));
+            addCombatLog(tParams("cb.secondWind", { name: enemy.name }));
+            enemyLoadStats();
+            return;
+        }
         // Gives out all the reward and show the claim button
         enemy.stats.hp = 0;
         enemyDead = true;
@@ -93,7 +103,7 @@ const hpValidation = () => {
         playerLoadStats();
 
         // VAMP: recover HP equal to VAMP% of the defeated enemy's max HP on kill
-        const vampPct = (player.stats.vamp || 0) * (player.skills.includes("Leech Lord") ? 1.35 : 1);
+        const vampPct = player.stats.vamp || 0;
         if (vampPct > 0) {
             const vampHeal = Math.round(enemy.stats.hpMax * vampPct / 100);
             if (vampHeal > 0) {
@@ -154,12 +164,12 @@ const playerAttack = () => {
     damage = damage * dmgRange;
     // Normal-attack-only damage: level-up N.ATK + equipment N.ATK + hidden secretAtk (total cap 300%)
     const normAtkPct = Math.min(300,
-        ((player.bonusStats && player.bonusStats.nAtk) || 0)
+        Math.min(200, (player.bonusStats && player.bonusStats.nAtk) || 0)
         + ((player.equippedStats && player.equippedStats.normAtkPct) || 0)
         + ((player.equippedStats && player.equippedStats.secretAtk) || 0));
     if (normAtkPct > 0) damage = damage * (1 + normAtkPct / 100);
-    // Check if the attack is a critical hit
-    if (Math.floor(Math.random() * 100) < (player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd"))) {
+    // Check if the attack is a critical hit (bosses with Nullify cannot be crit)
+    if (!enemy.noCrit && Math.floor(Math.random() * 100) < (player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd"))) {
         crit = true;
         dmgtype = "crit damage";
         damage = Math.round(damage * (1 + (player.stats.critDmg / 100)));
@@ -172,8 +182,9 @@ const playerAttack = () => {
     // Skill effects
     objectValidation();
     if (player.skills.includes("Remnant Razor")) {
-        // Attacks deal extra 8% of enemies' current health on hit
-        damage += Math.round((8 * enemy.stats.hp) / 100);
+        // +20% damage and attacks deal extra 2% of enemies' current health on hit
+        damage = Math.round(damage * 1.2);
+        damage += Math.round((2 * enemy.stats.hp) / 100);
     }
     if (player.skills.includes("Titan's Will")) {
         // Attacks deal extra 6% of your maximum health on hit
@@ -191,11 +202,9 @@ const playerAttack = () => {
         saveData();
     }
     if (player.skills.includes("Blade Dance")) {
-        // Gain increased attack speed after each hit. Stack resets after battle
-        player.baseStats.atkSpd += 0.01;
-        objectValidation();
-        player.tempStats.atkSpd += 0.01;
-        saveData();
+        // +1% ATK.SPD per hit — uncapped (added after the stats cap) and also
+        // shortens ability recovery. Resets after battle.
+        player.bladeDanceStacks = (player.bladeDanceStacks || 0) + 1;
     }
 
 // Ability buffs
@@ -214,30 +223,51 @@ const playerAttack = () => {
 
     // Passives: Adrenaline / Executioner / Leech Lord / Bloodlust / petrified / Momentum
     if (player.skills.includes("Adrenaline") && hpPctNow < 30) damage = Math.round(damage * 1.2);
-    if (player.skills.includes("Executioner") && enemy.stats.hp < enemy.stats.hpMax * 0.3) damage = Math.round(damage * 1.35);
-    if (player.skills.includes("Leech Lord")) damage = Math.round(damage * 0.85);
+    if (player.skills.includes("Executioner") && enemy.stats.hp < enemy.stats.hpMax * 0.66) damage = Math.round(damage * 1.33);
+    if (player.skills.includes("Leech Lord")) damage = Math.round(damage * 1.05);
     damage = Math.round(damage * petrifyDamageMult());
     if (player.skills.includes("Momentum")) {
         damage = Math.round(damage * (1 + Math.min(player.momentumStacks || 0, 20) * 0.03));
         player.momentumStacks = Math.min((player.momentumStacks || 0) + 1, 20);
     }
 
+    // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
+    const dodged = (enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge;
+    if (dodged) damage = 0;
+    else if (enemy.dr) damage = Math.max(1, Math.round(damage * (1 - enemy.dr / 100)));
+
     // Apply the calculations to combat
     enemy.stats.hp -= damage;
-    petrifyOnHit();
+    if (!dodged) petrifyOnHit();
     // Blood Tithe: each attack costs 2% of your max HP (cannot drop below 1 HP)
     if (player.skills.includes("Blood Tithe") && damage > 0) {
         player.stats.hp = Math.max(1, player.stats.hp - Math.round(player.stats.hpMax * 0.02));
     }
-    addCombatLog(tParams("cb.dealt", { name: player.name, dmg: tParams("cb.dmgTypeLabel", { dmg: nFormatter(damage), type: dmgtype === "crit damage" ? t("cb.dmgCrit") : t("cb.dmgNormal") }), target: enemy.name }));
+    // Boss thorns: reflect a % of damage taken
+    if (!dodged && !(player.invulnTrueUntil > Date.now()) && enemy.thornsPct && damage > 0) {
+        const refDmg = Math.round(damage * enemy.thornsPct / 100);
+        if (refDmg > 0) {
+            player.stats.hp -= refDmg;
+            addCombatLog(tParams("cb.reflects", { name: enemy.name, dmg: nFormatter(refDmg) }));
+        }
+    }
+    // Leech Lord: each connecting attack restores 5% of max HP
+    if (!dodged && damage > 0 && player.skills.includes("Leech Lord")) {
+        applyPlayerHeal(Math.round(player.stats.hpMax * 0.05));
+    }
+    if (dodged) {
+        addCombatLog(tParams("cb.attackMisses", { name: player.name, target: enemy.name }));
+    } else {
+        addCombatLog(tParams("cb.dealt", { name: player.name, dmg: tParams("cb.dmgTypeLabel", { dmg: nFormatter(damage), type: dmgtype === "crit damage" ? t("cb.dmgCrit") : t("cb.dmgNormal") }), target: enemy.name }));
+    }
     // Phase: attacking grants brief invulnerability
     const invulnSec = Math.min((player.equippedStats && player.equippedStats.attackInvuln) || 0, 3);
-    if (invulnSec > 0) {
+    if (!dodged && invulnSec > 0) {
         player.invulnUntil = Date.now() + invulnSec * 1000;
     }
 
     // Afterimage: 30% chance per attack to strike again at 50% damage, can chain (max 10)
-    if (!enemyDead && (player.combatBuffs || []).some(b => b.type === "afterimage" && b.expire > Date.now())) {
+    if (!enemyDead && !dodged && (player.combatBuffs || []).some(b => b.type === "afterimage" && b.expire > Date.now())) {
         let chains = 0;
         while (chains < 10 && !enemyDead && Math.random() < 0.3) {
             chains++;
@@ -249,7 +279,7 @@ const playerAttack = () => {
     }
     // Burst: each stack explodes into a separate fragment hit (10% of damage each)
     const burstStacks = player.burstStacks || 0;
-    if (burstStacks > 0 && enemy.stats.hp > 0) {
+    if (!dodged && burstStacks > 0 && enemy.stats.hp > 0) {
         let frags = 0;
         for (let i = 0; i < burstStacks && enemy.stats.hp > 0; i++) {
             const frag = Math.max(1, Math.round(damage * 0.10));
@@ -273,7 +303,7 @@ const playerAttack = () => {
     }, 200);
 
     // Damage numbers
-    spawnDamageNumber(damage, crit);
+    if (!dodged) spawnDamageNumber(damage, crit);
 
     // Attack Timer
     if (player.inCombat) {
@@ -281,7 +311,7 @@ const playerAttack = () => {
             if (player.inCombat) {
                 playerAttack();
             }
-        }, (1000 / (player.stats.atkSpd * playerBuffMult("atkSpdMult") * (player.skills.includes("Adrenaline") && player.stats.hp < player.stats.hpMax * 0.3 ? 1.4 : 1))));
+        }, (1000 / ((player.stats.atkSpd + (player.bladeDanceStacks || 0) * 0.01) * playerBuffMult("atkSpdMult") * (player.skills.includes("Adrenaline") && player.stats.hp < player.stats.hpMax * 0.3 ? 1.4 : 1))));
     }
 }
 
@@ -289,12 +319,17 @@ const enemyAttack = () => {
     if (!player.inCombat || playerDead) {
         return;
     }
+    // Boss phase transition stagger: the enemy cannot attack while staggered
+    if (enemy.staggerUntil && enemy.staggerUntil > Date.now()) {
+        setTimeout(enemyAttack, Math.max(50, enemy.staggerUntil - Date.now()));
+        return;
+    }
     if (player.inCombat) {
         sfxAttack.play();
     }
 
     // Calculates the damage and attacks the player
-    let damage = enemy.stats.atk * (enemy.stats.atk / (enemy.stats.atk + player.stats.def * playerBuffMult("defMult") * (player.skills.includes("Iron Will") && player.stats.hp < player.stats.hpMax * 0.5 ? 1.3 : 1)));
+    let damage = enemy.stats.atk * (enemy.stats.atk / (enemy.stats.atk + player.stats.def * playerBuffMult("defMult")));
     damage *= enemyDebuffMult("atkMult");
     let lifesteal = Math.round(enemy.stats.atk * (enemy.stats.vamp / 100));
     // Randomizes the damage by 90% - 110%
@@ -309,6 +344,15 @@ const enemyAttack = () => {
         damage = Math.round(damage);
     }
     damage = Math.round(damage * playerBuffMult("damageTakenMult"));
+
+    // Iron Will: below 80% HP, take 30% less damage
+    if (player.skills.includes("Iron Will") && player.stats.hp < player.stats.hpMax * 0.8) {
+        damage = Math.round(damage * 0.7);
+    }
+
+    // Boss phase effects: Enrage (ATK+30% under 30% HP) / Desperado (scales with missing HP)
+    if (enemy.enragePhase && enemy.stats.hp < enemy.stats.hpMax * 0.3) damage = Math.round(damage * 1.3);
+    if (enemy.desperado) damage = Math.round(damage * (1 + Math.min(0.5, 1 - enemy.stats.hp / enemy.stats.hpMax)));
 
     // Petrified enemies cannot attack
     if (isEnemyPetrified()) {
@@ -340,6 +384,24 @@ const enemyAttack = () => {
         }
     }
 
+    // True invulnerability (Adrenaline / Second Wind): negates all damage, no pierce
+    if (damage > 0 && player.invulnTrueUntil && Date.now() < player.invulnTrueUntil) {
+        damage = 0;
+        lifesteal = 0;
+    }
+
+    // Boss phase effects: every Nth attack is a heavy blow / first hit after a phase is empowered
+    enemy.attackCount = (enemy.attackCount || 0) + 1;
+    if (damage > 0 && enemy.heavyEvery && enemy.attackCount % enemy.heavyEvery === 0) {
+        damage *= 2;
+        addCombatLog(tParams("cb.bossHeavy", { name: enemy.name }));
+    }
+    if (damage > 0 && enemy.empoweredNext) {
+        damage = Math.round(damage * 1.6);
+        enemy.empoweredNext = false;
+        addCombatLog(tParams("cb.bossEmpowered", { name: enemy.name }));
+    }
+
     // Skill effects
     if (player.skills.includes("Paladin's Heart")) {
         // You receive 25% less damage
@@ -361,7 +423,16 @@ const enemyAttack = () => {
 
     // Apply the calculations
     player.stats.hp -= damage;
+    // Boss phase effect: Twin Strikes — chance of a follow-up hit
+    if (enemy.doubleStrike > 0 && damage > 0 && Math.random() < enemy.doubleStrike) {
+        const bonus = Math.max(1, Math.round(damage * 0.6));
+        player.stats.hp -= bonus;
+        spawnDamageNumber(bonus, false);
+        addCombatLog(tParams("cb.doubleStrike", { name: enemy.name }));
+    }
     if (damage > 0) player.momentumStacks = 0;
+    // Boss phase effect: Momentum — each attack ramps ATK.SPD
+    if (enemy.momentumRamp) enemy.momentumSpd = Math.min(0.6, (enemy.momentumSpd || 0) + 0.03);
     // Thorns: reflect % of damage taken (level growth + equipment)
     // Blood Oath: below 50% HP, THORN is increased by the affix value
     const oathThorns = player.stats.hp < player.stats.hpMax * 0.5 ? ((player.equippedStats && player.equippedStats.bloodOath) || 0) : 0;
@@ -419,7 +490,7 @@ const enemyAttack = () => {
             if (player.inCombat) {
                 enemyAttack();
             }
-        }, (1000 / (enemy.stats.atkSpd * enemyDebuffMult("atkSpdMult"))));
+        }, (1000 / (enemy.stats.atkSpd * enemyDebuffMult("atkSpdMult") * (1 + (enemy.momentumSpd || 0)))));
     }
 }
 
@@ -490,6 +561,9 @@ const startCombat = (battleMusic) => {
     player.abilityRecs = {};
     player.momentumStacks = 0;
     player.secondWindUsed = false;
+    player.adrenalineUsed = false;
+    player.invulnTrueUntil = 0;
+    player.bladeDanceStacks = 0;
     delete player.hot;
     if (enemy) { delete enemy.petrifyStacks; enemy.petrifiedUntil = 0; }
     // Trial regen: while below 50% HP, recover REGEN% of max HP every 0.5s
@@ -538,14 +612,6 @@ const endCombat = () => {
         player.tempStats.atk = 0;
         saveData();
     }
-    if (player.skills.includes("Blade Dance")) {
-        // Remove Blade Dance attack speed buff
-        objectValidation();
-        player.baseStats.atkSpd -= player.tempStats.atkSpd;
-        player.tempStats.atkSpd = 0;
-        saveData();
-    }
-
     // Stops every timer in combat
     clearInterval(combatTimer);
     if (playerRegenTimer) { clearInterval(playerRegenTimer); playerRegenTimer = null; }
@@ -652,10 +718,11 @@ const showCombatInfo = () => {
                 </div>
             </div></div>
             <p>${enemy.name} Lv.${enemy.lvl}${enemyModLabel()}</p>
-            <div class="battle-bar empty-bar hp bb-hp">
+            <div class="battle-bar empty-bar hp bb-hp${enemy.isBoss ? " boss-hp" : ""}">
                 <div class="battle-bar dmg bb-hp" id="enemy-hp-dmg"></div>
                 <div class="battle-bar current bb-hp" id="enemy-hp-battle"></div>
                 <div class="bar-text" id="enemy-hp-text">&nbsp;${nFormatter(enemy.stats.hp)}/${nFormatter(enemy.stats.hpMax)} (${enemy.stats.hpPercent}%)</div>
+                ${enemy.isBoss ? enemy.phaseThresholds.map(t => `<div class="phase-tick" style="left:${t * 100}%"></div>`).join("") : ""}
             </div>
             <div id="dmg-container" class="dmg-container"></div>
             <div id="enemy-sprite-wrap">

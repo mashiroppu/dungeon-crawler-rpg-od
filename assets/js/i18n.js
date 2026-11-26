@@ -43,6 +43,7 @@ const STRINGS = {
     "menu.title":           { en: "Menu", ja: "メニュー" },
     "menu.run":             { en: "Current Run", ja: "現在のラン" },
     "menu.volume":          { en: "Volume Settings", ja: "音量設定" },
+    "menu.settings":        { en: "Settings", ja: "設定" },
     "menu.ei":              { en: "Export/Import Data", ja: "データのエクスポート/インポート" },
     "menu.quit":            { en: "Abandon", ja: "ランを放棄" },
     "menu.lang":            { en: "Language", ja: "言語" },
@@ -76,6 +77,8 @@ const STRINGS = {
     "vol.bgm":              { en: "BGM", ja: "BGM" },
     "vol.sfx":              { en: "SFX", ja: "効果音" },
     "vol.apply":            { en: "Apply", ja: "適用" },
+    "set.title":            { en: "Settings", ja: "設定" },
+    "set.brightness":       { en: "Brightness", ja: "明るさ" },
 
     // ---- Export/Import tab ----
     "ei.title":             { en: "Export/Import Data", ja: "データのエクスポート/インポート" },
@@ -215,6 +218,7 @@ const STRINGS = {
 
     // ---- Combat log ----
     "cb.secondWind":        { en: "{name} refuses to fall! (Second Wind)", ja: "{name}は倒れない！（Second Wind）" },
+    "cb.trueInvuln":        { en: "{name} becomes untouchable for {s}s!", ja: "{name}が{s}秒間無敵になった！" },
     "cb.died":              { en: "You died!", ja: "あなたは死亡した！" },
     "cb.explode":           { en: "{name} explodes! You take {dmg} damage.", ja: "{name}が爆発した！{dmg}のダメージを受けた。" },
     "cb.enemyDied":         { en: "{name} died! ({time})", ja: "{name}を倒した！（{time}）" },
@@ -236,6 +240,11 @@ const STRINGS = {
     "cb.dmgNormal":         { en: "damage", ja: "ダメージ" },
     "cb.dmgCrit":           { en: "crit damage", ja: "クリティカルダメージ" },
     "cb.dmgTypeLabel":      { en: "{dmg} {type}", ja: "{dmg}{type}" },
+    "cb.bossPhase":         { en: "{name} enters Phase {p}!", ja: "{name}がフェーズ{p}に突入した！" },
+    "cb.bossGain":          { en: "{name} gains {effect}!", ja: "{name}が{effect}を得た！" },
+    "cb.bossHeavy":         { en: "{name} unleashes a devastating blow!", ja: "{name}が渾身の一撃を放った！" },
+    "cb.bossEmpowered":     { en: "{name} follows up with an empowered strike!", ja: "{name}が強化された追撃を放った！" },
+    "cb.doubleStrike":      { en: "{name} strikes again!", ja: "{name}が追撃した！" },
 
     // ---- Combat log: abilities ----
     "cb.ab.petrified4s":    { en: "{name} is petrified solid! (Cannot attack for 4s, takes +25% damage)", ja: "{name}は完全に石化した！（4秒間攻撃不可、被ダメ+25%）" },
@@ -314,42 +323,42 @@ const SKILL_DESC_KEYS = {
     "Leech Lord":      "cc.skill.leechLord",
 };
 const SKILL_DESC_EN = {
-    "Remnant Razor":   "Attacks deal extra 8% of enemies' current health on hit.",
+    "Remnant Razor":   "Deal +20% damage. Attacks also deal extra 2% of enemies' current health on hit.",
     "Titan's Will":    "Attacks deal extra 6% of your maximum health on hit.",
     "Devastator":      "Deal 40% more damage but you lose 30% base attack speed.",
     "Rampager":        "Increase attack by 5 after each hit. Stack resets after battle.",
-    "Blade Dance":     "Gain increased attack speed after each hit. Stack resets after battle.",
+    "Blade Dance":     "Gain +1% ATK.SPD after each hit (beyond the cap). Ability hits count too. Resets after battle.",
     "Paladin's Heart": "You receive 25% less damage permanently.",
     "Aegis Thorns":    "Enemies receive 20% of the damage they dealt.",
     "Blood Tithe":     "Each attack costs 2% of your max HP. Taking damage heals 6% of your max HP.",
-    "Second Wind":     "Once per battle, survive a lethal blow at 1 HP.",
-    "Adrenaline":      "Below 30% HP: +40% ATK.SPD and +20% damage.",
-    "Executioner":     "Enemies below 30% HP take +35% damage.",
+    "Second Wind":     "Once per battle, survive a lethal blow at 1 HP and gain 8s invulnerability.",
+    "Adrenaline":      "Below 30% HP: +40% ATK.SPD and +20% damage. Once per battle, gain 6s invulnerability.",
+    "Executioner":     "Enemies below 66% HP take +33% damage.",
     "Glass Cannon":    "+35% ATK but -25% max HP.",
-    "Iron Will":       "Below 50% HP: +30% DEF.",
+    "Iron Will":       "Below 80% HP: take 30% less damage. Hidden: DEF level-up bonus +2%.",
     "Momentum":        "Each attack without taking damage grants +3% damage (max +60%). Resets when hit.",
-    "Leech Lord":      "Kill healing +35% but deal -15% damage.",
+    "Leech Lord":      "Attacks heal 5% of your max HP and deal +5% damage.",
 };
 for (const [name, key] of Object.entries(SKILL_DESC_KEYS)) {
     STRINGS[key] = { en: SKILL_DESC_EN[name], ja: "" };
 }
 // Japanese passive descriptions
 const SKILL_DESC_JA = {
-    "cc.skill.remnantRazor": "攻撃命中時、敵の現在HPの8%を追加ダメージ。",
+    "cc.skill.remnantRazor": "与ダメージ+20%。攻撃命中時、敵の現在HPの2%を追加ダメージ。",
     "cc.skill.titansWill": "攻撃命中時、自分の最大HPの6%を追加ダメージ。",
     "cc.skill.devastator": "ダメージ+40%だが、基本攻撃速度-30%。",
     "cc.skill.rampager": "攻撃のたびにATK+5。戦闘終了でリセット。",
-    "cc.skill.bladeDance": "攻撃のたびに攻撃速度上昇。戦闘終了でリセット。",
+    "cc.skill.bladeDance": "攻撃・アビリティの命中ごとにATK.SPD+1%（上限突破）。戦闘終了でリセット。",
     "cc.skill.paladinsHeart": "被ダメージを常時25%軽減。",
     "cc.skill.aegisThorns": "敵が与えたダメージの20%を反射。",
     "cc.skill.bloodTithe": "攻撃ごとに最大HPの2%を消費。被ダメ時に最大HPの6%回復。",
-    "cc.skill.secondWind": "1戦闘に1度、致命傷をHP1で耐える。",
-    "cc.skill.adrenaline": "HP30%以下: ATK.SPD+40%、ダメージ+20%。",
-    "cc.skill.executioner": "HP30%以下の敵に与えるダメージ+35%。",
+    "cc.skill.secondWind": "1戦闘に1度、致命傷をHP1で耐え、8秒間無敵になる。",
+    "cc.skill.adrenaline": "HP30%以下: ATK.SPD+40%、ダメージ+20%。1戦闘に1度、6秒間無敵になる。",
+    "cc.skill.executioner": "HP66%以下の敵に与えるダメージ+33%。",
     "cc.skill.glassCannon": "ATK+35%だが最大HP-25%。",
-    "cc.skill.ironWill": "HP50%以下: DEF+30%。",
+    "cc.skill.ironWill": "HP80%以下: 被ダメージ30%軽減。隠し効果：レベルアップのDEF上昇量+2%。",
     "cc.skill.momentum": "被弾せず攻撃するたびにダメージ+3%（最大+60%）。被弾でリセット。",
-    "cc.skill.leechLord": "キル時の回復量+35%だが与ダメージ-15%。",
+    "cc.skill.leechLord": "攻撃命中時に最大HPの5%回復、与ダメージ+5%。",
 };
 for (const [key, ja] of Object.entries(SKILL_DESC_JA)) {
     STRINGS[key].ja = ja;

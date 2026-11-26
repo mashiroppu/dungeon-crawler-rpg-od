@@ -1,3 +1,11 @@
+// Display settings (brightness)
+let settings = JSON.parse(localStorage.getItem("settingsData")) || { brightness: 100 };
+const applyBrightness = () => {
+    document.body.style.filter = settings.brightness === 100 ? "" : `brightness(${settings.brightness / 100})`;
+};
+const saveSettings = () => localStorage.setItem("settingsData", JSON.stringify(settings));
+applyBrightness();
+
 window.addEventListener("load", function () {
     if (player === null) {
         runLoad("character-creation", "flex");
@@ -167,7 +175,7 @@ window.addEventListener("load", function () {
             </div>
             <button id="player-menu"><i class="fas fa-user"></i>${player.name}</button>
             <button id="stats">${t("menu.run")}</button>
-            <button id="volume-btn">${t("menu.volume")}</button>
+            <button id="volume-btn">${t("menu.settings")}</button>
             <button id="export-import">${t("menu.ei")}</button>
             <button id="lang-btn">${t("menu.lang")}: ${LANG === "ja" ? "日本語" : "English"}</button>
             <button id="quit-run">${t("menu.quit")}</button>
@@ -342,12 +350,13 @@ window.addEventListener("load", function () {
             let master = volume.master * 100;
             let bgm = (volume.bgm * 100) * 2;
             let sfx = volume.sfx * 100;
+            let bright = settings.brightness;
             menuModalElement.style.display = "none";
             defaultModalElement.style.display = "flex";
             defaultModalElement.innerHTML = `
             <div class="content" id="volume-tab">
                 <div class="content-head">
-                    <h3>${t("vol.title")}</h3>
+                    <h3>${t("set.title")}</h3>
                     <p id="volume-close"><i class="fa fa-xmark"></i></p>
                 </div>
                 <label id="master-label" for="master-volume">${t("vol.master")} (${master}%)</label>
@@ -356,11 +365,14 @@ window.addEventListener("load", function () {
                 <input type="range" id="bgm-volume" min="0" max="100" value="${bgm}">
                 <label id="sfx-label" for="sfx-volume">${t("vol.sfx")} (${sfx}%)</label>
                 <input type="range" id="sfx-volume" min="0" max="100" value="${sfx}">
+                <label id="bright-label" for="bright-slider">${t("set.brightness")} (${bright}%)</label>
+                <input type="range" id="bright-slider" min="50" max="150" value="${bright}">
                 <button id="apply-volume">${t("vol.apply")}</button>
             </div>`;
             let masterVol = document.querySelector('#master-volume');
             let bgmVol = document.querySelector('#bgm-volume');
             let sfxVol = document.querySelector('#sfx-volume');
+            let brightSlider = document.querySelector('#bright-slider');
             let applyVol = document.querySelector('#apply-volume');
             let volumeTab = document.querySelector('#volume-tab');
             volumeTab.style.width = "15rem";
@@ -388,10 +400,18 @@ window.addEventListener("load", function () {
                 document.querySelector('#sfx-label').innerHTML = `SFX (${sfx}%)`;
             };
 
+            brightSlider.oninput = function () {
+                bright = this.value;
+                document.querySelector('#bright-label').innerHTML = `${t("set.brightness")} (${bright}%)`;
+            };
+
             applyVol.onclick = function () {
                 volume.master = master / 100;
                 volume.bgm = (bgm / 100) / 2;
                 volume.sfx = sfx / 100;
+                settings.brightness = Number(bright);
+                applyBrightness();
+                saveSettings();
                 bgmDungeon.stop();
                 setVolume();
                 bgmDungeon.play();
@@ -590,14 +610,26 @@ const progressReset = () => {
 }
 
 // Export and Import Save Data
+// UTF-8 safe base64: btoa/atob alone throw on non-Latin1 chars (e.g. Japanese names)
+const encodeSaveData = (obj) => {
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    let bin = "";
+    bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+};
+const decodeSaveData = (data) => {
+    const bin = atob(data.trim());
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+};
+
 const exportData = () => {
-    const exportedData = btoa(JSON.stringify(player));
-    return exportedData;
+    return encodeSaveData(player);
 }
 
 const importData = (importedData) => {
     try {
-        let playerImport = JSON.parse(atob(importedData));
+        let playerImport = decodeSaveData(importedData);
         if (playerImport.inventory !== undefined) {
             sfxOpen.play();
             defaultModalElement.style.display = "none";

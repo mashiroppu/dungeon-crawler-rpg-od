@@ -103,12 +103,134 @@ const applyEnemyModifiers = (condition) => {
     }
 };
 
+// ===== Boss Phase System =====
+// Bosses (guardians / monarchs) fight in HP phases. Crossing a threshold grants
+// the boss a fixed set of phase effects and briefly staggers it.
+const BOSS_PHASE_THRESHOLDS = {
+    guardian: [0.66, 0.33],
+    sboss:    [0.75, 0.5, 0.25],
+};
+const BOSS_PHASE_STAGGER = { guardian: 800, sboss: 1000 };
+
+// Phase effect pool (~20 kinds). apply() mutates the enemy; checks in combat.js
+// read the resulting fields (dr, dodge, thornsPct, noCrit, statusResist, ...).
+const ENEMY_PHASE_EFFECTS = {
+    atk_surge:  { name: "ATK Surge",      apply: e => { e.stats.atk = Math.round(e.stats.atk * 1.25); } },
+    iron_hide:  { name: "Iron Hide",      apply: e => { e.stats.def = Math.round(e.stats.def * 1.35); } },
+    swift:      { name: "Swiftness",      apply: e => { e.stats.atkSpd = Math.min(2.5, e.stats.atkSpd * 1.2); } },
+    keen:       { name: "Keen Sight",     apply: e => { e.stats.critRate = Math.min(80, e.stats.critRate + 15); } },
+    heavy_crit: { name: "Heavy Crits",    apply: e => { e.stats.critDmg = Math.round(e.stats.critDmg * 1.4); } },
+    leech:      { name: "Leeching",       apply: e => { e.stats.vamp += 6; } },
+    bulwark:    { name: "Bulwark",        apply: e => { const add = Math.round(e.stats.hpMax * 0.25); e.stats.hpMax += add; e.stats.hp = Math.min(e.stats.hpMax, e.stats.hp + add); } },
+    regen:      { name: "Regeneration",   apply: e => { e.regenPerSec = Math.max(e.regenPerSec || 0, Math.round(e.stats.hpMax * 0.015)); } },
+    enrage:     { name: "Enrage",         apply: e => { e.enragePhase = true; } },
+    stone_skin: { name: "Stone Skin",     apply: e => { e.dr = (e.dr || 0) + 12; } },
+    reflect:    { name: "Retaliation",    apply: e => { e.thornsPct = (e.thornsPct || 0) + 8; } },
+    dodge:      { name: "Phantom Step",   apply: e => { e.dodge = (e.dodge || 0) + 12; } },
+    no_crit:    { name: "Nullify",        apply: e => { e.noCrit = true; } },
+    heavy_five: { name: "Heavy Blows",    apply: e => { e.heavyEvery = 5; } },
+    double:     { name: "Twin Strikes",   apply: e => { e.doubleStrike = 0.15; } },
+    momentum:   { name: "Momentum",       apply: e => { e.momentumRamp = true; } },
+    empowered:  { name: "Empowerment",    apply: e => { e.empoweredNext = true; } },
+    desperado:  { name: "Desperado",      apply: e => { e.desperado = true; } },
+    ward:       { name: "Null Ward",      apply: e => { e.statusResist = true; } },
+    second_wind:{ name: "Second Wind",    apply: e => { e.bossSecondWind = true; } },
+};
+
+// Fixed phase-effect table per boss. Index = phase transition (P1->P2 is [0]).
+// Guardians get 2 entries, monarchs get 3.
+const BOSS_PHASE_TABLE = {
+    // ===== Guardians =====
+    'Zaart, the Dominator Goblin': [["atk_surge"], ["enrage"]],
+    'Banshee, Skeleton Lord':      [["keen"], ["double"]],
+    'Molten Spider':               [["leech"], ["heavy_five"]],
+    'Cerberus Ptolemaios':         [["atk_surge"], ["double"]],
+    'Hellhound Inferni':           [["swift"], ["enrage"]],
+    'Berthelot, the Undead King':  [["iron_hide"], ["reflect"]],
+    'Slime King':                  [["bulwark"], ["regen"]],
+    'Zodiac Cancer':               [["stone_skin"], ["ward"]],
+    'Alfadriel, the Light Titan':  [["keen"], ["empowered"]],
+    'Tiamat, the Dragon Knight':   [["atk_surge"], ["desperado"]],
+    'Nameless Fallen King':        [["iron_hide"], ["second_wind"]],
+    'Zodiac Aries':                [["swift"], ["dodge"]],
+    'Llyrrad, the Ant Queen':       [["momentum"], ["double"]],
+    'Clockwork Spider':            [["dodge"], ["heavy_five"]],
+    'Aragorn, the Lethal Wolf':    [["leech"], ["enrage"]],
+    // ===== Monarchs =====
+    'Naizicher, the Spider Dragon': [["swift"], ["momentum"], ["double"]],
+    'Ulliot, the Deathlord':        [["iron_hide"], ["regen"], ["reflect", "stone_skin"]],
+    'Ifrit':                        [["atk_surge"], ["enrage"], ["heavy_five"]],
+    'Shiva':                        [["keen"], ["dodge"], ["stone_skin"]],
+    'Behemoth':                     [["bulwark"], ["iron_hide"], ["second_wind"]],
+    'Blood Manipulation Feral':     [["leech"], ["desperado"], ["enrage"]],
+    'Thanatos':                     [["no_crit"], ["reflect"], ["empowered"]],
+    'Darkness Angel Reaper':        [["swift"], ["dodge"], ["double"]],
+    'Zalaras, the Dragon Emperor':  [["atk_surge"], ["heavy_crit"], ["enrage", "heavy_five"]],
+};
+const BOSS_PHASE_DEFAULTS = {
+    guardian: [["atk_surge"], ["enrage"]],
+    sboss:    [["atk_surge"], ["swift"], ["enrage"]],
+};
+
+const gainEnemyPhaseEffect = (id) => {
+    const eff = ENEMY_PHASE_EFFECTS[id];
+    if (!eff || enemy.phaseEffects.includes(id)) return;
+    enemy.phaseEffects.push(id);
+    eff.apply(enemy);
+    addCombatLog(tParams("cb.bossGain", { name: enemy.name, effect: eff.name }));
+};
+
+const checkEnemyPhase = () => {
+    if (!enemy || !enemy.isBoss || enemyDead || enemy.stats.hp <= 0) return;
+    let crossed = 0;
+    for (const t of enemy.phaseThresholds) {
+        if (enemy.stats.hp <= enemy.stats.hpMax * t) crossed++;
+    }
+    const newPhase = 1 + crossed;
+    if (newPhase <= enemy.phase) return;
+    enemy.phase = newPhase;
+    enemy.staggerUntil = Date.now() + BOSS_PHASE_STAGGER[enemy.bossKind];
+    const table = BOSS_PHASE_TABLE[enemy.name] || BOSS_PHASE_DEFAULTS[enemy.bossKind] || BOSS_PHASE_DEFAULTS.guardian;
+    const effects = table[newPhase - 2] || [];
+    addCombatLog(tParams("cb.bossPhase", { name: enemy.name, p: newPhase }));
+    const sprite = document.querySelector("#enemy-sprite");
+    if (sprite) {
+        sprite.classList.remove("phase-flash");
+        void sprite.offsetWidth;
+        sprite.classList.add("phase-flash");
+        setTimeout(() => sprite.classList.remove("phase-flash"), 900);
+    }
+    for (const id of effects) gainEnemyPhaseEffect(id);
+};
+
 const generateRandomEnemy = (condition) => {
     enemy.elite = false;
     enemy.named = false;
     enemy.stageBoss = false;
     enemy.mods = [];
     enemy.combatDebuffs = [];
+    // Boss phase state
+    enemy.isBoss = (condition === "guardian" || condition === "sboss");
+    enemy.bossKind = enemy.isBoss ? condition : null;
+    enemy.phase = 1;
+    enemy.phaseEffects = [];
+    enemy.phaseThresholds = enemy.isBoss ? BOSS_PHASE_THRESHOLDS[condition] : null;
+    enemy.staggerUntil = 0;
+    enemy.attackCount = 0;
+    enemy.empoweredNext = false;
+    enemy.momentumRamp = false;
+    enemy.momentumSpd = 0;
+    enemy.dr = 0;
+    enemy.dodge = 0;
+    enemy.thornsPct = 0;
+    enemy.noCrit = false;
+    enemy.statusResist = false;
+    enemy.bossSecondWind = false;
+    enemy.bossSecondWindUsed = false;
+    enemy.enragePhase = false;
+    enemy.desperado = false;
+    enemy.heavyEvery = 0;
+    enemy.doubleStrike = 0;
     delete enemy.dot;
     delete enemy.regenPerSec;
     // List of possible enemy names
@@ -686,6 +808,7 @@ const setEnemyImg = () => {
 }
 
 const enemyLoadStats = () => {
+    checkEnemyPhase();
     // Shows proper percentage for respective stats
     let rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
     if (enemy.stats.hp > enemy.stats.hpMax) {

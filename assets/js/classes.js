@@ -158,7 +158,7 @@ const spawnDamageNumber = (damage, crit) => {
 // Petrify helpers: enemy.petrifyStacks builds while "petrifyLink" buff is active; 5 stacks = petrified 4s
 const isEnemyPetrified = () => !!(enemy && enemy.petrifiedUntil && enemy.petrifiedUntil > Date.now());
 const petrifyOnHit = () => {
-    if (!enemy || enemyDead || isEnemyPetrified()) return;
+    if (!enemy || enemyDead || isEnemyPetrified() || enemy.statusResist) return;
     const linked = (player.combatBuffs || []).some(b => b.type === "petrifyLink" && b.expire > Date.now());
     if (!linked) return;
     enemy.petrifyStacks = Math.min(5, (enemy.petrifyStacks || 0) + 1);
@@ -177,17 +177,34 @@ const abilityDamage = (mult, defScale = 1) => {
     let damage = player.stats.atk * mult * (player.stats.atk / (player.stats.atk + enemy.stats.def * defScale * defDebuff * penFactor));
     damage *= 0.9 + Math.random() * 0.2;
     let crit = false;
-    if (Math.floor(Math.random() * 100) < playerCritRate()) {
+    if (!enemy.noCrit && Math.floor(Math.random() * 100) < playerCritRate()) {
         crit = true;
         damage *= 1 + (player.stats.critDmg / 100);
     }
     damage = Math.round(damage * playerBuffMult("atkMult"));
-    // Passives: Executioner / Leech Lord / petrified bonus
-    if (player.skills.includes("Executioner") && enemy.stats.hp < enemy.stats.hpMax * 0.3) damage = Math.round(damage * 1.35);
-    if (player.skills.includes("Leech Lord")) damage = Math.round(damage * 0.85);
+    // Passives: Remnant Razor / Executioner / Leech Lord / petrified bonus
+    if (player.skills.includes("Remnant Razor")) damage = Math.round(damage * 1.2);
+    if (player.skills.includes("Executioner") && enemy.stats.hp < enemy.stats.hpMax * 0.66) damage = Math.round(damage * 1.33);
+    if (player.skills.includes("Leech Lord")) damage = Math.round(damage * 1.05);
     damage = Math.round(damage * petrifyDamageMult());
+    // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
+    if ((enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge) {
+        addCombatLog(tParams("cb.attackMisses", { name: player.name, target: enemy.name }));
+        return;
+    }
+    if (enemy.dr) damage = Math.max(1, Math.round(damage * (1 - enemy.dr / 100)));
     petrifyOnHit();
     enemy.stats.hp -= damage;
+    // Blade Dance: ability hits also grant ATK.SPD stacks
+    if (player.skills.includes("Blade Dance")) player.bladeDanceStacks = (player.bladeDanceStacks || 0) + 1;
+    // Boss thorns: reflect a % of damage taken
+    if (enemy.thornsPct && damage > 0 && !(player.invulnTrueUntil > Date.now())) {
+        const refDmg = Math.round(damage * enemy.thornsPct / 100);
+        if (refDmg > 0) {
+            player.stats.hp -= refDmg;
+            addCombatLog(tParams("cb.reflects", { name: enemy.name, dmg: nFormatter(refDmg) }));
+        }
+    }
     // Ability hit reaction: big flinch + flash on the enemy sprite
     const hitSprite = document.querySelector("#enemy-sprite");
     if (hitSprite) {
@@ -269,6 +286,7 @@ const useAbility = (id) => {
     (ABILITY_SFX[id] ? ABILITY_SFX[id]() : sfxAbility).play();
     const now = Date.now();
     const pushEnemyDebuff = (type, mult, sec) => {
+        if (enemy.statusResist) return; // Null Ward: immune to debuffs
         enemy.combatDebuffs = enemy.combatDebuffs || [];
         enemy.combatDebuffs.push({ type, mult, expire: now + Math.round(sec * 1000) });
     };
@@ -329,7 +347,7 @@ const useAbility = (id) => {
         }
         case "flame_nova":
             abilityDamage(2.0);
-            enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.015), ticks: 8 };
+            if (!enemy.statusResist) enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.015), ticks: 8 };
             addCombatLog(tParams("cb.ab.flames", { name: enemy.name }));
             break;
         case "frostbolt":
@@ -354,7 +372,7 @@ const useAbility = (id) => {
             break;
         case "venom_dagger":
             abilityDamage(1.2);
-            enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.0125), ticks: 8 };
+            if (!enemy.statusResist) enemy.dot = { dps: Math.round(enemy.stats.hpMax * 0.0125), ticks: 8 };
             addCombatLog(tParams("cb.ab.envenomed", { name: enemy.name }));
             break;
         case "godspeed":
@@ -436,6 +454,13 @@ const useAbility = (id) => {
 // Per-second combat tick: dots, regen, ability cooldown UI
 const combatSecondTick = () => {
     if (!player.inCombat) return;
+    // Adrenaline: once per battle, dropping below 30% HP grants 6s invulnerability
+    if (player.skills.includes("Adrenaline") && !player.adrenalineUsed &&
+        player.stats.hp > 0 && player.stats.hp < player.stats.hpMax * 0.3) {
+        player.adrenalineUsed = true;
+        player.invulnTrueUntil = Date.now() + 6000;
+        addCombatLog(tParams("cb.trueInvuln", { name: player.name, s: 6 }));
+    }
     if (enemy && enemy.dot && enemy.dot.ticks > 0 && enemy.stats.hp > 0) {
         enemy.stats.hp -= enemy.dot.dps;
         enemy.dot.ticks--;

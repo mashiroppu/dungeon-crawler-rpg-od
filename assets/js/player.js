@@ -109,7 +109,7 @@ const playerLoadStats = () => {
     // Player Stats
     playerHpElement.innerHTML = `${nFormatter(player.stats.hp)}/${nFormatter(player.stats.hpMax)} (${player.stats.hpPercent}%)`;
     playerAtkElement.innerHTML = nFormatter(player.stats.atk);
-    playerNatkElement.innerHTML = (Math.min(300, player.bonusStats.nAtk || 0) + Math.min(60, (player.equippedStats && player.equippedStats.normAtkPct) || 0)).toFixed(2).replace(rx, "$1") + "%";
+    playerNatkElement.innerHTML = (Math.min(200, player.bonusStats.nAtk || 0) + Math.min(60, (player.equippedStats && player.equippedStats.normAtkPct) || 0)).toFixed(2).replace(rx, "$1") + "%";
     playerDefElement.innerHTML = nFormatter(player.stats.def);
     playerAtkSpdElement.innerHTML = player.stats.atkSpd.toFixed(2).replace(rx, "$1");
     playerVampElement.innerHTML = (player.stats.vamp).toFixed(2).replace(rx, "$1") + "%";
@@ -246,13 +246,13 @@ const lvlupPopup = () => {
     const percentages = {
         "hp": 10,
         "atk": 8,
-        "def": 8,
+        "def": player.skills.includes("Iron Will") ? 10 : 8,
         "atkSpd": 3,
         "vamp": 0.5,
         "critRate": 1,
         "critDmg": 6,
         "thorns": 0.1,
-        "nAtk": 6
+        "nAtk": 4
     };
     lvlRerollCount = 0;
     generateLvlStats(percentages);
@@ -275,7 +275,7 @@ const generateLvlStats = (percentages) => {
         }
     }
     // N.ATK is an uncommon level-up option (~20% chance to appear, hidden once capped)
-    if (Math.random() < 0.2 && (player.bonusStats.nAtk || 0) < 300) {
+    if (Math.random() < 0.2 && (player.bonusStats.nAtk || 0) < 200) {
         selectedStats[Math.floor(Math.random() * selectedStats.length)] = "nAtk";
     }
 
@@ -326,7 +326,7 @@ const generateLvlStats = (percentages) => {
                     player.bonusStats.thorns = Math.min(10, player.bonusStats.thorns);
                 }
                 if (selectedStats[i] === "nAtk") {
-                    player.bonusStats.nAtk = Math.min(300, player.bonusStats.nAtk);
+                    player.bonusStats.nAtk = Math.min(200, player.bonusStats.nAtk);
                 }
 
                 if (player.exp.lvlGained > 1) {
