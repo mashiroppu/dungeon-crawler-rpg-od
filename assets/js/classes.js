@@ -190,6 +190,11 @@ const abilityDamage = (mult, defScale = 1) => {
     // HUNTER'S MARK: consecutive hits stack bonus damage
     const markPct = Math.min(player.hunterStacks || 0, 20) * ((player.equippedStats && player.equippedStats.hunterMark) || 0);
     if (markPct > 0) damage = Math.round(damage * (1 + markPct / 100));
+    // SURGE: the next attack after a heal deals bonus damage (5s window)
+    if (player.surgeNext && player.surgeNext.expire > Date.now() && player.surgeNext.pct > 0) {
+        damage = Math.round(damage * (1 + player.surgeNext.pct / 100));
+        player.surgeNext = null;
+    }
     // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
     if ((enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge) {
         addCombatLog(tParams("cb.attackMisses", { name: player.name, target: enemy.name }));
