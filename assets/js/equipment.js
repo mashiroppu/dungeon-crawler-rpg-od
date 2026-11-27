@@ -56,7 +56,7 @@ const AFFIXES = [
     { key: "siphon",      label: "SIPHON",    min: 0.5,max: 2,  w: 1 },
     { key: "flourish",    label: "FLRSH",     min: 5,  max: 15, w: 1 },
     { key: "hunterMark",  label: "MARK",      min: 1,  max: 3,  w: 1 },
-    { key: "critHeal",    label: "C.HEAL",    min: 7.5,max: 15, w: 1 },
+    { key: "critHeal",    label: "C.HEAL",    min: 3,  max: 12, w: 1 },
     { key: "thornViper",  label: "VIPER",     min: 0.75,max: 3,  w: 1 },
     { key: "vampThorns",  label: "VTHRN",     min: 10, max: 40, w: 1 },
     // Hidden: +2% normal attack, never displayed anywhere
