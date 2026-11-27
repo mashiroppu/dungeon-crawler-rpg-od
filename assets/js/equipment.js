@@ -56,6 +56,9 @@ const AFFIXES = [
 ];
 // Stats that must never appear in item stat lines
 const HIDDEN_STAT_KEYS = new Set(["secretAtk"]);
+// Effective scaling for gear stats: floored at 1.1 so item stats always grow
+// with item level even when the curse baseline is 1.0 (NORMAL band, no totem).
+const gearScaling = () => Math.max(1.1, Math.min(2, dungeon.settings.enemyScaling || 1));
 // Proc-style affixes: mutually exclusive per item, and unique across all equipped gear
 const SPECIAL_AFFIX_KEYS = new Set(["burst", "fullHpDmg", "lowHpDmg", "attackInvuln", "hpTradeDmg", "hpRegen", "bloodOath"]);
 const AFFIX_COUNT = { Rare: 1, Epic: 2, Legendary: 3, Heirloom: 4 };
@@ -214,11 +217,10 @@ const createEquipment = () => {
         if (equipment.lvl > 100) {
             equipment.lvl = 100;
         }
-        // Set stat scaling and equipment tier Tier 10 cap
-        let enemyScaling = dungeon.settings.enemyScaling;
-        if (enemyScaling > 2) {
-            enemyScaling = 2;
-        }
+        // Stat scaling and equipment tier Tier 10 cap.
+        // Gear uses an effective scaling floored at 1.1 so item stats always
+        // grow with item level; the curse (enemyScaling) can raise it further.
+        const enemyScaling = gearScaling();
         let statMultiplier = (enemyScaling - 1) * equipment.lvl;
         equipment.tier = Math.round((enemyScaling - 1) * 10);
         let hpScaling = (40 * randomizeDecimal(0.5, 1.5)) + ((40 * randomizeDecimal(0.5, 1.5)) * statMultiplier);
@@ -623,7 +625,7 @@ const itemLvBonus = (item) => item.lvBase != null ? item.lvl - item.lvBase : (it
 // Rescale an item's base stats from oldLvl to its current item.lvl.
 // Affixes are flat proc effects and are not level-scaled, so they are skipped.
 const rescaleItemStats = (item, oldLvl) => {
-    const s = Math.min(2, dungeon.settings.enemyScaling || 1);
+    const s = gearScaling();
     const ratio = (1 + (s - 1) * item.lvl) / (1 + (s - 1) * oldLvl);
     if (ratio === 1) return;
     const affixCount = (item.affixes || []).length;
