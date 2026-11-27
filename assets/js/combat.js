@@ -202,7 +202,7 @@ const playerAttack = () => {
         saveData();
     }
     if (player.skills.includes("Blade Dance")) {
-        // +1% ATK.SPD per hit — uncapped (added after the stats cap) and also
+        // +5% ATK.SPD per hit — uncapped (added after the stats cap) and also
         // shortens ability recovery. Resets after battle.
         player.bladeDanceStacks = (player.bladeDanceStacks || 0) + 1;
     }
@@ -311,7 +311,7 @@ const playerAttack = () => {
             if (player.inCombat) {
                 playerAttack();
             }
-        }, (1000 / ((player.stats.atkSpd + (player.bladeDanceStacks || 0) * 0.01) * playerBuffMult("atkSpdMult") * (player.skills.includes("Adrenaline") && player.stats.hp < player.stats.hpMax * 0.3 ? 1.4 : 1))));
+        }, (1000 / ((player.stats.atkSpd + (player.bladeDanceStacks || 0) * 0.05) * playerBuffMult("atkSpdMult") * (player.skills.includes("Adrenaline") && player.stats.hp < player.stats.hpMax * 0.3 ? 1.4 : 1))));
     }
 }
 
