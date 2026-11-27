@@ -228,6 +228,7 @@ const STRINGS = {
     "cb.dealt":             { en: "{name} dealt {dmg} {type} to {target}.", ja: "{name}が{target}に{dmg}{type}のダメージを与えた。" },
     "cb.afterimages":       { en: "{name}'s afterimages strike {n} more time{s}!", ja: "{name}の残像がさらに{n}回攻撃した！" },
     "cb.fragments":         { en: "{name}'s attack bursts into {n} fragment{s}!", ja: "{name}の攻撃が{n}つの破片に分裂した！" },
+    "cb.flourish":          { en: "{name} flourishes — {target} is struck twice!", ja: "{name}の華麗な連撃が{target}に炸裂した！" },
     "cb.petrifiedNoAtk":    { en: "{name} is petrified solid and cannot attack!", ja: "{name}は石化して攻撃できない！" },
     "cb.attackMisses":      { en: "{name}'s attack misses {target}!", ja: "{name}の攻撃は{target}を外れた！" },
     "cb.piercesGuard":      { en: "{name}'s attack pierces {target}'s guard!", ja: "{name}の攻撃は{target}の防御を貫いた！" },

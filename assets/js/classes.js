@@ -187,6 +187,9 @@ const abilityDamage = (mult, defScale = 1) => {
     if (player.skills.includes("Executioner") && enemy.stats.hp < enemy.stats.hpMax * 0.66) damage = Math.round(damage * 1.33);
     if (player.skills.includes("Leech Lord")) damage = Math.round(damage * 1.05);
     damage = Math.round(damage * petrifyDamageMult());
+    // HUNTER'S MARK: consecutive hits stack bonus damage
+    const markPct = Math.min(player.hunterStacks || 0, 20) * ((player.equippedStats && player.equippedStats.hunterMark) || 0);
+    if (markPct > 0) damage = Math.round(damage * (1 + markPct / 100));
     // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
     if ((enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge) {
         addCombatLog(tParams("cb.attackMisses", { name: player.name, target: enemy.name }));
@@ -195,6 +198,10 @@ const abilityDamage = (mult, defScale = 1) => {
     if (enemy.dr) damage = Math.max(1, Math.round(damage * (1 - enemy.dr / 100)));
     petrifyOnHit();
     enemy.stats.hp -= damage;
+    player.hunterStacks = Math.min((player.hunterStacks || 0) + 1, 20);
+    // SIPHON: heal for a % of the damage dealt
+    const siphonPct = (player.equippedStats && player.equippedStats.siphon) || 0;
+    if (damage > 0 && siphonPct > 0) applyPlayerHeal(Math.round(damage * siphonPct / 100));
     // Blade Dance: ability hits also grant ATK.SPD stacks
     if (player.skills.includes("Blade Dance")) player.bladeDanceStacks = (player.bladeDanceStacks || 0) + 1;
     // Boss thorns: reflect a % of damage taken

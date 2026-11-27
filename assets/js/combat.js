@@ -230,6 +230,14 @@ const playerAttack = () => {
         damage = Math.round(damage * (1 + Math.min(player.momentumStacks || 0, 20) * 0.03));
         player.momentumStacks = Math.min((player.momentumStacks || 0) + 1, 20);
     }
+    // OPENER: first connecting hit of the battle deals bonus damage
+    const openerPct = (player.equippedStats && player.equippedStats.opener) || 0;
+    if (player.openerReady && openerPct > 0) {
+        damage = Math.round(damage * (1 + openerPct / 100));
+    }
+    // HUNTER'S MARK: consecutive hits on the same enemy stack bonus damage
+    const markPct = Math.min(player.hunterStacks || 0, 20) * ((player.equippedStats && player.equippedStats.hunterMark) || 0);
+    if (markPct > 0) damage = Math.round(damage * (1 + markPct / 100));
 
     // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
     const dodged = (enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge;
@@ -238,6 +246,10 @@ const playerAttack = () => {
 
     // Apply the calculations to combat
     enemy.stats.hp -= damage;
+    if (!dodged) {
+        player.openerReady = false;
+        player.hunterStacks = Math.min((player.hunterStacks || 0) + 1, 20);
+    }
     if (!dodged) petrifyOnHit();
     // Blood Tithe: each attack costs 2% of your max HP (cannot drop below 1 HP)
     if (player.skills.includes("Blood Tithe") && damage > 0) {
@@ -254,6 +266,11 @@ const playerAttack = () => {
     // Leech Lord: each connecting attack restores 5% of max HP
     if (!dodged && damage > 0 && player.skills.includes("Leech Lord")) {
         applyPlayerHeal(Math.round(player.stats.hpMax * 0.05));
+    }
+    // SIPHON: heal for a % of the damage dealt
+    const siphonPct = (player.equippedStats && player.equippedStats.siphon) || 0;
+    if (!dodged && damage > 0 && siphonPct > 0) {
+        applyPlayerHeal(Math.round(damage * siphonPct / 100));
     }
     if (dodged) {
         addCombatLog(tParams("cb.attackMisses", { name: player.name, target: enemy.name }));
@@ -288,6 +305,14 @@ const playerAttack = () => {
             frags++;
         }
         if (frags) addCombatLog(tParams("cb.fragments", { name: player.name, n: frags, s: frags > 1 ? "s" : "" }));
+    }
+    // Flourish: chance for the attack to strike twice for full damage
+    const flourishPct = (player.equippedStats && player.equippedStats.flourish) || 0;
+    if (!dodged && flourishPct > 0 && enemy.stats.hp > 0 && Math.random() * 100 < flourishPct) {
+        const bonus = Math.max(1, damage);
+        enemy.stats.hp -= bonus;
+        spawnDamageNumber(bonus, crit);
+        addCombatLog(tParams("cb.flourish", { name: player.name, target: enemy.name }));
     }
     hpValidation();
     playerLoadStats();
@@ -564,6 +589,8 @@ const startCombat = (battleMusic) => {
     player.adrenalineUsed = false;
     player.invulnTrueUntil = 0;
     player.bladeDanceStacks = 0;
+    player.openerReady = true;
+    player.hunterStacks = 0;
     delete player.hot;
     if (enemy) { delete enemy.petrifyStacks; enemy.petrifiedUntil = 0; }
     // Trial regen: while below 50% HP, recover REGEN% of max HP every 0.5s

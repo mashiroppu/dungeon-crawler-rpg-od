@@ -51,6 +51,11 @@ const AFFIXES = [
     { key: "bloodOath",   label: "OATH",      min: 0.08, max: 0.2, w: 1 },
     // Normal-attack-only damage (does NOT boost abilities). Equipment total capped at 24%.
     { key: "normAtkPct",  label: "N.ATK",     min: 2,  max: 4,  w: 1 },
+    // ===== Signature affixes =====
+    { key: "opener",      label: "OPNR",      min: 15, max: 40, w: 1 },
+    { key: "siphon",      label: "SIPHON",    min: 0.5,max: 2,  w: 1 },
+    { key: "flourish",    label: "FLRSH",     min: 5,  max: 15, w: 1 },
+    { key: "hunterMark",  label: "MARK",      min: 1,  max: 3,  w: 1 },
     // Hidden: +2% normal attack, never displayed anywhere
     { key: "secretAtk",   label: "",          min: 2,  max: 2,  w: 1, hidden: true },
 ];
@@ -60,10 +65,10 @@ const HIDDEN_STAT_KEYS = new Set(["secretAtk"]);
 // with item level even when the curse baseline is 1.0 (NORMAL band, no totem).
 const gearScaling = () => Math.max(1.1, Math.min(2, dungeon.settings.enemyScaling || 1));
 // Proc-style affixes: mutually exclusive per item, and unique across all equipped gear
-const SPECIAL_AFFIX_KEYS = new Set(["burst", "fullHpDmg", "lowHpDmg", "attackInvuln", "hpTradeDmg", "hpRegen", "bloodOath"]);
+const SPECIAL_AFFIX_KEYS = new Set(["burst", "fullHpDmg", "lowHpDmg", "attackInvuln", "hpTradeDmg", "hpRegen", "bloodOath", "opener", "siphon", "flourish", "hunterMark"]);
 const AFFIX_COUNT = { Rare: 1, Epic: 2, Legendary: 3, Heirloom: 4 };
-const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND", cdr: "CDR", abUse: "AB.USE", burst: "BURST", fullHpDmg: "PRIDE", lowHpDmg: "BERSERK", attackInvuln: "PHASE", hpTradeDmg: "TRIAL", hpRegen: "REGEN", bloodOath: "OATH", normAtkPct: "N.ATK" };
-const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind", "cdr", "fullHpDmg", "lowHpDmg", "hpTradeDmg", "hpRegen", "bloodOath", "normAtkPct", "secretAtk"]);
+const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND", cdr: "CDR", abUse: "AB.USE", burst: "BURST", fullHpDmg: "PRIDE", lowHpDmg: "BERSERK", attackInvuln: "PHASE", hpTradeDmg: "TRIAL", hpRegen: "REGEN", bloodOath: "OATH", normAtkPct: "N.ATK", opener: "OPNR", siphon: "SIPHON", flourish: "FLRSH", hunterMark: "MARK" };
+const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind", "cdr", "fullHpDmg", "lowHpDmg", "hpTradeDmg", "hpRegen", "bloodOath", "normAtkPct", "secretAtk", "opener", "siphon", "flourish", "hunterMark"]);
 const formatStatLine = (stat) => {
     const keys = Object.keys(stat).filter(k => !HIDDEN_STAT_KEYS.has(k));
     if (!keys.length) return "";
@@ -688,7 +693,11 @@ const applyEquipmentStats = () => {
         hpRegen: 0,
         bloodOath: 0,
         normAtkPct: 0,
-        secretAtk: 0
+        secretAtk: 0,
+        opener: 0,
+        siphon: 0,
+        flourish: 0,
+        hunterMark: 0
     };
 
     // Deduplicate proc affixes across equipped items (first equipped wins)
