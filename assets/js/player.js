@@ -249,7 +249,7 @@ const lvlupPopup = () => {
         "def": player.skills.includes("Iron Will") ? 10 : 8,
         "atkSpd": 3,
         "vamp": 0.5,
-        "critRate": 1,
+        "critRate": 0.5,
         "critDmg": 6,
         "thorns": 0.1,
         "nAtk": 4

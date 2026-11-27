@@ -169,7 +169,7 @@ const playerAttack = () => {
         + ((player.equippedStats && player.equippedStats.secretAtk) || 0));
     if (normAtkPct > 0) damage = damage * (1 + normAtkPct / 100);
     // Check if the attack is a critical hit (bosses with Nullify cannot be crit)
-    if (!enemy.noCrit && Math.floor(Math.random() * 100) < (player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd"))) {
+    if (!enemy.noCrit && Math.floor(Math.random() * 100) < Math.min(75, player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd"))) {
         crit = true;
         dmgtype = "crit damage";
         damage = Math.round(damage * (1 + (player.stats.critDmg / 100)));
@@ -271,6 +271,11 @@ const playerAttack = () => {
     const siphonPct = (player.equippedStats && player.equippedStats.siphon) || 0;
     if (!dodged && damage > 0 && siphonPct > 0) {
         applyPlayerHeal(Math.round(damage * siphonPct / 100));
+    }
+    // C.HEAL: critical hits restore a % of max HP
+    const critHealPct = (player.equippedStats && player.equippedStats.critHeal) || 0;
+    if (!dodged && crit && damage > 0 && critHealPct > 0) {
+        applyPlayerHeal(Math.round(player.stats.hpMax * critHealPct / 100));
     }
     if (dodged) {
         addCombatLog(tParams("cb.attackMisses", { name: player.name, target: enemy.name }));

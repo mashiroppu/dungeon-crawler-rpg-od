@@ -534,7 +534,7 @@ const calculateStats = () => {
     player.stats.def = Math.round(playerDefBase * (1 + (player.bonusStats.def + eqDefPct) / 100) + player.equippedStats.def);
     player.stats.atkSpd = (playerAtkSpdBase + playerAtkSpdBase * (player.bonusStats.atkSpd / 100)) + equipmentAtkSpd + (equipmentAtkSpd * (player.equippedStats.atkSpd / 100));
     player.stats.vamp = playerVampBase + player.bonusStats.vamp + player.equippedStats.vamp;
-    player.stats.critRate = playerCRateBase + player.bonusStats.critRate + player.equippedStats.critRate;
+    player.stats.critRate = Math.min(75, playerCRateBase + player.bonusStats.critRate + player.equippedStats.critRate);
     player.stats.critDmg = playerCDmgBase + player.bonusStats.critDmg + player.equippedStats.critDmg;
 
     // Caps attack speed to 3

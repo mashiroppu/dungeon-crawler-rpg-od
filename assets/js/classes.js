@@ -135,7 +135,7 @@ const buffAdd = (list, type) => {
     (list || []).forEach(b => { if (b.type === type && b.expire > now) s += b.add || 0; });
     return s;
 };
-const playerCritRate = () => player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd");
+const playerCritRate = () => Math.min(75, player.stats.critRate + buffAdd(player.combatBuffs, "critRateAdd"));
 
 // (cooldown system removed — each ability is usable once per battle)
 
@@ -202,6 +202,9 @@ const abilityDamage = (mult, defScale = 1) => {
     // SIPHON: heal for a % of the damage dealt
     const siphonPct = (player.equippedStats && player.equippedStats.siphon) || 0;
     if (damage > 0 && siphonPct > 0) applyPlayerHeal(Math.round(damage * siphonPct / 100));
+    // C.HEAL: critical hits restore a % of max HP
+    const critHealPct = (player.equippedStats && player.equippedStats.critHeal) || 0;
+    if (crit && damage > 0 && critHealPct > 0) applyPlayerHeal(Math.round(player.stats.hpMax * critHealPct / 100));
     // Blade Dance: ability hits also grant ATK.SPD stacks
     if (player.skills.includes("Blade Dance")) player.bladeDanceStacks = (player.bladeDanceStacks || 0) + 1;
     // Boss thorns: reflect a % of damage taken
