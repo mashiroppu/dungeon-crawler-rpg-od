@@ -35,7 +35,7 @@ const AFFIXES = [
     { key: "vamp",      label: "VAMP",   min: 0.5,max: 2,  w: 2 },
     { key: "critRate",  label: "C.RATE", min: 1,  max: 4,  w: 2 },
     { key: "critDmg",   label: "C.DMG",  min: 5,  max: 15, w: 2 },
-    { key: "penPct",    label: "PEN",    min: 3,  max: 10, w: 1 },
+    { key: "penPct",    label: "PEN",    min: 1,  max: 5,  w: 1 },
     { key: "thorns",    label: "THORN",  min: 0.05,max: 0.1, w: 1 },
     { key: "dodge",     label: "DODGE",  min: 2,  max: 6,  w: 1 },
     { key: "goldFind",  label: "G.FIND", min: 5,  max: 15, w: 1 },
@@ -91,7 +91,9 @@ const rollAffixes = (equipment) => {
         for (const a of pool) { r -= a.w; if (r <= 0) { pick = a; break; } }
         usedAffix.add(pick.key);
         const mult = equipment.rarity === "Heirloom" ? 1.5 : 1;
-        const val = Math.round(randomizeDecimal(pick.min, pick.max) * mult * 10) / 10;
+        let val = Math.round(randomizeDecimal(pick.min, pick.max) * mult * 10) / 10;
+        // PEN is capped at 5% per item regardless of rarity multiplier
+        if (pick.key === "penPct") val = Math.min(pick.max, val);
         let pairKey = null, pairVal = null;
         if (pick.pair) {
             pairKey = pick.pair.key;
@@ -723,6 +725,9 @@ const applyEquipmentStats = () => {
             for (const k in bonus) player.equippedStats[k] = (player.equippedStats[k] || 0) + bonus[k];
         }
     }
+
+    // PEN is capped at 30% total across all gear and set bonuses
+    player.equippedStats.penPct = Math.min(30, player.equippedStats.penPct);
     calculateStats();
 }
 
