@@ -11,6 +11,11 @@ const applyPlayerHeal = (amount) => {
         hp = Math.min(hp, player.stats.hpMax * 0.51);
     }
     player.stats.hp = Math.min(player.stats.hpMax, hp);
+    // SURGE: healing empowers the next attack for 5s
+    const surgePct = (player.equippedStats && player.equippedStats.healSurge) || 0;
+    if (amount > 0 && surgePct > 0) {
+        player.surgeNext = { pct: surgePct, expire: Date.now() + 5000 };
+    }
 };
 
 // ========== Validation ==========
@@ -238,6 +243,11 @@ const playerAttack = () => {
     // HUNTER'S MARK: consecutive hits on the same enemy stack bonus damage
     const markPct = Math.min(player.hunterStacks || 0, 20) * ((player.equippedStats && player.equippedStats.hunterMark) || 0);
     if (markPct > 0) damage = Math.round(damage * (1 + markPct / 100));
+    // SURGE: the next attack after a heal deals bonus damage (5s window)
+    if (player.surgeNext && player.surgeNext.expire > Date.now() && player.surgeNext.pct > 0) {
+        damage = Math.round(damage * (1 + player.surgeNext.pct / 100));
+        player.surgeNext = null;
+    }
 
     // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
     const dodged = (enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge;
@@ -601,6 +611,7 @@ const startCombat = (battleMusic) => {
     player.bladeDanceStacks = 0;
     player.openerReady = true;
     player.hunterStacks = 0;
+    player.surgeNext = null;
     delete player.hot;
     if (enemy) { delete enemy.petrifyStacks; enemy.petrifiedUntil = 0; }
     // Trial regen: while below 50% HP, recover REGEN% of max HP every 0.5s
