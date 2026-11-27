@@ -60,6 +60,9 @@ const AFFIXES = [
     { key: "thornViper",  label: "VIPER",     min: 0.75,max: 3,  w: 1 },
     { key: "vampThorns",  label: "VTHRN",     min: 10, max: 40, w: 1 },
     { key: "healSurge",   label: "SURGE",     min: 22, max: 44, w: 1 },
+    { key: "warded75",    label: "WARD",      min: 4,  max: 12, w: 1 },
+    { key: "fury75",      label: "FURY",      min: 6,  max: 18, w: 1 },
+    { key: "rapidRegen",  label: "RAPID",     min: 0.1,max: 0.3,w: 1 },
     // Hidden: +2% normal attack, never displayed anywhere
     { key: "secretAtk",   label: "",          min: 2,  max: 2,  w: 1, hidden: true },
 ];
@@ -69,10 +72,10 @@ const HIDDEN_STAT_KEYS = new Set(["secretAtk"]);
 // with item level even when the curse baseline is 1.0 (NORMAL band, no totem).
 const gearScaling = () => Math.max(1.1, Math.min(2, dungeon.settings.enemyScaling || 1));
 // Proc-style affixes: mutually exclusive per item, and unique across all equipped gear
-const SPECIAL_AFFIX_KEYS = new Set(["burst", "fullHpDmg", "lowHpDmg", "attackInvuln", "hpTradeDmg", "hpRegen", "bloodOath", "opener", "siphon", "flourish", "hunterMark", "critHeal", "thornViper", "vampThorns", "healSurge"]);
+const SPECIAL_AFFIX_KEYS = new Set(["burst", "fullHpDmg", "lowHpDmg", "attackInvuln", "hpTradeDmg", "hpRegen", "bloodOath", "opener", "siphon", "flourish", "hunterMark", "critHeal", "thornViper", "vampThorns", "healSurge", "warded75", "fury75", "rapidRegen"]);
 const AFFIX_COUNT = { Rare: 1, Epic: 2, Legendary: 3, Heirloom: 4 };
-const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND", cdr: "CDR", abUse: "AB.USE", burst: "BURST", fullHpDmg: "PRIDE", lowHpDmg: "BERSERK", attackInvuln: "PHASE", hpTradeDmg: "TRIAL", hpRegen: "REGEN", bloodOath: "OATH", normAtkPct: "N.ATK", opener: "OPNR", siphon: "SIPHON", flourish: "FLRSH", hunterMark: "MARK", critHeal: "C.HEAL", thornViper: "VIPER", vampThorns: "VTHRN", healSurge: "SURGE" };
-const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind", "cdr", "fullHpDmg", "lowHpDmg", "hpTradeDmg", "hpRegen", "bloodOath", "normAtkPct", "secretAtk", "opener", "siphon", "flourish", "hunterMark", "critHeal", "thornViper", "vampThorns", "healSurge"]);
+const STAT_LINE_LABEL = { hp: "HP", atk: "ATK", def: "DEF", atkSpd: "ATK.SPD", vamp: "VAMP", critRate: "C.RATE", critDmg: "C.DMG", hpPct: "HP", atkPct: "ATK", defPct: "DEF", penPct: "PEN", thorns: "THORN", dodge: "DODGE", goldFind: "G.FIND", expFind: "E.FIND", cdr: "CDR", abUse: "AB.USE", burst: "BURST", fullHpDmg: "PRIDE", lowHpDmg: "BERSERK", attackInvuln: "PHASE", hpTradeDmg: "TRIAL", hpRegen: "REGEN", bloodOath: "OATH", normAtkPct: "N.ATK", opener: "OPNR", siphon: "SIPHON", flourish: "FLRSH", hunterMark: "MARK", critHeal: "C.HEAL", thornViper: "VIPER", vampThorns: "VTHRN", healSurge: "SURGE", warded75: "WARD", fury75: "FURY", rapidRegen: "RAPID" };
+const PCT_STATS = new Set(["atkSpd", "vamp", "critRate", "critDmg", "hpPct", "atkPct", "defPct", "penPct", "thorns", "dodge", "goldFind", "expFind", "cdr", "fullHpDmg", "lowHpDmg", "hpTradeDmg", "hpRegen", "bloodOath", "normAtkPct", "secretAtk", "opener", "siphon", "flourish", "hunterMark", "critHeal", "thornViper", "vampThorns", "healSurge", "warded75", "fury75", "rapidRegen"]);
 const formatStatLine = (stat) => {
     const keys = Object.keys(stat).filter(k => !HIDDEN_STAT_KEYS.has(k));
     if (!keys.length) return "";
@@ -705,7 +708,10 @@ const applyEquipmentStats = () => {
         critHeal: 0,
         thornViper: 0,
         vampThorns: 0,
-        healSurge: 0
+        healSurge: 0,
+        warded75: 0,
+        fury75: 0,
+        rapidRegen: 0
     };
 
     // Deduplicate proc affixes across equipped items (first equipped wins)

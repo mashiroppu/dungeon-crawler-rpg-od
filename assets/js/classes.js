@@ -195,6 +195,9 @@ const abilityDamage = (mult, defScale = 1) => {
         damage = Math.round(damage * (1 + player.surgeNext.pct / 100));
         player.surgeNext = null;
     }
+    // FURY: battles start at 75% HP — deal bonus damage as compensation
+    const fury75Pct = (player.equippedStats && player.equippedStats.fury75) || 0;
+    if (fury75Pct > 0) damage = Math.round(damage * (1 + fury75Pct / 100));
     // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
     if ((enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge) {
         addCombatLog(tParams("cb.attackMisses", { name: player.name, target: enemy.name }));

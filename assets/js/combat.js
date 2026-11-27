@@ -3,6 +3,7 @@ let enemyDead = false;
 let playerDead = false;
 let endCombatAction = null;
 let playerRegenTimer = null;
+let playerRapidTimer = null;
 
 // Applies healing to the player. Blood Oath: while below 50% HP, healing cannot raise HP above 51%.
 const applyPlayerHeal = (amount) => {
@@ -248,6 +249,9 @@ const playerAttack = () => {
         damage = Math.round(damage * (1 + player.surgeNext.pct / 100));
         player.surgeNext = null;
     }
+    // FURY: battles start at 75% HP — deal bonus damage as compensation
+    const fury75Pct = (player.equippedStats && player.equippedStats.fury75) || 0;
+    if (fury75Pct > 0) damage = Math.round(damage * (1 + fury75Pct / 100));
 
     // Boss phase effects: Phantom Step dodge / Stone Skin damage reduction
     const dodged = (enemy.dodge || 0) > 0 && Math.random() * 100 < enemy.dodge;
@@ -388,6 +392,12 @@ const enemyAttack = () => {
     // Iron Will: below 80% HP, take 30% less damage
     if (player.skills.includes("Iron Will") && player.stats.hp < player.stats.hpMax * 0.8) {
         damage = Math.round(damage * 0.7);
+    }
+
+    // WARD: battles start at 75% HP — take reduced damage as compensation
+    const warded75Pct = (player.equippedStats && player.equippedStats.warded75) || 0;
+    if (damage > 0 && warded75Pct > 0) {
+        damage = Math.round(damage * (1 - warded75Pct / 100));
     }
 
     // Boss phase effects: Enrage (ATK+30% under 30% HP) / Desperado (scales with missing HP)
@@ -640,6 +650,21 @@ const startCombat = (battleMusic) => {
     playerLoadStats();
     enemyLoadStats();
 
+    // WARD / FURY: battles begin at no more than 75% HP
+    if (((player.equippedStats && player.equippedStats.warded75) || 0) > 0 || ((player.equippedStats && player.equippedStats.fury75) || 0) > 0) {
+        player.stats.hp = Math.min(player.stats.hp, Math.round(player.stats.hpMax * 0.75));
+        playerLoadStats();
+    }
+    // RAPID: fast regen — heal a % of max HP every 0.1s
+    if (playerRapidTimer) clearInterval(playerRapidTimer);
+    playerRapidTimer = setInterval(() => {
+        if (!player.inCombat || playerDead || enemyDead) return;
+        const rapid = (player.equippedStats && player.equippedStats.rapidRegen) || 0;
+        if (rapid <= 0 || player.stats.hp <= 0 || player.stats.hp >= player.stats.hpMax) return;
+        applyPlayerHeal(Math.round(player.stats.hpMax * rapid / 100));
+        playerLoadStats();
+    }, 100);
+
     dungeon.status.event = true;
     combatPanel.style.display = "flex";
 
@@ -663,6 +688,7 @@ const endCombat = () => {
     // Stops every timer in combat
     clearInterval(combatTimer);
     if (playerRegenTimer) { clearInterval(playerRegenTimer); playerRegenTimer = null; }
+    if (playerRapidTimer) { clearInterval(playerRapidTimer); playerRapidTimer = null; }
     combatSeconds = 0;
     saveData();
 }
