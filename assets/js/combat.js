@@ -471,6 +471,11 @@ const enemyAttack = () => {
         // THORN: damage taken × thorns% × (ATK/10)
         const refDmg = Math.round(damage * (thornsPct / 100) * (player.stats.atk / 10));
         enemy.stats.hp -= refDmg;
+        // THORN VIPER: thorns heal a % of max HP; VAMPTHORN: heal a % of reflected damage
+        const thornViperPct = (player.equippedStats && player.equippedStats.thornViper) || 0;
+        const vampThornsPct = (player.equippedStats && player.equippedStats.vampThorns) || 0;
+        if (thornViperPct > 0) applyPlayerHeal(Math.round(player.stats.hpMax * thornViperPct / 100));
+        if (vampThornsPct > 0) applyPlayerHeal(Math.round(refDmg * vampThornsPct / 100));
         // Thorns Nova: reflected damage bursts for +50%
         if ((player.combatBuffs || []).some(b => b.type === "thornsNova" && b.expire > Date.now())) {
             enemy.stats.hp -= Math.round(refDmg * 0.5);
