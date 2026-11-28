@@ -656,8 +656,12 @@ const updateAbilityBar = () => {
             cnt.className = "charges";
             btn.appendChild(cnt);
         }
-        cnt.textContent = `x${Math.floor(ch)}`;
-        cnt.style.opacity = ch >= 1 ? "1" : "0.4";
+        // Charge pips: one dot per charge stock (filled = available, dim = empty/regenning)
+        const maxCh = abilityMaxUses(id);
+        const fullCh = Math.floor(ch);
+        cnt.innerHTML = Array.from({ length: maxCh }, (_, i) =>
+            `<span class="pip${i < fullCh ? " on" : ""}">●</span>`).join("");
+        cnt.style.opacity = ch >= 1 ? "1" : "0.55";
         // Overlay: recovery lock always; charge-regen countdown only when stock is empty
         const waitLeft = Math.max(abilityRecLeft(id), ch >= 1 ? 0 : abilityCdLeft(id));
         let cdEl = btn.querySelector(".cd");
