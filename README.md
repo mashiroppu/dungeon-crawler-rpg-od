@@ -104,6 +104,7 @@ Plain HTML/CSS/JavaScript — no framework, no build step. Audio via
 - [効果音ラボ](https://soundeffect-lab.info/) — Sound effects
 - [OtoLogic](https://otologic.jp/) — Sound effects
 - [TheManki](https://lmaomonkey.itch.io/) — Ability icons
+- [歩夢 (IllustAC)](https://www.ac-illust.com/main/profile.php?id=UcZy0agl&area=1) — Battle background
 
 ## License
 

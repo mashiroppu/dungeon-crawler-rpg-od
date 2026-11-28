@@ -98,6 +98,7 @@
 - [効果音ラボ](https://soundeffect-lab.info/) — 効果音
 - [OtoLogic](https://otologic.jp/) — 効果音
 - [TheManki](https://lmaomonkey.itch.io/) — アビリティアイコン
+- [歩夢 (イラストAC)](https://www.ac-illust.com/main/profile.php?id=UcZy0agl&area=1) — 戦闘背景
 
 ## ライセンス
 
