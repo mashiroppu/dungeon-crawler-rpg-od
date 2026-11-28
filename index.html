@@ -23,15 +23,6 @@
     <link rel="icon" type="image/png" href="./assets/icon/favicon.ico">
     <script src="./assets/js/howler.min.js"></script>
     <title>Dungeon Crawler on Demand!</title>
-    <script>
-        // Page renders at fixed 80% (body zoom). Block browser zoom shortcuts.
-        window.addEventListener("keydown", (e) => {
-            if (e.ctrlKey && ["=", "+", "-", "_", "0"].includes(e.key)) e.preventDefault();
-        });
-        window.addEventListener("wheel", (e) => {
-            if (e.ctrlKey) e.preventDefault();
-        }, { passive: false });
-    </script>
 </head>
 
 <body>
