@@ -980,8 +980,8 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
-.ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translate(-0.5px, -7.25px); }
-.ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translate(-0.5px, -7.25px); }
+.ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translate(1px, -7.25px); }
+.ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translate(1px, -7.25px); }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
 .ability-btn.on-cd { opacity: 0.45; cursor: default; }
 .ability-btn.used { opacity: 0.35; cursor: default; filter: grayscale(0.6); }
