@@ -950,12 +950,12 @@ header button i {
     border: 2px solid #8a6d3b;
     border-radius: 0;
     background:
-        linear-gradient(135deg, rgba(232, 200, 106, 0.12) 0%, transparent 45%),
-        linear-gradient(180deg, #332613 0%, #201608 55%, #100a04 100%);
+        linear-gradient(135deg, rgba(232, 200, 106, 0.4) 0%, transparent 45%),
+        linear-gradient(180deg, #6a5228 0%, #4a3719 55%, #2c1e0d 100%);
     box-shadow:
-        inset 0 0 10px rgba(0, 0, 0, 0.85),
-        inset 0 1px 0 rgba(255, 235, 180, 0.18),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.6),
+        inset 0 0 10px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 235, 180, 0.4),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.4),
         0 2px 6px rgba(0, 0, 0, 0.7);
     color: #f0e6d2;
     text-shadow: none;
@@ -968,8 +968,8 @@ header button i {
 }
 .ability-btn:hover, .ability-btn:active {
     background:
-        linear-gradient(135deg, rgba(232, 200, 106, 0.22) 0%, transparent 45%),
-        linear-gradient(180deg, #4a3a20 0%, #2e2113 55%, #180f07 100%);
+        linear-gradient(135deg, rgba(255, 224, 130, 0.55) 0%, transparent 45%),
+        linear-gradient(180deg, #8a6d3b 0%, #5f471f 55%, #3a2a10 100%);
     border-color: #c9a227;
     box-shadow:
         0 0 12px rgba(201, 162, 39, 0.35),
