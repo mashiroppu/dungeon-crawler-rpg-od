@@ -435,6 +435,9 @@
             // 6. combat decisions
             handleCombatExtras();
             handleAbilities();
+            // 6b. post-battle Claim / death Back-to-Menu (#battleButton)
+            const bb = document.querySelector("#battleButton");
+            if (vis(bb) && !player.inCombat) { bb.click(); return; }
             // 7. dungeon choices
             handleChoices();
             // 8. equipment management (idle moments)
