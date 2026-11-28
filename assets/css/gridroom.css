@@ -156,9 +156,13 @@
 }
 
 /* ---- Battle background image: replaces the wireframe stage ---- */
+#enemyPanel .grid-room {
+  /* bleed past the panel into the .content padding so no gap shows at the top */
+  inset: -9px -15px 0 -15px;
+}
 .grid-room {
   background:
-    linear-gradient(180deg, rgba(4, 4, 10, 0.68) 0%, rgba(4, 4, 10, 0.45) 45%, rgba(4, 4, 10, 0.82) 100%),
+    linear-gradient(180deg, rgba(4, 4, 10, 0.78) 0%, rgba(4, 4, 10, 0.58) 45%, rgba(4, 4, 10, 0.88) 100%),
     var(--bg);
 }
 .grid-room .battle-bg {
