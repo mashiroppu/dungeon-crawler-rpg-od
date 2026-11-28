@@ -35,8 +35,7 @@ const maxDiffTier = () => {
     return legacy[player.difficulty] ?? 0;
 };
 const playerDiffTier = () => diffKeyToTier(player.difficulty);
-// NG+ runs fight at OMEGA tier on every floor
-const currentDifficulty = () => DIFFICULTY_TIERS[(player && player.ngPlus > 0) ? DIFFICULTY_TIERS.length - 1 : diffTierOfFloor(dungeon.progress.floor)] || DIFFICULTY_TIERS[0];
+const currentDifficulty = () => DIFFICULTY_TIERS[diffTierOfFloor(dungeon.progress.floor)] || DIFFICULTY_TIERS[0];
 // Starting curse stage per difficulty tier: tiers 0-2 -> 0, 3-5 -> 1, 6-8 -> 2, 9 -> 3
 const bandCurseStage = (tier) => tier >= 9 ? 3 : tier >= 6 ? 2 : tier >= 3 ? 1 : 0;
 // enemyScaling baseline for a band: stage 0 = 1.0 (no curse), each stage +0.1

@@ -122,11 +122,12 @@ const hpValidation = () => {
         if (enemy.stageBoss) {
             const tier = diffTierOfFloor(dungeon.progress.floor);
             dungeon.clearedTiers = dungeon.clearedTiers || {};
-            if (tier >= DIFFICULTY_TIERS.length - 1) {
-                // OMEGA cleared: advance to the next NG+ cycle (repeatable every clear)
+            if (tier >= DIFFICULTY_TIERS.length - 1 && dungeon.progress.floor === dungeon.progress.floorLimit) {
+                // Cap boss down: NG+ cycle — the dungeon extends 10 floors and enemies scale up
                 dungeon.clearedTiers[tier] = true;
                 player.ngPlus = (player.ngPlus || 0) + 1;
-                addCombatLog(tParams("cb.ngPlus", { n: player.ngPlus }));
+                dungeon.progress.floorLimit += 10;
+                addCombatLog(tParams("cb.ngPlus", { n: player.ngPlus, floor: dungeon.progress.floorLimit }));
                 saveData();
             } else if (!dungeon.clearedTiers[tier]) {
                 dungeon.clearedTiers[tier] = true;

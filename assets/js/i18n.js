@@ -157,7 +157,7 @@ const STRINGS = {
     "cb.crystalDrop":       { en: "{name} dropped {n} crystal(s)!", ja: "{name}がクリスタルを{n}個落とした！" },
     "cb.diffUnlocked":      { en: "New difficulty unlocked: {name}!", ja: "新しい難易度が解放された：{name}！" },
     "cb.dungeonClear":      { en: "You have cleared the dungeon!", ja: "ダンジョンを制覇した！" },
-    "cb.ngPlus":            { en: "OMEGA cleared! Next run starts at NG+{n} difficulty!", ja: "OMEGAを制覇！次のランはNG+{n}の難易度で開始！" },
+    "cb.ngPlus":            { en: "OMEGA cleared! NG+{n} — the dungeon extends to floor {floor}!", ja: "OMEGA制覇！NG+{n} — ダンジョンが{floor}階まで拡張！" },
 
     // ---- Equipment / Inventory ----
     "eq.equip":             { en: "Equip", ja: "装備" },

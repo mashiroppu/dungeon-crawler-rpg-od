@@ -93,8 +93,8 @@ const loadDungeonProgress = () => {
             dungeon.progress.floor++;
         }
     }
-    // Curse resets to the band's starting stage on difficulty change (NG+ runs stay at OMEGA baseline)
-    const band = (player && player.ngPlus > 0) ? DIFFICULTY_TIERS.length - 1 : diffTierOfFloor(dungeon.progress.floor);
+    // Curse resets to the band's starting stage on difficulty change
+    const band = diffTierOfFloor(dungeon.progress.floor);
     const bandBase = bandCurseScaling(band);
     if (dungeon.curseBand === undefined) {
         // First load: adopt the band baseline. Untouched saves sit at the old
@@ -390,8 +390,8 @@ const mimicBattle = (type) => {
 const guardianBattle = () => {
     incrementRoom();
     generateRandomEnemy("guardian");
-    // Guardian on a band-end floor (20, 40, ... 200) is the stage boss
-    enemy.stageBoss = (dungeon.progress.floor % 20 === 0);
+    // Guardian on a band-end floor is the stage boss; beyond floor 200 every 10 floors extends the cap
+    enemy.stageBoss = (dungeon.progress.floor % 20 === 0) || (dungeon.progress.floor > 200 && dungeon.progress.floor % 10 === 0);
     showCombatInfo();
     startCombat(bgmBattleGuardian);
     addCombatLog(tParams("dgn.log.guardian", { name: enemy.name }));

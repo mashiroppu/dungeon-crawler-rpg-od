@@ -281,7 +281,7 @@ window.addEventListener("load", function () {
                     <p id="run-close"><i class="fa fa-xmark"></i></p>
                 </div>
                 <p>${player.name} Lv.${player.lvl} [${(CLASSES[player.cls] || CLASSES.warrior).name}]</p>
-                <p>${t("run.difficulty")} <select id="run-diff-select">${player.ngPlus > 0 ? `<option value="omega" selected>${diffTierLabel(DIFFICULTY_TIERS.length - 1)}</option>` : DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}" ${player.difficulty === d.key ? "selected" : ""}>${diffTierLabel(i)}</option>` : "").join("")}</select></p>
+                <p>${t("run.difficulty")} <select id="run-diff-select">${DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}" ${player.difficulty === d.key ? "selected" : ""}>${diffTierLabel(i)}</option>` : "").join("")}</select></p>
                 <p>${t("run.blessing")}${player.blessing}</p>
                 <p>${t("run.curse")} ${Math.round((dungeon.settings.enemyScaling - 1) * 10)}</p>
                 <p>${t("run.kills")} ${nFormatter(dungeon.statistics.kills)}</p>
@@ -588,11 +588,10 @@ const progressReset = () => {
         player.inventory.equipment = (player.storage || []).splice(0);
     }
     applyEquipmentStats();
-    // NG+ runs are always OMEGA difficulty across the full dungeon (floors 1-200)
-    const ngPlusRun = (player.ngPlus || 0) > 0;
-    if (ngPlusRun) player.difficulty = "omega";
+    // NG+ cycle count is per-run: a new run starts back at NORMAL+ progression
+    player.ngPlus = 0;
     // New run starts at the selected difficulty's band head (NORMAL=1 ... OMEGA=181)
-    dungeon.progress.floor = ngPlusRun ? 1 : diffStartFloor(playerDiffTier());
+    dungeon.progress.floor = diffStartFloor(playerDiffTier());
     dungeon.progress.floorLimit = 200;
     dungeon.progress.room = 1;
     dungeon.statistics.kills = 0;
