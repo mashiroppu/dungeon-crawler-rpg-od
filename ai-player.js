@@ -446,6 +446,9 @@
 
     // ---------- Title / run setup ----------
     function handleTitle() {
+        // "Tap to explore" text is also visible behind the allocate-stats modal;
+        // never treat it as the title screen while any modal is open.
+        if (modalOpen("#defaultModal") || modalOpen("#confirmationModal") || modalOpen("#lvlupPanel") || modalOpen("#combatPanel")) return false;
         const tap = Array.from(document.querySelectorAll("p, div, span, a"))
             .find(e => vis(e) && e.children.length < 3 && /tap to explore|ダンジョンを探索/i.test(e.innerText || ""));
         if (tap) { tap.click(); state.runCount++; return true; }
@@ -487,8 +490,8 @@
     function tick() {
         try {
             if (typeof player === "undefined" || typeof dungeon === "undefined") return;
-            if (handleTitle()) return;
             if (handleRunSetup()) return;
+            if (handleTitle()) return;
             syncAbilityLoadout();
             // stash modal first (has #stash-close), then death legacy
             if (modalOpen("#defaultModal") && document.querySelector("#defaultModal #stash-close")) { handleStashModal(); return; }
