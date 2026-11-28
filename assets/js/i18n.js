@@ -162,12 +162,9 @@ const STRINGS = {
     // ---- Equipment / Inventory ----
     "eq.equip":             { en: "Equip", ja: "装備" },
     "eq.unequip":           { en: "Unequip", ja: "外す" },
-    "eq.finalize":          { en: "Finalize", ja: "確定" },
     "eq.close":             { en: "Close", ja: "閉じる" },
     "eq.sell":              { en: "Sell", ja: "売却" },
     "eq.sellQ":             { en: "Sell <span class=\"{r}\">{item}</span>?", ja: "<span class=\"{r}\">{item}</span>を売却しますか？" },
-    "eq.finQ":              { en: "Finalize <span class=\"{r}\">{item}</span>?", ja: "<span class=\"{r}\">{item}</span>を確定しますか？" },
-    "eq.finNote":           { en: "All options +40%<br>Cost: <b>{c}G</b>", ja: "全オプション+40%<br>費用: <b>{c}G</b>" },
     "eq.nothing":           { en: "Nothing equipped.", ja: "装備なし。" },
     "eq.empty":             { en: "There are no items available.", ja: "アイテムがありません。" },
     "eq.tier":              { en: "Tier", ja: "ティア" },

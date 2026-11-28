@@ -390,7 +390,6 @@ const showItemInfo = (item, icon, type, i) => {
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
                 <div class="button-container">
                     <button id="un-equip">${type === "Equip" ? t("eq.equip") : t("eq.unequip")}</button>
-                    ${item.affixes && item.affixes.length && !item.finalized ? `<button id="finalize-equip"><i class="ra ra-check"></i>${t("eq.finalize")}</button>` : ''}
                     <button id="sell-equip"><i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(item.value)}</button>
                     <button id="close-item-info">${t("eq.close")}</button>
                 </div>
@@ -475,66 +474,6 @@ const showItemInfo = (item, icon, type, i) => {
             continueExploring();
         }
     };
-
-    // Finalize: upgrades all option values +40%
-    let finalizeBtn = document.querySelector("#finalize-equip");
-    if (finalizeBtn) {
-        finalizeBtn.onclick = function () {
-            const cost = Math.max(500, Math.round((item.value || 200) * 0.8));
-            if (player.gold < cost) {
-                sfxDeny.play();
-                return;
-            }
-            sfxOpen.play();
-            itemInfo.style.display = "none";
-            defaultModalElement.style.display = "flex";
-            defaultModalElement.innerHTML = `
-            <div class="content">
-                <p>${tParams("eq.finQ", { r: item.rarity, item: `${icon}${itemName(item)}` })}</p>
-                <p style="font-size:0.85rem;color:#999">${tParams("eq.finNote", { c: nFormatter(cost) })}</p>
-                <div class="button-container">
-                    <button id="fin-confirm">${t("eq.finalize")}</button>
-                    <button id="fin-cancel">${t("common.cancel")}</button>
-                </div>
-            </div>`;
-
-            document.querySelector("#fin-confirm").onclick = function () {
-                sfxSell.play();
-                player.gold -= cost;
-                const mult = 1.4;
-                item.affixes.forEach(af => {
-                    af.value = Math.round(af.value * mult * 10) / 10;
-                    if (af.pairValue != null) af.pairValue = Math.round(af.pairValue * mult * 10) / 10;
-                });
-                // Rewrite the affix stat lines (they are the last N entries in item.stats)
-                const affixCount = item.affixes.length;
-                const tail = item.stats.splice(item.stats.length - affixCount, affixCount);
-                item.affixes.forEach((af, j) => {
-                    tail[j] = af.pairKey ? { [af.key]: af.value, [af.pairKey]: af.pairValue } : { [af.key]: af.value };
-                });
-                item.stats.push(...tail);
-                item.finalized = true;
-                item.value = Math.round((item.value || 0) * 1.3);
-                if (type == "Equip") {
-                    player.inventory.equipment[i] = JSON.stringify(item);
-                }
-
-                defaultModalElement.style.display = "none";
-                defaultModalElement.innerHTML = "";
-                dimContainer.style.filter = "brightness(100%)";
-                playerLoadStats();
-                saveData();
-                continueExploring();
-            };
-            document.querySelector("#fin-cancel").onclick = function () {
-                sfxDecline.play();
-                defaultModalElement.style.display = "none";
-                defaultModalElement.innerHTML = "";
-                itemInfo.style.display = "flex";
-                continueExploring();
-            };
-        };
-    }
 
     // Close item info
     let close = document.querySelector("#close-item-info");

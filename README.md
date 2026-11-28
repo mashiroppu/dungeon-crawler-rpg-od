@@ -38,7 +38,6 @@ and heals. Up to 3 abilities can be slotted in the loadout.
   VAMP, C.RATE, C.DMG, **PEN** (armor penetration), **THORN** (damage
   reflect), **DODGE**, **G.FIND** (gold find), **E.FIND** (EXP find),
   **N.ATK** (normal-attack damage), and hidden stats
-- **Finalize**: upgrade all of an item's options +40%
 - **Set bonuses**: 20 equipment sets with hidden 2-piece/4-piece bonuses.
   Set effects are not shown in the stats panel — check the **TIP** menu
   for currently active set effects
