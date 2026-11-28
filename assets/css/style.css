@@ -986,31 +986,46 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
-/* Enchant-style aurora glint: 3.5s sweep, then 2s pause (5.5s cycle) */
-.ability-btn::after {
+/* Aurora shimmer: two layers of soft drifting light blobs over the whole frame */
+.ability-btn::after,
+.ability-btn::before {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(115deg,
-        transparent 40%,
-        rgba(255, 230, 160, 0.5) 46%,
-        rgba(255, 255, 255, 0.9) 50%,
-        rgba(160, 225, 255, 0.55) 54%,
-        transparent 60%);
-    background-size: 200% 100%;
-    background-position: -150% 0;
     mix-blend-mode: screen;
-    animation: ability-enchant-glint 5.5s linear infinite;
 }
-@keyframes ability-enchant-glint {
-    0%    { background-position: 150% 0; }
-    63.6% { background-position: -150% 0; }
-    100%  { background-position: -150% 0; }
+.ability-btn::after {
+    background:
+        radial-gradient(50% 60% at 25% 115%, rgba(120, 255, 180, 0.38), transparent 70%),
+        radial-gradient(45% 55% at 80% 110%, rgba(255, 225, 140, 0.32), transparent 70%),
+        radial-gradient(40% 50% at 55% -20%, rgba(130, 215, 255, 0.30), transparent 70%);
+    background-size: 220% 220%;
+    animation: aurora-drift-a 9s ease-in-out infinite alternate;
 }
-/* stop the sheen while on cooldown / spent */
+.ability-btn::before {
+    background:
+        radial-gradient(45% 55% at 70% 120%, rgba(255, 205, 150, 0.22), transparent 70%),
+        radial-gradient(50% 60% at 15% -10%, rgba(255, 240, 170, 0.25), transparent 70%),
+        radial-gradient(40% 50% at 90% 100%, rgba(140, 190, 255, 0.22), transparent 70%);
+    background-size: 200% 200%;
+    animation: aurora-drift-b 13s ease-in-out infinite alternate-reverse;
+}
+@keyframes aurora-drift-a {
+    0%   { background-position: 0% 30%; }
+    50%  { background-position: 60% 70%; }
+    100% { background-position: 100% 30%; }
+}
+@keyframes aurora-drift-b {
+    0%   { background-position: 100% 70%; }
+    50%  { background-position: 40% 30%; }
+    100% { background-position: 0% 70%; }
+}
+/* hide the aurora while on cooldown / spent */
 .ability-btn.on-cd::after,
-.ability-btn.used::after { opacity: 0; }
+.ability-btn.on-cd::before,
+.ability-btn.used::after,
+.ability-btn.used::before { opacity: 0; }
 
 .ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translate(0.75px, -7.5px); }
 .ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translate(0.75px, -7.5px); }
