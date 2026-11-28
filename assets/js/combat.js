@@ -168,9 +168,9 @@ const playerAttack = () => {
     // Randomizes the damage by 90% - 110%
     let dmgRange = 0.9 + Math.random() * 0.2;
     damage = damage * dmgRange;
-    // ATK%: direct damage-dealt multiplier (applies to attacks and abilities)
-    const eqAtkPct = (player.equippedStats && player.equippedStats.atkPct) || 0;
-    if (eqAtkPct > 0) damage = damage * (1 + eqAtkPct / 100);
+    // ATK%: direct damage-dealt multiplier (equipment atkPct + level-up atk; applies to attacks and abilities)
+    const atkPctTotal = ((player.equippedStats && player.equippedStats.atkPct) || 0) + ((player.bonusStats && player.bonusStats.atk) || 0);
+    if (atkPctTotal > 0) damage = damage * (1 + atkPctTotal / 100);
     // Normal-attack-only damage: level-up N.ATK + equipment N.ATK + hidden secretAtk (total cap 300%)
     const normAtkPct = Math.min(300,
         Math.min(200, (player.bonusStats && player.bonusStats.nAtk) || 0)
@@ -492,7 +492,7 @@ const enemyAttack = () => {
     const thornsPct = ((player.bonusStats && player.bonusStats.thorns) || 0) + ((player.equippedStats && player.equippedStats.thorns) || 0) + oathThorns;
     if (thornsPct > 0 && damage > 0) {
         // THORN: damage taken × thorns% × (ATK/10) × ATK%
-        const thornAtkPct = (player.equippedStats && player.equippedStats.atkPct) || 0;
+        const thornAtkPct = ((player.equippedStats && player.equippedStats.atkPct) || 0) + ((player.bonusStats && player.bonusStats.atk) || 0);
         const refDmg = Math.round(damage * (thornsPct / 100) * (player.stats.atk / 10) * (1 + thornAtkPct / 100));
         enemy.stats.hp -= refDmg;
         // THORN VIPER: thorns heal a % of max HP; VAMPTHORN: heal a % of reflected damage
