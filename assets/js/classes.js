@@ -38,7 +38,7 @@ const ABILITIES = {
     dragon_roar:   { cls: "lancer",  lvl: 15, cd: 5, rec: 1, uses: 3, name: "Dragon Roar",     desc: "180% ATK dmg, enemy ATK -40% for 5s.",                    icon: "ra-dragon-breath" },
     dragon_fall:   { cls: "lancer",  lvl: 25, cd: 8, rec: 1.25, uses: 2, name: "Dragon's Fall",   desc: "450% ATK dmg, ignores 50% DEF.",                           icon: "ra-two-dragons" },
     // ===== Paladin: holy counterattacker — strike+heal, reflect, armor break, shield, conditional nuke, ultimate =====
-    holy_strike:   { cls: "paladin", lvl: 1,  cd: 3.5, rec: 0.75, uses: 4, name: "Holy Strike",     desc: "240% ATK dmg, recover 8% max HP.",                       icon: "ra-lightning-sword" },
+    holy_strike:   { cls: "paladin", lvl: 1,  cd: 3.5, rec: 0.75, uses: 4, name: "Holy Strike",     desc: "240% ATK dmg, recover 8% max HP.",                       icon: "img:assets/icon/abilities/holy-strike.png" },
     judgment_counter:{ cls: "paladin",lvl: 15, cd: 6, rec: 1, uses: 2, name: "Judgment Counter",desc: "For 8s, reflect 200% damage taken but take +30% damage.",  icon: "ra-gavel" },
     thorns_nova:   { cls: "paladin", lvl: 10, cd: 5.5, rec: 1, uses: 3, name: "Thorns Nova",     desc: "150% ATK dmg. For 10s, reflected damage also bursts for +50%.", icon: "ra-cactus" },
     aegis_oath:    { cls: "paladin", lvl: 12, cd: 6, rec: 1, uses: 2, name: "Aegis Oath",      desc: "Shield 30% max HP, reflect 50% for 10s.",                 icon: "ra-round-shield" },
@@ -513,6 +513,11 @@ const combatSecondTick = () => {
     updateAbilityBar();
 };
 
+// Icon renderer: "ra-*" uses the icon font; "img:<path>" uses an image file
+const abilityIconHtml = (icon) => icon && icon.startsWith("img:")
+    ? `<img class="ability-icon-img" src="${icon.slice(4)}" alt="">`
+    : `<i class="ra ${icon}"></i>`;
+
 // ===== Ability bar UI =====
 const renderAbilityBar = () => {
     const bar = document.querySelector("#ability-bar");
@@ -520,7 +525,7 @@ const renderAbilityBar = () => {
     const abs = equippedAbilities();
     if (!abs.length) { bar.innerHTML = ""; return; }
     bar.innerHTML = abs.map(a =>
-        `<button class="ability-btn" data-ab="${a.id}" title="${a.desc}"><i class="ra ${a.icon}"></i> ${a.name}</button>`
+        `<button class="ability-btn" data-ab="${a.id}" title="${a.desc}">${abilityIconHtml(a.icon)} ${a.name}</button>`
     ).join("");
     // Loadout is managed from the dungeon header gear button only — never inside combat
     bar.querySelectorAll(".ability-btn").forEach(btn => {
@@ -545,7 +550,7 @@ const showLoadoutModal = () => {
                 ${unlocked.map(a => `
                     <label class="loadout-item ${current.includes(a.id) ? "on" : ""}">
                         <input type="checkbox" value="${a.id}" ${current.includes(a.id) ? "checked" : ""}>
-                        <i class="ra ${a.icon}"></i>
+                        ${abilityIconHtml(a.icon)}
                         <span class="loadout-name">${a.name}</span>
                         <span class="loadout-desc">${a.desc}</span>
                         <span class="loadout-cd">x${a.uses} / ${a.cd}s</span>
