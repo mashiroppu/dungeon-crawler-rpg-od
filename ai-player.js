@@ -52,7 +52,12 @@
     const state = { timer: null, tick: 0, rerolls: 0, lastAbility: {}, runCount: 0 };
 
     // ---------- DOM helpers ----------
-    const vis = (el) => el && el.offsetParent !== null;
+    // offsetParent is null for position:fixed modals — use computed style + rects instead
+    const vis = (el) => {
+        if (!el) return false;
+        const s = getComputedStyle(el);
+        return s.display !== "none" && s.visibility !== "hidden" && el.getClientRects().length > 0;
+    };
     const qa = (sel) => Array.from(document.querySelectorAll(sel));
     const modalOpen = (sel) => { const m = document.querySelector(sel); return m && m.style.display !== "none" && vis(m); };
     const clickBtn = (re) => {
