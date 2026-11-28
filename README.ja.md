@@ -93,6 +93,12 @@
 - [phoenix1291](https://phoenix1291.itch.io/sound-effects-pack-2) — レベルアップ音
 - [Leviathan_Music](https://soundcloud.com/leviathan254) — バトル音楽
 - [Sara Garrard](https://sonatina.itch.io/letsadventure) — ダンジョン音楽
+- [ぴぽや](https://pipoya.net/) — 効果音・素材
+- 倉庫 — ゲーム素材
+- The manki — ゲーム素材
+- [効果音ラボ](https://soundeffect-lab.info/) — 効果音
+- [OtoLogic](https://otologic.jp/) — BGM
+- rute — ゲーム素材
 
 ## ライセンス
 
