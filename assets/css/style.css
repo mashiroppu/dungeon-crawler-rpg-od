@@ -993,11 +993,11 @@ header button i {
     inset: 0;
     pointer-events: none;
     background: linear-gradient(115deg,
-        transparent 27%,
-        rgba(255, 220, 130, 0.22) 40.5%,
-        rgba(255, 255, 255, 0.45) 50%,
-        rgba(140, 220, 255, 0.25) 59.5%,
-        transparent 73%);
+        transparent 30%,
+        rgba(255, 220, 130, 0.4) 41%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(140, 220, 255, 0.45) 59%,
+        transparent 70%);
     background-size: 300% 100%;
     background-position: 150% 0;
     mix-blend-mode: screen;
