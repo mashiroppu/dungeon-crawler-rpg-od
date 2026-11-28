@@ -207,7 +207,6 @@ const dungeonEvent = () => {
                     </div>`;
                 generateRandomEnemy();
                 addDungeonLog(tParams("dgn.log.encounter", { name: enemy.name + enemyModLabel(" omen") }), choices);
-                player.inCombat = true;
                 document.querySelector("#choice1").onclick = function () {
                     engageBattle();
                 }

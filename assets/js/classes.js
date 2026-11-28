@@ -536,7 +536,7 @@ const renderAbilityBar = () => {
 
 // Loadout picker: choose up to MAX_ABILITY_SLOTS abilities from unlocked ones
 const showLoadoutModal = () => {
-    if (player.inCombat) return;
+    if (player.inCombat) { sfxDeny.play(); return; }
     const unlocked = unlockedAbilities();
     if (!unlocked.length) return;
     const current = (player.abilityLoadout || []).filter(id => unlocked.some(a => a.id === id));
