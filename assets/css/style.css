@@ -986,8 +986,8 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
-.ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translate(0.75px, -7.5px); }
-.ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translate(0.75px, -7.5px); }
+.ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: none; }
+.ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: none; }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
 /* Cooldown/spent dims only the icon — the frame stays fully visible */
 .ability-btn.on-cd { cursor: default; }
