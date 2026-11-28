@@ -157,6 +157,7 @@
         const cur = (player.abilityLoadout || []).filter(id => unlocked.includes(id));
         // fill missing slots anyway (engine auto-fills, but explicit is safer)
         for (const id of unlocked) { if (want.length >= 3) break; if (!want.includes(id)) want.push(id); }
+        state.syncDebug = { unlocked, want, cur, lo: player.abilityLoadout };
         if (want.join() !== cur.join()) {
             player.abilityLoadout = want.slice(0, 3);
             try { saveData(); } catch (e) {}
@@ -505,7 +506,7 @@
             manageEquipment();
             handleWarehouse();
             handleExplore();
-        } catch (e) { /* never let the bot crash the game */ }
+        } catch (e) { state.lastError = String(e && e.stack || e); /* never let the bot crash the game */ }
     }
 
     const API = {
