@@ -54,7 +54,7 @@ const initialDungeonLoad = () => {
     dungeonAction.innerHTML = t("dgn.resting");
     dungeonActivity.innerHTML = t("dgn.explore");
     dungeonTime.innerHTML = "00:00:00";
-    dungeonTimer = setInterval(dungeonEvent, 1000);
+    dungeonTimer = setInterval(dungeonEvent, 667);
     playTimer = setInterval(dungeonCounter, 1000);
 }
 
