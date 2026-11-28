@@ -986,7 +986,9 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
-/* Enchant-style aurora glint sweeping across the icon (Minecraft enchant shimmer) */
+/* Enchant-style aurora glint sweeping across the icon (Minecraft enchant shimmer)
+   Two staggered bands: each sweep takes 3.5s, a new band enters every ~2s. */
+.ability-btn::before,
 .ability-btn::after {
     content: "";
     position: absolute;
@@ -1001,14 +1003,17 @@ header button i {
     background-size: 300% 100%;
     background-position: 150% 0;
     mix-blend-mode: screen;
-    animation: ability-enchant-glint 5s linear infinite;
+    animation: ability-enchant-glint 3.5s linear infinite;
 }
+.ability-btn::before { animation-delay: -2s; }
 @keyframes ability-enchant-glint {
     0%   { background-position: 150% 0; }
     100% { background-position: -150% 0; }
 }
 /* stop the sheen while on cooldown / spent */
+.ability-btn.on-cd::before,
 .ability-btn.on-cd::after,
+.ability-btn.used::before,
 .ability-btn.used::after { opacity: 0; }
 
 .ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translate(0.75px, -7.5px); }
