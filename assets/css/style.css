@@ -972,15 +972,15 @@ header button i {
     transform: none;
     filter: brightness(1.15);
 }
-.ability-btn .ra { font-size: 2rem; }
-.ability-icon-img { width: 44px; height: 44px; image-rendering: auto; object-fit: contain; }
+.ability-btn .ra { font-size: 2rem; display: inline-block; transform: translateY(-3px); }
+.ability-icon-img { width: 44px; height: 44px; image-rendering: auto; object-fit: contain; transform: translateY(-3px); }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
 .ability-btn.on-cd { opacity: 0.45; cursor: default; }
 .ability-btn.used { opacity: 0.35; cursor: default; filter: grayscale(0.6); }
 
 .ability-btn .charges {
     position: absolute;
-    top: 3px;
+    top: 0px;
     right: 3px;
     font-size: 0.85rem;
     font-weight: bold;
