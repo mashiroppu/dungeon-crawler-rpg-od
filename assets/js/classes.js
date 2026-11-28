@@ -525,7 +525,7 @@ const renderAbilityBar = () => {
     const abs = equippedAbilities();
     if (!abs.length) { bar.innerHTML = ""; return; }
     bar.innerHTML = abs.map(a =>
-        `<button class="ability-btn" data-ab="${a.id}" title="${a.desc}">${abilityIconHtml(a.icon)} ${a.name}</button>`
+        `<button class="ability-btn" data-ab="${a.id}" title="${a.name}: ${a.desc}">${abilityIconHtml(a.icon)}</button>`
     ).join("");
     // Loadout is managed from the dungeon header gear button only — never inside combat
     bar.querySelectorAll(".ability-btn").forEach(btn => {
