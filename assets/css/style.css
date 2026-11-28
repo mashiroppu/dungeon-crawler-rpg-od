@@ -455,9 +455,9 @@ button:focus {
     #combatPanel .dmg-container { height: 2rem; }
     #combatPanel .battle-info-panel { padding: 0.4rem; margin: 0 0.25rem; gap: 0.2rem; }
     #combatPanel #ability-bar { gap: 4px; margin: 4px 0; }
-    #combatPanel .ability-btn { width: 40px; height: 40px; }
-    #combatPanel .ability-btn .ra { font-size: 1.45rem; }
-    #combatPanel .ability-icon-img { width: 32px; height: 32px; }
+    #combatPanel .ability-btn { width: 42px; height: 42px; }
+    #combatPanel .ability-btn .ra { font-size: 1.52rem; }
+    #combatPanel .ability-icon-img { width: 34px; height: 34px; }
     #combatPanel .logBox { min-height: 4rem; }
 }
 
@@ -980,8 +980,8 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
-.ability-btn .ra { font-size: 1.8rem; display: inline-block; transform: translateY(-7px); }
-.ability-icon-img { width: 40px; height: 40px; image-rendering: auto; object-fit: contain; transform: translateY(-7px); }
+.ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translateY(-7px); }
+.ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translateY(-7px); }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
 .ability-btn.on-cd { opacity: 0.45; cursor: default; }
 .ability-btn.used { opacity: 0.35; cursor: default; filter: grayscale(0.6); }
