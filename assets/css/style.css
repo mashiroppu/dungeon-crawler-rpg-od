@@ -990,7 +990,7 @@ header button i {
 .ability-btn::after {
     content: "";
     position: absolute;
-    inset: 5px;
+    inset: 0;
     pointer-events: none;
     background: linear-gradient(115deg,
         transparent 27%,
