@@ -60,8 +60,8 @@ const AFFIXES = [
     { key: "thornViper",  label: "VIPER",     min: 0.75,max: 3,  w: 1 },
     { key: "vampThorns",  label: "VTHRN",     min: 10, max: 40, w: 1 },
     { key: "healSurge",   label: "SURGE",     min: 22, max: 44, w: 1 },
-    { key: "warded75",    label: "WARD",      min: 4,  max: 12, w: 1 },
-    { key: "fury75",      label: "FURY",      min: 6,  max: 18, w: 1 },
+    { key: "warded75",    label: "WARD",      min: 6,  max: 16, w: 1 },
+    { key: "fury75",      label: "FURY",      min: 10, max: 26, w: 1 },
     { key: "rapidRegen",  label: "RAPID",     min: 0.1,max: 0.3,w: 1 },
     // Hidden: +2% normal attack, never displayed anywhere
     { key: "secretAtk",   label: "",          min: 2,  max: 2,  w: 1, hidden: true },
