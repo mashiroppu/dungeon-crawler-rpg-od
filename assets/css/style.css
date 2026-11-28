@@ -993,12 +993,12 @@ header button i {
     inset: 0;
     pointer-events: none;
     background: linear-gradient(115deg,
-        transparent 30%,
-        rgba(255, 220, 130, 0.4) 41%,
+        transparent 32%,
+        rgba(255, 220, 130, 0.4) 43%,
         rgba(255, 255, 255, 0.75) 50%,
-        rgba(140, 220, 255, 0.45) 59%,
-        transparent 70%);
-    background-size: 300% 100%;
+        rgba(140, 220, 255, 0.45) 57%,
+        transparent 68%);
+    background-size: 200% 100%;
     background-position: -150% 0;
     mix-blend-mode: screen;
     animation: ability-enchant-glint 5.5s linear infinite;
