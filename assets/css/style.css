@@ -943,14 +943,18 @@ header button i {
     width: 48px;
     height: 48px;
     padding: 0;
-    border: 2px solid #6b5320;
-    border-radius: 4px;
-    background: linear-gradient(180deg, #3a2d1c 0%, #241a10 100%);
+    border: 2px solid #8a6d3b;
+    border-radius: 6px;
+    background:
+        linear-gradient(135deg, rgba(232, 200, 106, 0.22) 0%, transparent 45%),
+        linear-gradient(180deg, #54401f 0%, #38291a 55%, #20150b 100%);
     box-shadow:
-        0 0 0 1px rgba(201, 162, 39, 0.35),
-        inset 0 0 8px rgba(0, 0, 0, 0.75),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 2px 5px rgba(0, 0, 0, 0.6);
+        0 0 0 1px #0d0a06,
+        0 0 0 2px rgba(201, 162, 39, 0.5),
+        inset 0 0 10px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 235, 180, 0.28),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+        0 2px 6px rgba(0, 0, 0, 0.7);
     color: #f0e6d2;
     text-shadow: none;
     cursor: pointer;
@@ -960,17 +964,42 @@ header button i {
     align-items: center;
     justify-content: center;
 }
+/* inner gold filigree line */
+.ability-btn::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(201, 162, 39, 0.55);
+    border-radius: 4px;
+    pointer-events: none;
+}
+/* gold rivets at the four corners */
+.ability-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 7px 7px, #f0d488 1.6px, #8a6d3b 2.6px, transparent 3.4px),
+        radial-gradient(circle at calc(100% - 7px) 7px, #f0d488 1.6px, #8a6d3b 2.6px, transparent 3.4px),
+        radial-gradient(circle at 7px calc(100% - 7px), #f0d488 1.6px, #8a6d3b 2.6px, transparent 3.4px),
+        radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), #f0d488 1.6px, #8a6d3b 2.6px, transparent 3.4px);
+}
 .ability-btn:hover, .ability-btn:active {
-    background: linear-gradient(180deg, #4a3a24 0%, #2e2214 100%);
-    border-color: #8a6d3b;
+    background:
+        linear-gradient(135deg, rgba(232, 200, 106, 0.35) 0%, transparent 45%),
+        linear-gradient(180deg, #6a5228 0%, #46331d 55%, #2a1c0d 100%);
+    border-color: #c9a227;
     box-shadow:
-        0 0 0 1px rgba(201, 162, 39, 0.6),
-        inset 0 0 8px rgba(0, 0, 0, 0.75),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 2px 5px rgba(0, 0, 0, 0.6);
+        0 0 0 1px #0d0a06,
+        0 0 0 2px rgba(232, 200, 106, 0.75),
+        0 0 12px rgba(201, 162, 39, 0.35),
+        inset 0 0 10px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 235, 180, 0.35),
+        0 2px 6px rgba(0, 0, 0, 0.7);
     color: #f0e6d2;
     transform: none;
-    filter: brightness(1.15);
+    filter: brightness(1.1);
 }
 .ability-btn .ra { font-size: 2rem; display: inline-block; transform: translateY(-6px); }
 .ability-icon-img { width: 44px; height: 44px; image-rendering: auto; object-fit: contain; transform: translateY(-6px); }
