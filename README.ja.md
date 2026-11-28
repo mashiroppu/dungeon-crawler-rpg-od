@@ -94,10 +94,10 @@
 - [Leviathan_Music](https://soundcloud.com/leviathan254) — バトル音楽
 - [Sara Garrard](https://sonatina.itch.io/letsadventure) — ダンジョン音楽
 - [ぴぽや倉庫](https://pipoya.net/) — エフェクト
-- rute — エフェクト
+- [rute (shelf somewhere anybody)](https://sites.google.com/view/shelf-somewhere-anybody/) — エフェクト
 - [効果音ラボ](https://soundeffect-lab.info/) — 効果音
 - [OtoLogic](https://otologic.jp/) — 効果音
-- The manki — アビリティアイコン
+- [TheManki](https://lmaomonkey.itch.io/) — アビリティアイコン
 
 ## ライセンス
 

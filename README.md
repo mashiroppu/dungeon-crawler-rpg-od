@@ -100,10 +100,10 @@ Plain HTML/CSS/JavaScript — no framework, no build step. Audio via
 - [Leviathan_Music](https://soundcloud.com/leviathan254) — Battle music
 - [Sara Garrard](https://sonatina.itch.io/letsadventure) — Dungeon music
 - [ぴぽや倉庫](https://pipoya.net/) — Effect animations
-- rute — Effect animations
+- [rute (shelf somewhere anybody)](https://sites.google.com/view/shelf-somewhere-anybody/) — Effect animations
 - [効果音ラボ](https://soundeffect-lab.info/) — Sound effects
 - [OtoLogic](https://otologic.jp/) — Sound effects
-- The manki — Ability icons
+- [TheManki](https://lmaomonkey.itch.io/) — Ability icons
 
 ## License
 
