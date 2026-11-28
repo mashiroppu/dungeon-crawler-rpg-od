@@ -980,8 +980,8 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
-.ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translateY(-7px); }
-.ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translateY(-7px); }
+.ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translate(-1px, -7px); }
+.ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translate(-1px, -7px); }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
 .ability-btn.on-cd { opacity: 0.45; cursor: default; }
 .ability-btn.used { opacity: 0.35; cursor: default; filter: grayscale(0.6); }
@@ -989,7 +989,7 @@ header button i {
 .ability-btn .charges {
     position: absolute;
     top: -4px;
-    right: 3px;
+    right: 2px;
     font-size: 0.85rem;
     font-weight: bold;
     color: #7ec8e3;
