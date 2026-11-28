@@ -809,7 +809,7 @@ const showCombatInfo = () => {
             <div id="dmg-container" class="dmg-container"></div>
             <div id="enemy-sprite-wrap">
                 <img src="./assets/sprites/${enemy.image.name}${enemy.image.type}" alt="${enemy.name}" id="enemy-sprite"
-                    style="${{ slime_crusader: 'height:6.16rem', slime: 'height:8.8rem', slime_boss: 'height:8.8rem', slime_angel: 'height:6.6rem', slime_knight: 'height:6.6rem' }[enemy.image.name] || (enemy.image.name.startsWith('spider') ? 'height:9.35rem' : '')}">
+                    style="${{ slime_crusader: 'height:6.16rem', slime: 'height:8.8rem', slime_boss: 'height:8.8rem', slime_angel: 'height:6.6rem', slime_knight: 'height:6.6rem', mimic: 'height:9.35rem', mimic_door: 'height:9.35rem' }[enemy.image.name] || (enemy.image.name.startsWith('spider') ? 'height:9.35rem' : '')}">
             </div>
         </div>
         <div class="battle-info-panel primary-panel" id="playerPanel">
