@@ -112,6 +112,7 @@ window.addEventListener("load", function () {
                     kills: 0,
                     deaths: 0,
                     skills: [],
+                    ngPlus: 0,
                     inCombat: false
                 };
                 calculateStats();
@@ -280,7 +281,7 @@ window.addEventListener("load", function () {
                     <p id="run-close"><i class="fa fa-xmark"></i></p>
                 </div>
                 <p>${player.name} Lv.${player.lvl} [${(CLASSES[player.cls] || CLASSES.warrior).name}]</p>
-                <p>${t("run.difficulty")} <select id="run-diff-select">${DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}" ${player.difficulty === d.key ? "selected" : ""}>${d.label}</option>` : "").join("")}</select></p>
+                <p>${t("run.difficulty")} <select id="run-diff-select">${DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}" ${player.difficulty === d.key ? "selected" : ""}>${diffTierLabel(i)}</option>` : "").join("")}</select></p>
                 <p>${t("run.blessing")}${player.blessing}</p>
                 <p>${t("run.curse")} ${Math.round((dungeon.settings.enemyScaling - 1) * 10)}</p>
                 <p>${t("run.kills")} ${nFormatter(dungeon.statistics.kills)}</p>
@@ -587,9 +588,9 @@ const progressReset = () => {
         player.inventory.equipment = (player.storage || []).splice(0);
     }
     applyEquipmentStats();
-    // New run starts at the selected difficulty's band head (NORMAL=1 ... OMEGA=901)
+    // New run starts at the selected difficulty's band head (NORMAL=1 ... OMEGA=181)
     dungeon.progress.floor = diffStartFloor(playerDiffTier());
-    dungeon.progress.floorLimit = 1000;
+    dungeon.progress.floorLimit = 200;
     dungeon.progress.room = 1;
     dungeon.statistics.kills = 0;
     dungeon.status = {
@@ -781,7 +782,7 @@ const allocationPopup = () => {
             <div class="row">
                 <p>${t("cc.difficulty")}</p>
                 <select id="select-difficulty">
-                    ${DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}">${d.label}</option>` : "").join("")}
+                    ${DIFFICULTY_TIERS.map((d, i) => i <= maxDiffTier() ? `<option value="${d.key}">${diffTierLabel(i)}</option>` : "").join("")}
                 </select>
             </div>
             <div class="row primary-panel pad">
@@ -1058,6 +1059,9 @@ const allocationPopup = () => {
 const objectValidation = () => {
     if (player.skills == undefined) {
         player.skills = [];
+    }
+    if (player.ngPlus == undefined) {
+        player.ngPlus = 0;
     }
     if (player.tempStats == undefined) {
         player.tempStats = {};

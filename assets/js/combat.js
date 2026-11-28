@@ -125,10 +125,13 @@ const hpValidation = () => {
             if (!dungeon.clearedTiers[tier]) {
                 dungeon.clearedTiers[tier] = true;
                 if (tier >= DIFFICULTY_TIERS.length - 1) {
-                    addCombatLog(t("cb.dungeonClear"));
+                    // OMEGA cleared: start the next run one NG+ cycle higher
+                    player.ngPlus = (player.ngPlus || 0) + 1;
+                    addCombatLog(tParams("cb.ngPlus", { n: player.ngPlus }));
+                    saveData();
                 } else if (tier + 1 > maxDiffTier()) {
                     player.maxDiffTier = tier + 1;
-                    addCombatLog(tParams("cb.diffUnlocked", { name: DIFFICULTY_TIERS[tier + 1].label }));
+                    addCombatLog(tParams("cb.diffUnlocked", { name: diffTierLabel(tier + 1) }));
                     saveData();
                 }
             }

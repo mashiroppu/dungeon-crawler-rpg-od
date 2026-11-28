@@ -10,7 +10,7 @@ let dungeon = {
     progress: {
         floor: 1,
         room: 1,
-        floorLimit: 1000,
+        floorLimit: 200,
         roomLimit: 5,
     },
     settings: {
@@ -346,8 +346,8 @@ const stashPointEvent = () => {
 
 // ========== Blacksmith (5% per action on band-relative floors 25-100, once per band) ==========
 const blacksmithReady = () => {
-    const bandFloor = ((dungeon.progress.floor - 1) % 100) + 1;
-    if (bandFloor < 25 || bandFloor > 100) return false;
+    const bandFloor = ((dungeon.progress.floor - 1) % 20) + 1;
+    if (bandFloor < 15) return false;
     if (dungeon.blacksmithBand === diffTierOfFloor(dungeon.progress.floor)) return false;
     return Math.random() < 0.05;
 };
@@ -390,8 +390,8 @@ const mimicBattle = (type) => {
 const guardianBattle = () => {
     incrementRoom();
     generateRandomEnemy("guardian");
-    // Guardian on a band-end floor (100, 200, ... 1000) is the stage boss
-    enemy.stageBoss = (dungeon.progress.floor % 100 === 0);
+    // Guardian on a band-end floor (20, 40, ... 200) is the stage boss
+    enemy.stageBoss = (dungeon.progress.floor % 20 === 0);
     showCombatInfo();
     startCombat(bgmBattleGuardian);
     addCombatLog(tParams("dgn.log.guardian", { name: enemy.name }));

@@ -114,7 +114,7 @@
 <!-- ============ DUNGEON ============ -->
 <div class="panel">
 <h2>Dungeon</h2>
-<div class="row"><label>Floor</label><input id="d-floor" type="number" min="1" max="1000" value="1"></div>
+<div class="row"><label>Floor</label><input id="d-floor" type="number" min="1" max="200" value="1"></div>
 <div class="row"><label>Room</label><input id="d-room" type="number" min="1" max="5" value="1"></div>
 <div class="row"><label>Enemy Scaling</label><input id="d-scaling" type="number" step="0.1" min="1" max="3" value="1.1"></div>
 <div class="row"><label>Difficulty kills</label><input id="d-kills" type="number" value="0"></div>
@@ -165,7 +165,7 @@ if (!player) {
         gold:0, playtime:0, kills:0, deaths:0, inCombat:false, blessing:1 };
 }
 player.allocated = true;
-if (!dungeon) dungeon = { rating:500, grade:"E", progress:{floor:1,room:1,floorLimit:1000,roomLimit:5}, settings:{enemyBaseLvl:1,enemyLvlGap:5,enemyBaseStats:1,enemyScaling:1.1}, status:{exploring:false,paused:true,event:false}, statistics:{kills:0,runtime:0}, backlog:[], action:0 };
+if (!dungeon) dungeon = { rating:500, grade:"E", progress:{floor:1,room:1,floorLimit:200,roomLimit:5}, settings:{enemyBaseLvl:1,enemyLvlGap:5,enemyBaseStats:1,enemyScaling:1.1}, status:{exploring:false,paused:true,event:false}, statistics:{kills:0,runtime:0}, backlog:[], action:0 };
 
 const $ = id => document.getElementById(id);
 const msg = t => { $("msg").textContent = t; $("saveMsg").textContent = t; };
@@ -331,7 +331,7 @@ function saveAll() {
     player.abilityLoadout = [...document.querySelectorAll("#abilityList input:checked")].map(c => c.value).slice(0,6);
     // dungeon
     dungeon.progress.floor = parseInt($("d-floor").value) || 1;
-    dungeon.progress.floorLimit = 1000;
+    dungeon.progress.floorLimit = 200;
     dungeon.progress.room = parseInt($("d-room").value) || 1;
     dungeon.settings.enemyScaling = parseFloat($("d-scaling").value) || 1.1;
     dungeon.statistics.kills = parseInt($("d-kills").value) || 0;
@@ -370,7 +370,7 @@ function preset(which) {
     p.storage = []; p.abilityCds = {}; p.combatBuffs = []; p.shield = 0;
     p.exp = { expCurr: 0, expMax: 1000, expCurrLvl: 0, expMaxLvl: 100, lvlGained: 0 };
     p.blessing = p.blessing || 1;
-    dungeon.progress.floorLimit = 1000;
+    dungeon.progress.floorLimit = 200;
     dungeon.statistics.kills = 0;
 
     const bonus = { hp:0, atk:0, def:0, atkSpd:0, vamp:0, critRate:0, critDmg:0, thorns:0 };

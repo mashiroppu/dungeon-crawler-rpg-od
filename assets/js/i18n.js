@@ -157,6 +157,7 @@ const STRINGS = {
     "cb.crystalDrop":       { en: "{name} dropped {n} crystal(s)!", ja: "{name}がクリスタルを{n}個落とした！" },
     "cb.diffUnlocked":      { en: "New difficulty unlocked: {name}!", ja: "新しい難易度が解放された：{name}！" },
     "cb.dungeonClear":      { en: "You have cleared the dungeon!", ja: "ダンジョンを制覇した！" },
+    "cb.ngPlus":            { en: "OMEGA cleared! Next run starts at NG+{n} difficulty!", ja: "OMEGAを制覇！次のランはNG+{n}の難易度で開始！" },
 
     // ---- Equipment / Inventory ----
     "eq.equip":             { en: "Equip", ja: "装備" },
@@ -293,16 +294,16 @@ const STRINGS = {
     "cc.classdesc.rogue":   { en: "Speed star. High ATK.SPD and crit rate.", ja: "スピードスター。高いATK.SPDとクリティカル率。" },
     "cc.classdesc.lancer":  { en: "Reach fighter. High ATK.SPD, solid ATK/DEF.", ja: "リーチファイター。高いATK.SPDと安定したATK/DEF。" },
     "cc.classdesc.paladin": { en: "Holy defender. Reflects damage, shields and heals.", ja: "聖なる防御者。ダメージ反射・シールド・回復。" },
-    "cc.diffdesc.normal":   { en: "Floors 1-100. The baseline difficulty.", ja: "フロア1-100。基準となる難易度。" },
-    "cc.diffdesc.hard":     { en: "Floors 101-200. Enemies: +15% HP, +10% ATK.SPD, +5% ATK, +10% DEF.", ja: "フロア101-200。敵: HP+15%、ATK.SPD+10%、ATK+5%、DEF+10%。" },
-    "cc.diffdesc.terror":   { en: "Floors 201-300. Enemies: +25% HP, +15% ATK.SPD, +10% ATK, +15% DEF.", ja: "フロア201-300。敵: HP+25%、ATK.SPD+15%、ATK+10%、DEF+15%。" },
-    "cc.diffdesc.abyss":    { en: "Floors 301-400. Enemies: +40% HP, +20% ATK.SPD, +25% ATK, +20% DEF.", ja: "フロア301-400。敵: HP+40%、ATK.SPD+20%、ATK+25%、DEF+20%。" },
-    "cc.diffdesc.inferno":  { en: "Floors 401-500. Enemies: +50% HP, +25% ATK.SPD, +30% ATK, +25% DEF.", ja: "フロア401-500。敵: HP+50%、ATK.SPD+25%、ATK+30%、DEF+25%。" },
-    "cc.diffdesc.eclipse":  { en: "Floors 501-600. Enemies: +60% HP, +30% ATK.SPD, +40% ATK, +30% DEF.", ja: "フロア501-600。敵: HP+60%、ATK.SPD+30%、ATK+40%、DEF+30%。" },
-    "cc.diffdesc.oblivion": { en: "Floors 601-700. Enemies: +80% HP, +30% ATK.SPD, +50% ATK, +35% DEF.", ja: "フロア601-700。敵: HP+80%、ATK.SPD+30%、ATK+50%、DEF+35%。" },
-    "cc.diffdesc.genesis":  { en: "Floors 701-800. Enemies: +100% HP, +50% ATK.SPD, +60% ATK, +40% DEF.", ja: "フロア701-800。敵: HP+100%、ATK.SPD+50%、ATK+60%、DEF+40%。" },
-    "cc.diffdesc.apocalypse": { en: "Floors 801-900. Enemies: +130% HP, +60% ATK.SPD, +80% ATK, +45% DEF.", ja: "フロア801-900。敵: HP+130%、ATK.SPD+60%、ATK+80%、DEF+45%。" },
-    "cc.diffdesc.omega":    { en: "Floors 901-1000. Enemies: +160% HP, +75% ATK.SPD, +100% ATK, +50% DEF. Final difficulty.", ja: "フロア901-1000。敵: HP+160%、ATK.SPD+75%、ATK+100%、DEF+50%。最終難易度。" },
+    "cc.diffdesc.normal":   { en: "Floors 1-20. The baseline difficulty.", ja: "フロア1-20。基準となる難易度。" },
+    "cc.diffdesc.hard":     { en: "Floors 21-40. Enemies: +15% HP, +10% ATK.SPD, +5% ATK, +10% DEF.", ja: "フロア21-40。敵: HP+15%、ATK.SPD+10%、ATK+5%、DEF+10%。" },
+    "cc.diffdesc.terror":   { en: "Floors 41-60. Enemies: +25% HP, +15% ATK.SPD, +10% ATK, +15% DEF.", ja: "フロア41-60。敵: HP+25%、ATK.SPD+15%、ATK+10%、DEF+15%。" },
+    "cc.diffdesc.abyss":    { en: "Floors 61-80. Enemies: +40% HP, +20% ATK.SPD, +25% ATK, +20% DEF.", ja: "フロア61-80。敵: HP+40%、ATK.SPD+20%、ATK+25%、DEF+20%。" },
+    "cc.diffdesc.inferno":  { en: "Floors 81-100. Enemies: +50% HP, +25% ATK.SPD, +30% ATK, +25% DEF.", ja: "フロア81-100。敵: HP+50%、ATK.SPD+25%、ATK+30%、DEF+25%。" },
+    "cc.diffdesc.eclipse":  { en: "Floors 101-120. Enemies: +60% HP, +30% ATK.SPD, +40% ATK, +30% DEF.", ja: "フロア101-120。敵: HP+60%、ATK.SPD+30%、ATK+40%、DEF+30%。" },
+    "cc.diffdesc.oblivion": { en: "Floors 121-140. Enemies: +80% HP, +30% ATK.SPD, +50% ATK, +35% DEF.", ja: "フロア121-140。敵: HP+80%、ATK.SPD+30%、ATK+50%、DEF+35%。" },
+    "cc.diffdesc.genesis":  { en: "Floors 141-160. Enemies: +100% HP, +50% ATK.SPD, +60% ATK, +40% DEF.", ja: "フロア141-160。敵: HP+100%、ATK.SPD+50%、ATK+60%、DEF+40%。" },
+    "cc.diffdesc.apocalypse": { en: "Floors 161-180. Enemies: +130% HP, +60% ATK.SPD, +80% ATK, +45% DEF.", ja: "フロア161-180。敵: HP+130%、ATK.SPD+60%、ATK+80%、DEF+45%。" },
+    "cc.diffdesc.omega":    { en: "Floors 181-200. Enemies: +160% HP, +75% ATK.SPD, +100% ATK, +50% DEF. Final difficulty. Clearing it unlocks NG+ cycles.", ja: "フロア181-200。敵: HP+160%、ATK.SPD+75%、ATK+100%、DEF+50%。最終難易度。制覇するとNG+周回が解放される。" },
 };
 
 // Passive skill descriptions (character creation)

@@ -1,4 +1,4 @@
-// ===== Difficulty Tiers (10 bands of 100 floors, floors 1-1000) =====
+// ===== Difficulty Tiers (10 bands of 20 floors, floors 1-200; NG+ scales beyond) =====
 // Columns: enemy HP / ATK.SPD / ATK / DEF bonuses vs NORMAL. Each band = one tier.
 const DIFFICULTY_TIERS = [
     { key: "normal",     label: "NORMAL",     hp: 1.00, atkSpd: 1.00, atk: 1.00, def: 1.00, reward: 1.00, dropRoll: 3, critRate: 0,  critDmg: 1.00 },
@@ -13,10 +13,17 @@ const DIFFICULTY_TIERS = [
     { key: "omega",      label: "OMEGA",      hp: 2.60, atkSpd: 1.75, atk: 2.00, def: 1.50, reward: 2.40, dropRoll: 2, critRate: 20, critDmg: 1.50 },
 ];
 const DIFFICULTY_MODES = Object.fromEntries(DIFFICULTY_TIERS.map(d => [d.key, d]));
-// Tier index for a floor: floors 1-100 -> 0, 101-200 -> 1, ... 901-1000 -> 9
-const diffTierOfFloor = (floor) => Math.max(0, Math.min(DIFFICULTY_TIERS.length - 1, Math.floor((floor - 1) / 100)));
-// First floor of each difficulty's band (NORMAL=1, HARD=101, ... OMEGA=901)
-const diffStartFloor = (tier) => tier * 100 + 1;
+// Tier index for a floor: floors 1-20 -> 0, 21-40 -> 1, ... 181-200 -> 9
+const diffTierOfFloor = (floor) => Math.max(0, Math.min(DIFFICULTY_TIERS.length - 1, Math.floor((floor - 1) / 20)));
+// First floor of each difficulty's band (NORMAL=1, HARD=21, ... OMEGA=181)
+const diffStartFloor = (tier) => tier * 20 + 1;
+// Tier label with NG+ suffix (each cleared OMEGA adds one "+")
+const diffTierLabel = (tier) => {
+    const d = DIFFICULTY_TIERS[tier];
+    if (!d) return "";
+    const ng = (player && player.ngPlus) || 0;
+    return d.label + (ng > 0 ? "+".repeat(Math.min(ng, 5)) : "");
+};
 const diffKeyToTier = (key) => {
     const i = DIFFICULTY_TIERS.findIndex(d => d.key === key);
     return i >= 0 ? i : 0;
@@ -538,6 +545,16 @@ const setEnemyStats = (type, condition) => {
     enemy.stats.critRate = Math.min(80, enemy.stats.critRate + diff.critRate);
     enemy.stats.critDmg = Math.round(enemy.stats.critDmg * diff.critDmg);
 
+    // NG+ cycle scaling: each cleared OMEGA run strengthens enemies (+30% stats, +15% rewards per cycle)
+    const ngPlus = (player && player.ngPlus) || 0;
+    if (ngPlus > 0) {
+        const ngStat = 1 + 0.3 * ngPlus;
+        enemy.stats.hpMax = Math.round(enemy.stats.hpMax * ngStat);
+        enemy.stats.atk = Math.round(enemy.stats.atk * ngStat);
+        enemy.stats.def = Math.round(enemy.stats.def * ngStat);
+    }
+    const ngReward = 1 + 0.15 * ngPlus;
+
     // Calculate exp and gold that the monster gives
     const expYield = [];
 
@@ -554,11 +571,11 @@ const setEnemyStats = (type, condition) => {
     }
 
     let expCalculation = (expYield.reduce((acc, cur) => acc + cur, 0)) / 20;
-    enemy.rewards.exp = Math.round((expCalculation + expCalculation * (enemy.lvl * 0.1)) * diff.reward);
+    enemy.rewards.exp = Math.round((expCalculation + expCalculation * (enemy.lvl * 0.1)) * diff.reward * ngReward);
     if (enemy.rewards.exp > 1000000) {
         enemy.rewards.exp = 1000000 * randomizeDecimal(0.9, 1.1);
     }
-    enemy.rewards.gold = Math.round((enemy.rewards.exp * randomizeDecimal(0.9, 1.1)) * 1.5 * diff.reward);
+    enemy.rewards.gold = Math.round((enemy.rewards.exp * randomizeDecimal(0.9, 1.1)) * 1.5 * diff.reward * ngReward);
     enemy.rewards.drop = randomizeNum(1, diff.dropRoll);
     if (enemy.rewards.drop == 1) {
         enemy.rewards.drop = true;
