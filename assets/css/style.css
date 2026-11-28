@@ -1582,6 +1582,7 @@ html, body {
 /* ---- Combat: enemy panel ---- */
 #enemyPanel {
     position: relative;
+    overflow: hidden;
     background: #0d0a12;
 }
 /* keep text/sprite above the backdrop layers */

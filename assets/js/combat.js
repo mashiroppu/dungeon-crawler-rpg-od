@@ -752,7 +752,7 @@ const showCombatInfo = () => {
     document.querySelector('#combatPanel').innerHTML = `
     <div class="content">
         <div class="battle-info-panel center" id="enemyPanel">
-            <div class="grid-room" role="img" aria-label="grid dungeon" aria-hidden="true"><img class="battle-bg" src="./assets/bg/battle.png" alt=""><div class="stage">
+            <div class="grid-room" role="img" aria-label="grid dungeon" aria-hidden="true"><img class="battle-bg" src="./assets/bg/battle.jpg" alt=""><div class="stage">
                 <div class="fill f-left"></div>
                 <div class="fill f-right"></div>
                 <div class="fill f-top"></div>
