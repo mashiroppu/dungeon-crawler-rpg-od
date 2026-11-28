@@ -947,12 +947,13 @@ header button i {
     width: 48.5px;
     height: 48.5px;
     padding: 0;
-    border: 2px solid #8a6d3b;
+    border: 2px solid #ffd968;
     border-radius: 0;
     background:
         linear-gradient(135deg, rgba(255, 240, 170, 0.8) 0%, transparent 45%),
-        linear-gradient(180deg, #b8913f 0%, #8a6424 55%, #553d12 100%);
+        linear-gradient(180deg, #c9a227 0%, #8f6f1e 55%, #5c4210 100%);
     box-shadow:
+        0 0 10px rgba(255, 215, 0, 0.55),
         inset 0 0 10px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 245, 200, 0.7),
         inset 0 -2px 4px rgba(0, 0, 0, 0.2),
@@ -970,9 +971,10 @@ header button i {
     background:
         linear-gradient(135deg, rgba(255, 250, 200, 0.9) 0%, transparent 45%),
         linear-gradient(180deg, #d4af4e 0%, #a87c2c 55%, #6b4d16 100%);
-    border-color: #c9a227;
+    border-color: #fff0a0;
     box-shadow:
-        0 0 12px rgba(201, 162, 39, 0.35),
+        0 0 16px rgba(255, 225, 80, 0.85),
+        0 0 4px rgba(255, 255, 200, 0.9),
         inset 0 0 10px rgba(0, 0, 0, 0.8),
         inset 0 1px 0 rgba(255, 235, 180, 0.35),
         0 2px 6px rgba(0, 0, 0, 0.7);
@@ -981,7 +983,7 @@ header button i {
     filter: brightness(1.1);
 }
 .ability-btn .ra { font-size: 0.73em; display: inline-block; flex-shrink: 0; transform: translateY(-7.75px); }
-.ability-icon-img { width: 1em; height: 1em; flex-shrink: 0; image-rendering: pixelated; object-fit: contain; transform: translateY(-7.75px); }
+.ability-icon-img { width: 1em; height: 1em; flex-shrink: 0; image-rendering: pixelated; object-fit: contain; transform: translateY(-7.75px); filter: brightness(1.2) saturate(1.1); }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
 /* Cooldown/spent dims only the icon — the frame stays fully visible */
 .ability-btn.on-cd { cursor: default; }
