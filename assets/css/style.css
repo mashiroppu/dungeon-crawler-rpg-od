@@ -972,13 +972,14 @@ header button i {
 
 .ability-btn .charges {
     position: absolute;
-    top: -2px;
-    right: -4px;
-    font-size: 0.8rem;
+    top: 3px;
+    right: 3px;
+    font-size: 0.85rem;
     font-weight: bold;
     color: #7ec8e3;
-    text-shadow: 0 0 3px #000, 0 0 3px #000;
+    text-shadow: 0 0 3px #000, 0 0 3px #000, 0 1px 2px #000;
     z-index: 2;
+    pointer-events: none;
 }
 .ability-btn .cd {
     position: absolute;
