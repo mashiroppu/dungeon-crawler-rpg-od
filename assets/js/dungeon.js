@@ -93,8 +93,8 @@ const loadDungeonProgress = () => {
             dungeon.progress.floor++;
         }
     }
-    // Curse resets to the band's starting stage every 100 floors (difficulty change)
-    const band = diffTierOfFloor(dungeon.progress.floor);
+    // Curse resets to the band's starting stage on difficulty change (NG+ runs stay at OMEGA baseline)
+    const band = (player && player.ngPlus > 0) ? DIFFICULTY_TIERS.length - 1 : diffTierOfFloor(dungeon.progress.floor);
     const bandBase = bandCurseScaling(band);
     if (dungeon.curseBand === undefined) {
         // First load: adopt the band baseline. Untouched saves sit at the old

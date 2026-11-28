@@ -122,14 +122,15 @@ const hpValidation = () => {
         if (enemy.stageBoss) {
             const tier = diffTierOfFloor(dungeon.progress.floor);
             dungeon.clearedTiers = dungeon.clearedTiers || {};
-            if (!dungeon.clearedTiers[tier]) {
+            if (tier >= DIFFICULTY_TIERS.length - 1) {
+                // OMEGA cleared: advance to the next NG+ cycle (repeatable every clear)
                 dungeon.clearedTiers[tier] = true;
-                if (tier >= DIFFICULTY_TIERS.length - 1) {
-                    // OMEGA cleared: start the next run one NG+ cycle higher
-                    player.ngPlus = (player.ngPlus || 0) + 1;
-                    addCombatLog(tParams("cb.ngPlus", { n: player.ngPlus }));
-                    saveData();
-                } else if (tier + 1 > maxDiffTier()) {
+                player.ngPlus = (player.ngPlus || 0) + 1;
+                addCombatLog(tParams("cb.ngPlus", { n: player.ngPlus }));
+                saveData();
+            } else if (!dungeon.clearedTiers[tier]) {
+                dungeon.clearedTiers[tier] = true;
+                if (tier + 1 > maxDiffTier()) {
                     player.maxDiffTier = tier + 1;
                     addCombatLog(tParams("cb.diffUnlocked", { name: diffTierLabel(tier + 1) }));
                     saveData();
