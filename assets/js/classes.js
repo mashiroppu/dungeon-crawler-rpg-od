@@ -39,7 +39,7 @@ const ABILITIES = {
     dragon_fall:   { cls: "lancer",  lvl: 25, cd: 8, rec: 1.25, uses: 2, name: "Dragon's Fall",   desc: "450% ATK dmg, ignores 50% DEF.",                           icon: "ra-two-dragons" },
     // ===== Paladin: holy counterattacker — strike+heal, reflect, armor break, shield, conditional nuke, ultimate =====
     holy_strike:   { cls: "paladin", lvl: 1,  cd: 3.5, rec: 0.75, uses: 4, name: "Holy Strike",     desc: "240% ATK dmg, recover 8% max HP.",                       icon: "img:assets/icon/abilities/holy-strike.png?v=2" },
-    judgment_counter:{ cls: "paladin",lvl: 15, cd: 6, rec: 1, uses: 2, name: "Judgment Counter",desc: "For 8s, reflect 200% damage taken but take +30% damage.",  icon: "ra-gavel" },
+    judgment_counter:{ cls: "paladin",lvl: 15, cd: 6, rec: 1, uses: 2, name: "Judgment Counter",desc: "For 8s, reflect 200% damage taken but take +30% damage.",  icon: "img:assets/icon/abilities/judgment-counter.png?v=2" },
     thorns_nova:   { cls: "paladin", lvl: 10, cd: 5.5, rec: 1, uses: 3, name: "Thorns Nova",     desc: "150% ATK dmg. For 10s, reflected damage also bursts for +50%.", icon: "img:assets/icon/abilities/thorns-nova.png?v=2" },
     aegis_oath:    { cls: "paladin", lvl: 12, cd: 6, rec: 1, uses: 2, name: "Aegis Oath",      desc: "Shield 30% max HP, reflect 50% for 10s.",                 icon: "img:assets/icon/abilities/aegis-oath.png?v=2" },
     divine_judgement:{ cls: "paladin",lvl: 20, cd: 7.5, rec: 1.25, uses: 2, name: "Divine Judgement",desc: "300% ATK dmg — 500% while shielded.",               icon: "ra-on-target" },
