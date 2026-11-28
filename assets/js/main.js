@@ -527,10 +527,10 @@ const calculateStats = () => {
     let playerCDmgBase = player.baseStats.critDmg;
 
     const eqHpPct = player.equippedStats.hpPct || 0;
-    const eqAtkPct = player.equippedStats.atkPct || 0;
     const eqDefPct = player.equippedStats.defPct || 0;
     player.stats.hpMax = Math.round(playerHpBase * (1 + (player.bonusStats.hp + eqHpPct) / 100) + player.equippedStats.hp);
-    player.stats.atk = Math.round(playerAtkBase * (1 + (player.bonusStats.atk + eqAtkPct) / 100) + player.equippedStats.atk);
+    // ATK% (atkPct) is a direct damage-dealt multiplier applied in combat, not an ATK stat boost
+    player.stats.atk = Math.round(playerAtkBase * (1 + (player.bonusStats.atk) / 100) + player.equippedStats.atk);
     player.stats.def = Math.round(playerDefBase * (1 + (player.bonusStats.def + eqDefPct) / 100) + player.equippedStats.def);
     player.stats.atkSpd = (playerAtkSpdBase + playerAtkSpdBase * (player.bonusStats.atkSpd / 100)) + equipmentAtkSpd + (equipmentAtkSpd * (player.equippedStats.atkSpd / 100));
     player.stats.vamp = playerVampBase + player.bonusStats.vamp + player.equippedStats.vamp;

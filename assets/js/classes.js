@@ -176,6 +176,9 @@ const abilityDamage = (mult, defScale = 1) => {
     const defDebuff = enemyDebuffMult("defMult");
     let damage = player.stats.atk * mult * (player.stats.atk / (player.stats.atk + enemy.stats.def * defScale * defDebuff * penFactor));
     damage *= 0.9 + Math.random() * 0.2;
+    // ATK%: direct damage-dealt multiplier (applies to attacks and abilities)
+    const eqAtkPct = (player.equippedStats && player.equippedStats.atkPct) || 0;
+    if (eqAtkPct > 0) damage = damage * (1 + eqAtkPct / 100);
     let crit = false;
     if (!enemy.noCrit && Math.floor(Math.random() * 100) < playerCritRate()) {
         crit = true;
