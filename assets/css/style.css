@@ -1001,7 +1001,7 @@ header button i {
     background-size: 300% 100%;
     background-position: 150% 0;
     mix-blend-mode: screen;
-    animation: ability-enchant-glint 3.2s linear infinite;
+    animation: ability-enchant-glint 2s linear infinite;
 }
 @keyframes ability-enchant-glint {
     0%   { background-position: 150% 0; }
