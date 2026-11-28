@@ -964,15 +964,6 @@ header button i {
     align-items: center;
     justify-content: center;
 }
-/* inner gold filigree line */
-.ability-btn::before {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    border: 1px solid rgba(201, 162, 39, 0.55);
-    border-radius: 4px;
-    pointer-events: none;
-}
 .ability-btn:hover, .ability-btn:active {
     background:
         linear-gradient(135deg, rgba(232, 200, 106, 0.35) 0%, transparent 45%),
