@@ -17,12 +17,12 @@ const DIFFICULTY_MODES = Object.fromEntries(DIFFICULTY_TIERS.map(d => [d.key, d]
 const diffTierOfFloor = (floor) => Math.max(0, Math.min(DIFFICULTY_TIERS.length - 1, Math.floor((floor - 1) / 20)));
 // First floor of each difficulty's band (NORMAL=1, HARD=21, ... OMEGA=181)
 const diffStartFloor = (tier) => tier * 20 + 1;
-// Tier label with NG+ suffix (each cleared OMEGA adds one "+")
+// Tier label with NG+ suffix (NG+1 -> "OMEGA+", NG+2 -> "OMEGA+2", ...)
 const diffTierLabel = (tier) => {
     const d = DIFFICULTY_TIERS[tier];
     if (!d) return "";
     const ng = (player && player.ngPlus) || 0;
-    return d.label + (ng > 0 ? "+".repeat(Math.min(ng, 5)) : "");
+    return d.label + (ng === 1 ? "+" : ng > 1 ? "+" + ng : "");
 };
 const diffKeyToTier = (key) => {
     const i = DIFFICULTY_TIERS.findIndex(d => d.key === key);
