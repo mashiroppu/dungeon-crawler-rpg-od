@@ -165,9 +165,9 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: -4px;
+  top: -8px;
   width: 100%;
-  height: calc(100% + 8px);
+  height: calc(100% + 16px);
   object-fit: fill;
   image-rendering: auto;
 }
