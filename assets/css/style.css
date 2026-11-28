@@ -980,6 +980,31 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
+/* Enchant-style aurora glint sweeping across the icon (Minecraft enchant shimmer) */
+.ability-btn::after {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    pointer-events: none;
+    background: linear-gradient(115deg,
+        transparent 32%,
+        rgba(150, 110, 255, 0.45) 44%,
+        rgba(255, 255, 255, 0.85) 50%,
+        rgba(110, 200, 255, 0.5) 56%,
+        transparent 68%);
+    background-size: 260% 100%;
+    background-position: 130% 0;
+    mix-blend-mode: screen;
+    animation: ability-enchant-glint 3.2s linear infinite;
+}
+@keyframes ability-enchant-glint {
+    0%   { background-position: 130% 0; }
+    100% { background-position: -130% 0; }
+}
+/* stop the sheen while on cooldown / spent */
+.ability-btn.on-cd::after,
+.ability-btn.used::after { opacity: 0; }
+
 .ability-btn .ra { font-size: 1.9rem; display: inline-block; transform: translate(0.75px, -7.5px); }
 .ability-icon-img { width: 42px; height: 42px; image-rendering: auto; object-fit: contain; transform: translate(0.75px, -7.5px); }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
