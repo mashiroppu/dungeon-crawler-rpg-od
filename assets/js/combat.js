@@ -171,8 +171,8 @@ const playerAttack = () => {
     // ATK%: direct damage-dealt multiplier (equipment atkPct + level-up atk; applies to attacks and abilities)
     const atkPctTotal = ((player.equippedStats && player.equippedStats.atkPct) || 0) + ((player.bonusStats && player.bonusStats.atk) || 0);
     if (atkPctTotal > 0) damage = damage * (1 + atkPctTotal / 100);
-    // Normal-attack-only damage: level-up N.ATK + equipment N.ATK + hidden secretAtk (total cap 300%)
-    const normAtkPct = Math.min(300,
+    // Normal-attack-only damage: level-up N.ATK + equipment N.ATK + hidden secretAtk (total cap 200%)
+    const normAtkPct = Math.min(200,
         Math.min(200, (player.bonusStats && player.bonusStats.nAtk) || 0)
         + ((player.equippedStats && player.equippedStats.normAtkPct) || 0)
         + ((player.equippedStats && player.equippedStats.secretAtk) || 0));
