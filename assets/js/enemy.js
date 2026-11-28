@@ -708,7 +708,7 @@ const setEnemyImg = () => {
         // Bosses
         case 'Zaart, the Dominator Goblin':
             enemy.image.name = 'goblin_boss';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Banshee, Skeleton Lord':
             enemy.image.name = 'skeleton_boss';
@@ -770,39 +770,39 @@ const setEnemyImg = () => {
         // Special Boss
         case 'Naizicher, the Spider Dragon':
             enemy.image.name = 'spider_dragon';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Ulliot, the Deathlord':
             enemy.image.name = 'skeleton_dragon';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Ifrit':
             enemy.image.name = 'firelord';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Shiva':
             enemy.image.name = 'icemaiden';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Behemoth':
             enemy.image.name = 'behemoth';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Blood Manipulation Feral':
             enemy.image.name = 'bm-feral';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Thanatos':
             enemy.image.name = 'thanatos';
-            enemy.image.size = '70%';
+            enemy.image.size = '93%';
             break;
         case 'Darkness Angel Reaper':
             enemy.image.name = 'da-reaper';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
         case 'Zalaras, the Dragon Emperor':
             enemy.image.name = 'zalaras';
-            enemy.image.size = '70%';
+            enemy.image.size = '87.5%';
             break;
     };
 }
