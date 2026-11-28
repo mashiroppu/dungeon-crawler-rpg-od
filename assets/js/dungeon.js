@@ -390,8 +390,8 @@ const mimicBattle = (type) => {
 const guardianBattle = () => {
     incrementRoom();
     generateRandomEnemy("guardian");
-    // Guardian on a band-end floor is the stage boss; beyond floor 200 every 10 floors extends the cap
-    enemy.stageBoss = (dungeon.progress.floor % 20 === 0) || (dungeon.progress.floor > 200 && dungeon.progress.floor % 10 === 0);
+    // Guardian on a band-end floor is the stage boss; NG+ bands past 200 also run 20 floors each
+    enemy.stageBoss = dungeon.progress.floor % 20 === 0;
     showCombatInfo();
     startCombat(bgmBattleGuardian);
     addCombatLog(tParams("dgn.log.guardian", { name: enemy.name }));

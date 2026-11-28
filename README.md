@@ -55,9 +55,9 @@ and heals. Up to 3 abilities can be slotted in the loadout.
   INFERNO, ECLIPSE, OBLIVION, GENESIS, APOCALYPSE, OMEGA. Difficulty rises
   every 20 floors; defeat the band-end Guardian to unlock the next tier.
   Each difficulty starts at its band's first floor (e.g. HARD = floor 21).
-  Clearing OMEGA (floor 200) extends the dungeon by 10 floors per NG+
-  cycle (NG+1 = floor 210, NG+2 = 220, ...) — enemies and rewards scale
-  up each cycle, endlessly
+  Clearing OMEGA (floor 200) extends the dungeon by 20 floors per NG+
+  cycle (NG+1 cap = floor 220, NG+2 = 240, ...) — enemies and rewards
+  scale up each cycle, endlessly
 - Level cap 500. Level up by choosing 1 of 3 stat boosts (with rerolls);
   rare picks include **N.ATK** (+6% normal attack damage, ~20% drop rate,
   cap 300%) and **THORN** (damage reflect, cap 10%)

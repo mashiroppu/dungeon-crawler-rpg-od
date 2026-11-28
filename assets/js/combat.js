@@ -123,10 +123,10 @@ const hpValidation = () => {
             const tier = diffTierOfFloor(dungeon.progress.floor);
             dungeon.clearedTiers = dungeon.clearedTiers || {};
             if (tier >= DIFFICULTY_TIERS.length - 1 && dungeon.progress.floor === dungeon.progress.floorLimit) {
-                // Cap boss down: NG+ cycle — the dungeon extends 10 floors and enemies scale up
+                // Cap boss down: NG+ cycle — the dungeon extends 20 floors and enemies scale up
                 dungeon.clearedTiers[tier] = true;
                 player.ngPlus = (player.ngPlus || 0) + 1;
-                dungeon.progress.floorLimit += 10;
+                dungeon.progress.floorLimit += 20;
                 addCombatLog(tParams("cb.ngPlus", { n: player.ngPlus, floor: dungeon.progress.floorLimit }));
                 saveData();
             } else if (!dungeon.clearedTiers[tier]) {
