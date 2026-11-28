@@ -461,9 +461,9 @@ button:focus {
     #combatPanel .dmg-container { height: 2rem; }
     #combatPanel .battle-info-panel { padding: 0.4rem; margin: 0 0.25rem; gap: 0.2rem; }
     #combatPanel #ability-bar { gap: 4px; margin: 4px 0; }
-    #combatPanel .ability-btn { width: 44.5px; height: 44.5px; }
+    #combatPanel .ability-btn { width: 46px; height: 46px; }
     #combatPanel .ability-btn .ra { font-size: 1.62rem; }
-    #combatPanel .ability-icon-img { width: 36.5px; height: 36.5px; }
+    #combatPanel .ability-icon-img { width: 37.5px; height: 37.5px; }
     #combatPanel .logBox { min-height: 4rem; }
 }
 
@@ -982,8 +982,8 @@ header button i {
     transform: none;
     filter: brightness(1.1);
 }
-.ability-btn .ra { font-size: 2.02rem; display: inline-block; flex-shrink: 0; transform: translateY(-8px); }
-.ability-icon-img { width: 44.5px; height: 44.5px; flex-shrink: 0; image-rendering: auto; object-fit: contain; transform: translateY(-8px); }
+.ability-btn .ra { font-size: 2.09rem; display: inline-block; flex-shrink: 0; transform: translateY(-8px); }
+.ability-icon-img { width: 46px; height: 46px; flex-shrink: 0; image-rendering: auto; object-fit: contain; transform: translateY(-8px); }
 .loadout-item .ability-icon-img { width: 1.1rem; height: 1.1rem; vertical-align: -0.2rem; }
 /* Cooldown/spent dims only the icon — the frame stays fully visible */
 .ability-btn.on-cd { cursor: default; }
@@ -1531,7 +1531,7 @@ button:active {
     to   { transform: translateY(-15%); }
 }
 #title-screen h1 {
-    font-size: 2.02rem;
+    font-size: 2.09rem;
     letter-spacing: 3px;
     text-shadow:
         0 0 22px rgba(212, 175, 55, 0.55),
