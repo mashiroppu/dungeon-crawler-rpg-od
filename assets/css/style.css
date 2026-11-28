@@ -988,9 +988,9 @@ header button i {
     pointer-events: none;
     background: linear-gradient(115deg,
         transparent 32%,
-        rgba(150, 110, 255, 0.45) 44%,
+        rgba(255, 220, 130, 0.45) 44%,
         rgba(255, 255, 255, 0.85) 50%,
-        rgba(110, 200, 255, 0.5) 56%,
+        rgba(140, 220, 255, 0.5) 56%,
         transparent 68%);
     background-size: 260% 100%;
     background-position: 130% 0;
