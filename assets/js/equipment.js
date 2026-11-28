@@ -44,15 +44,15 @@ const AFFIXES = [
     // (abUse affix removed — legacy AB.USE stats now count as +5% CDR each in abilityEffectiveCd)
     // ===== Special proc affixes =====
     { key: "burst",       label: "BURST",     min: 1,  max: 5,  w: 1 },
-    { key: "fullHpDmg",   label: "PRIDE",     min: 10, max: 30, w: 1 },
-    { key: "lowHpDmg",    label: "BERSERK",   min: 10, max: 30, w: 1 },
-    { key: "attackInvuln",label: "PHASE",     min: 1.5,max: 3,  w: 1 },
-    { key: "hpTradeDmg",  label: "TRIAL",     min: 10, max: 25, w: 1, pair: { key: "hpRegen", label: "REGEN", min: 0.5, max: 3 } },
+    { key: "fullHpDmg",   label: "PRIDE",     min: 15, max: 40, w: 1 },
+    { key: "lowHpDmg",    label: "BERSERK",   min: 15, max: 40, w: 1 },
+    { key: "attackInvuln",label: "PHASE",     min: 2,  max: 4,  w: 1 },
+    { key: "hpTradeDmg",  label: "TRIAL",     min: 12, max: 30, w: 1, pair: { key: "hpRegen", label: "REGEN", min: 0.5, max: 3 } },
     { key: "bloodOath",   label: "OATH",      min: 0.08, max: 0.2, w: 1 },
     // Normal-attack-only damage (does NOT boost abilities). Equipment total capped at 24%.
     { key: "normAtkPct",  label: "N.ATK",     min: 2,  max: 4,  w: 1 },
     // ===== Signature affixes =====
-    { key: "opener",      label: "OPNR",      min: 15, max: 40, w: 1 },
+    { key: "opener",      label: "OPNR",      min: 20, max: 50, w: 1 },
     { key: "siphon",      label: "SIPHON",    min: 0.5,max: 2,  w: 1 },
     { key: "flourish",    label: "FLRSH",     min: 5,  max: 15, w: 1 },
     { key: "hunterMark",  label: "MARK",      min: 1,  max: 3,  w: 1 },
