@@ -529,6 +529,8 @@ const calculateStats = () => {
     const eqHpPct = player.equippedStats.hpPct || 0;
     const eqDefPct = player.equippedStats.defPct || 0;
     player.stats.hpMax = Math.round(playerHpBase * (1 + (player.bonusStats.hp + eqHpPct) / 100) + player.equippedStats.hp);
+    // Glass Cannon: -25% max HP
+    if (player.skills.includes("Glass Cannon")) player.stats.hpMax = Math.round(player.stats.hpMax * 0.75);
     // ATK% (atkPct + level-up atk) is a direct damage-dealt multiplier applied in combat, not an ATK stat boost
     player.stats.atk = Math.round(playerAtkBase + player.equippedStats.atk);
     player.stats.def = Math.round(playerDefBase * (1 + (player.bonusStats.def + eqDefPct) / 100) + player.equippedStats.def);
@@ -536,6 +538,8 @@ const calculateStats = () => {
     player.stats.vamp = playerVampBase + player.bonusStats.vamp + player.equippedStats.vamp;
     player.stats.critRate = Math.min(75, playerCRateBase + player.bonusStats.critRate + player.equippedStats.critRate);
     player.stats.critDmg = playerCDmgBase + player.bonusStats.critDmg + player.equippedStats.critDmg;
+    // Devastator: -30% attack speed
+    if (player.skills.includes("Devastator")) player.stats.atkSpd = player.stats.atkSpd * 0.7;
 
     // Caps attack speed to 3
     if (player.stats.atkSpd > 3) {

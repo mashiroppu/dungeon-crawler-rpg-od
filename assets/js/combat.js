@@ -203,6 +203,10 @@ const playerAttack = () => {
         // Deal 40% more damage but you lose 30% base attack speed
         damage = Math.round(damage + ((40 * damage) / 100));
     }
+    // Glass Cannon: +35% damage dealt, -25% max HP (HP penalty applied in calculateStats)
+    if (player.skills.includes("Glass Cannon")) {
+        damage = Math.round(damage * 1.35);
+    }
     if (player.skills.includes("Rampager")) {
         // Increase base attack by 5 after each hit. Stack resets after battle.
         player.baseStats.atk += 5;

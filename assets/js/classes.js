@@ -12,7 +12,7 @@ const ABILITIES = {
     // ===== Warrior: balanced bruiser — nuke, control, defense, buffs, sustain, finisher =====
     cleave:        { cls: "warrior", lvl: 1,  cd: 3.2, rec: 0.75, uses: 4, name: "Cleave",          desc: "Deal 260% ATK damage.",                                  icon: "ra-axe" },
     temporal_snare:{ cls: "warrior", lvl: 8,  cd: 6, rec: 1, uses: 3, name: "Temporal Snare",   desc: "150% ATK dmg, enemy ATK.SPD -50% for 6s.",                 icon: "ra-hourglass-sand" },
-    shield_wall:   { cls: "warrior", lvl: 5,  cd: 5.5, rec: 1, uses: 2, name: "Shield Wall",    desc: "Shield 25% max HP + DEF +30% for 8s.",                    icon: "ra-shield" },
+    shield_wall:   { cls: "warrior", lvl: 5,  cd: 5.5, rec: 1, uses: 2, name: "Shield Wall",    desc: "Shield 25% max HP + take 25% less damage for 8s.",       icon: "ra-shield" },
     warcry:        { cls: "warrior", lvl: 12, cd: 5, rec: 1, uses: 3, name: "War Cry",         desc: "+35% damage for 12s.",                                     icon: "ra-lightning-storm" },
     undying_oath:  { cls: "warrior", lvl: 20, cd: 6.5, rec: 1.25, uses: 2, name: "Undying Oath",   desc: "100% ATK dmg + regen 3% max HP/s for 10s.",               icon: "ra-crowned-heart" },
     execute:       { cls: "warrior", lvl: 25, cd: 7.5, rec: 1.25, uses: 2, name: "Execute",         desc: "220% ATK dmg — 550% if enemy HP is below 30%.",          icon: "ra-sword" },
@@ -189,6 +189,9 @@ const abilityDamage = (mult, defScale = 1) => {
     if (player.skills.includes("Remnant Razor")) damage = Math.round(damage * 1.2);
     if (player.skills.includes("Executioner") && enemy.stats.hp < enemy.stats.hpMax * 0.66) damage = Math.round(damage * 1.33);
     if (player.skills.includes("Leech Lord")) damage = Math.round(damage * 1.05);
+    if (player.skills.includes("Devastator")) damage = Math.round(damage * 1.4);
+    // Glass Cannon: +35% damage dealt, -25% max HP (HP penalty applied in calculateStats)
+    if (player.skills.includes("Glass Cannon")) damage = Math.round(damage * 1.35);
     damage = Math.round(damage * petrifyDamageMult());
     // HUNTER'S MARK: consecutive hits stack bonus damage
     const markPct = Math.min(player.hunterStacks || 0, 20) * ((player.equippedStats && player.equippedStats.hunterMark) || 0);
@@ -333,7 +336,7 @@ const useAbility = (id) => {
             break;
         case "shield_wall":
             player.shield = Math.max(player.shield || 0, Math.round(player.stats.hpMax * 0.25));
-            pushPlayerBuff("defMult", 1.3, 8);
+            pushPlayerBuff("damageTakenMult", 0.75, 8);
             addCombatLog(tParams("cb.ab.shieldWall", { name: player.name, s: nFormatter(player.shield) }));
             break;
         case "warcry":
