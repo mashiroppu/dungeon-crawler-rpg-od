@@ -390,7 +390,6 @@ const showItemInfo = (item, icon, type, i) => {
                 <ul>${item.stats.map(formatStatLine).join('')}</ul>
                 <div class="button-container">
                     <button id="un-equip">${type === "Equip" ? t("eq.equip") : t("eq.unequip")}</button>
-                    ${item.affixes && item.affixes.length && !item.finalized ? `<button id="reroll-equip"><i class="ra ra-recycle"></i>${t("eq.reroll")}</button>` : ''}
                     ${item.affixes && item.affixes.length && !item.finalized ? `<button id="finalize-equip"><i class="ra ra-check"></i>${t("eq.finalize")}</button>` : ''}
                     <button id="sell-equip"><i class="fas fa-coins" style="color: #FFD700;"></i>${nFormatter(item.value)}</button>
                     <button id="close-item-info">${t("eq.close")}</button>
@@ -477,31 +476,7 @@ const showItemInfo = (item, icon, type, i) => {
         }
     };
 
-    // Reroll affixes (Rare and above)
-    let rerollBtn = document.querySelector("#reroll-equip");
-    if (rerollBtn) {
-        rerollBtn.onclick = function () {
-            const cost = Math.max(100, Math.round((item.value || 100) * 0.3));
-            if (player.gold < cost) {
-                sfxDeny.play();
-                return;
-            }
-            sfxSell.play();
-            player.gold -= cost;
-            const oldCount = (item.affixes || []).length;
-            if (oldCount > 0) item.stats.splice(item.stats.length - oldCount, oldCount);
-            rollAffixes(item);
-            item.value = Math.round((item.value || 0) * 1.1);
-            if (type == "Equip") {
-                player.inventory.equipment[i] = JSON.stringify(item);
-            }
-            playerLoadStats();
-            saveData();
-            showItemInfo(item, icon, type, i);
-        };
-    }
-
-    // Finalize: locks affixes (no more rerolls) but upgrades all option values +40%
+    // Finalize: upgrades all option values +40%
     let finalizeBtn = document.querySelector("#finalize-equip");
     if (finalizeBtn) {
         finalizeBtn.onclick = function () {
