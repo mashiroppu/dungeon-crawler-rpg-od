@@ -99,12 +99,11 @@ Plain HTML/CSS/JavaScript — no framework, no build step. Audio via
 - [phoenix1291](https://phoenix1291.itch.io/sound-effects-pack-2) — Level up SFX
 - [Leviathan_Music](https://soundcloud.com/leviathan254) — Battle music
 - [Sara Garrard](https://sonatina.itch.io/letsadventure) — Dungeon music
-- [ぴぽや](https://pipoya.net/) — Sound effects & materials
-- 倉庫 — Game materials
-- The manki — Game materials
+- [ぴぽや倉庫](https://pipoya.net/) — Effect animations
+- rute — Effect animations
 - [効果音ラボ](https://soundeffect-lab.info/) — Sound effects
-- [OtoLogic](https://otologic.jp/) — BGM
-- rute — Game materials
+- [OtoLogic](https://otologic.jp/) — Sound effects
+- The manki — Ability icons
 
 ## License
 
