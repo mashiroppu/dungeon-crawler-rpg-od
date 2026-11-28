@@ -993,19 +993,19 @@ header button i {
     inset: 5px;
     pointer-events: none;
     background: linear-gradient(115deg,
-        transparent 32%,
-        rgba(255, 220, 130, 0.45) 44%,
+        transparent 26%,
+        rgba(255, 220, 130, 0.45) 40%,
         rgba(255, 255, 255, 0.85) 50%,
-        rgba(140, 220, 255, 0.5) 56%,
-        transparent 68%);
-    background-size: 260% 100%;
-    background-position: 130% 0;
+        rgba(140, 220, 255, 0.5) 60%,
+        transparent 74%);
+    background-size: 300% 100%;
+    background-position: 150% 0;
     mix-blend-mode: screen;
     animation: ability-enchant-glint 3.2s linear infinite;
 }
 @keyframes ability-enchant-glint {
-    0%   { background-position: 130% 0; }
-    100% { background-position: -130% 0; }
+    0%   { background-position: 150% 0; }
+    100% { background-position: -150% 0; }
 }
 /* stop the sheen while on cooldown / spent */
 .ability-btn.on-cd::after,
